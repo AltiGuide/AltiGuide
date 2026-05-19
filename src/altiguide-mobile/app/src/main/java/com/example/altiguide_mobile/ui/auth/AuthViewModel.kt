@@ -1,13 +1,11 @@
 package com.example.altiguide_mobile.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.altiguide_mobile.data.model.AuthResponse
 import com.example.altiguide_mobile.data.model.LoginRequest
 import com.example.altiguide_mobile.data.repository.AuthRepository
-import com.example.altiguide_mobile.data.model.MountainModel
-import com.example.altiguide_mobile.data.model.TransactionListResponse
-import com.example.altiguide_mobile.data.model.UserModel
 import com.example.altiguide_mobile.data.repository.MountainRepository
 import com.example.altiguide_mobile.data.repository.RouteRepository
 import com.example.altiguide_mobile.data.repository.TransactionRepository
@@ -35,35 +33,134 @@ class AuthViewModel @Inject constructor(
     private val _testState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val testState: StateFlow<UiState<String>> = _testState.asStateFlow()
 
+    fun testTransactionsAndEticket() {
+        viewModelScope.launch {
+            _testState.value = UiState.Loading
+            try {
+                val transactions = transactionRepository.getTransactions()
+                Log.d("API_TEST", "Transactions count: ${transactions.data.size}")
+
+                if (transactions.data.isNotEmpty()) {
+                    val firstTx = transactions.data.first()
+                    Log.d("API_TEST", "Testing Detail for Tx ID: ${firstTx.id}")
+
+                    val detail = transactionRepository.getTransactionDetail(firstTx.id)
+                    Log.d("API_TEST", "Tx Detail: Status=${detail.data.status}, Method=${detail.data.paymentType}")
+
+                    Log.d("API_TEST", "Testing E-Ticket PDF download...")
+                    val pdfBody = transactionRepository.downloadETicketPdf(firstTx.id)
+                    val contentLength = pdfBody.contentLength()
+                    Log.d("API_TEST", "PDF Download Success: Length=$contentLength bytes")
+                    
+                    _testState.value = UiState.Success("Transaction & E-Ticket tested! Check Logcat.")
+                } else {
+                    _testState.value = UiState.Success("No transactions found to test.")
+                }
+            } catch (e: Exception) {
+                Log.e("API_TEST", "Error testing Transactions: ${e.message}", e)
+                _testState.value = UiState.Error("Transaction Test failed: ${e.message}")
+            }
+        }
+    }
+
+    fun testMountainsAndRoutesDetail() {
+        viewModelScope.launch {
+            _testState.value = UiState.Loading
+            try {
+                // Merbabu ID = 2
+                Log.d("API_TEST", "Testing Mountain Detail (ID: 2)...")
+                val mountain = mountainRepository.getMountainDetail(2)
+                Log.d("API_TEST", "Mountain: ${mountain.name}, Routes: ${mountain.routes?.size}")
+
+                Log.d("API_TEST", "Testing Routes List...")
+                val routes = routeRepository.getRoutes()
+                if (routes.isNotEmpty()) {
+                    val firstRoute = routes.first()
+                    Log.d("API_TEST", "Testing Route Detail (ID: ${firstRoute.id})...")
+                    val detail = routeRepository.getRouteDetail(firstRoute.id)
+                    Log.d("API_TEST", "Route Detail: ${detail.name}, Waypoints: ${detail.waypoints?.size}")
+                }
+
+                _testState.value = UiState.Success("Mountains & Routes Details tested! Check Logcat.")
+            } catch (e: Exception) {
+                Log.e("API_TEST", "Error testing Details: ${e.message}", e)
+                _testState.value = UiState.Error("Detail Test failed: ${e.message}")
+            }
+        }
+    }
+
+    fun testForgotPasswordFlow() {
+        viewModelScope.launch {
+            _testState.value = UiState.Loading
+            try {
+                val email = "test@example.com"
+                Log.d("API_TEST", "Testing Forgot Password Code for $email...")
+                val response = authRepository.sendForgotPasswordCode(email)
+                Log.d("API_TEST", "Send Code Result: ${response.isSuccessful}")
+
+                _testState.value = UiState.Success("Forgot Password flow started! Check Logcat.")
+            } catch (e: Exception) {
+                Log.e("API_TEST", "Error testing Forgot Pwd: ${e.message}", e)
+                _testState.value = UiState.Error("Forgot Pwd Test failed: ${e.message}")
+            }
+        }
+    }
+
+    fun testProfileAndLogout() {
+        viewModelScope.launch {
+            _testState.value = UiState.Loading
+            try {
+                val user = authRepository.getUserProfile()
+                Log.d("API_TEST", "Profile: ${user.name}, NIK: ${user.nik}")
+
+                Log.d("API_TEST", "Testing Logout...")
+                authRepository.logout()
+                Log.d("API_TEST", "Logout Success. Local token cleared.")
+
+                _testState.value = UiState.Success("Profile & Logout tested successfully!")
+            } catch (e: Exception) {
+                Log.e("API_TEST", "Error testing Profile/Logout: ${e.message}", e)
+                _testState.value = UiState.Error("Profile/Logout Test failed: ${e.message}")
+            }
+        }
+    }
+
+    fun testAdditionalFeatures() {
+        viewModelScope.launch {
+            _testState.value = UiState.Loading
+            try {
+                Log.d("API_TEST", "Testing Validate NIK...")
+                val nikResponse = authRepository.validateNik("1234567890123456")
+                Log.d("API_TEST", "Validate NIK Result: Success=${nikResponse.isSuccessful}")
+
+                Log.d("API_TEST", "Testing Update Profile...")
+                val profileUpdate = mapOf("name" to "Updated Name", "phone_number" to "08123456789")
+                val updateResponse = authRepository.updateUserProfile(profileUpdate)
+                Log.d("API_TEST", "Update Profile Result: Success=${updateResponse.isSuccessful}")
+
+                _testState.value = UiState.Success("NIK & Profile Update tested! Check Logcat.")
+            } catch (e: Exception) {
+                Log.e("API_TEST", "Error testing Additional Features: ${e.message}", e)
+                _testState.value = UiState.Error("Test failed: ${e.message}")
+            }
+        }
+    }
+
     fun testHikingSessions() {
         viewModelScope.launch {
             _testState.value = UiState.Loading
             try {
-                // GET /api/hiking-sessions
                 val sessions = transactionRepository.getHikingSessions()
-                android.util.Log.d("API_TEST", "Hiking Sessions count: ${sessions.size}")
+                Log.d("API_TEST", "Hiking Sessions count: ${sessions.size}")
 
                 if (sessions.isNotEmpty()) {
                     val firstSession = sessions.first()
-                    android.util.Log.d("API_TEST", "First Session: ID=${firstSession.id}, Group=${firstSession.group_name}, Route=${firstSession.route?.name}")
-
-                    // GET /api/hiking-sessions/{id}
                     val sessionDetail = transactionRepository.getHikingSessionDetail(firstSession.id)
-                    android.util.Log.d("API_TEST", "Session Detail Route: ${sessionDetail.route?.name}")
-                    
-                    val waypoints = sessionDetail.route?.waypoints
-                    android.util.Log.d("API_TEST", "Session Detail Waypoints Count: ${waypoints?.size ?: 0}")
-                    if (!waypoints.isNullOrEmpty()) {
-                        val firstWp = waypoints.first()
-                        android.util.Log.d("API_TEST", "First Waypoint: Name=${firstWp.name}, Alt=${firstWp.altitude}, Index=${firstWp.order_index}")
-                    }
-                } else {
-                    android.util.Log.d("API_TEST", "No Hiking Sessions found for this user.")
+                    Log.d("API_TEST", "Session Detail Route: ${sessionDetail.route?.name}")
                 }
-
-                _testState.value = UiState.Success("Hiking Sessions tested successfully! Check Logcat API_TEST.")
+                _testState.value = UiState.Success("Hiking Sessions tested successfully!")
             } catch (e: Exception) {
-                android.util.Log.e("API_TEST", "Error testing Hiking Sessions: ${e.message}", e)
+                Log.e("API_TEST", "Error testing Hiking Sessions: ${e.message}", e)
                 _testState.value = UiState.Error("Test failed: ${e.message}")
             }
         }
@@ -73,23 +170,15 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _testState.value = UiState.Loading
             try {
-                // Test Mountain Weather (e.g., Mount ID = 2 for Merbabu)
                 val mountainWeather = mountainRepository.getMountainWeather(2)
-                android.util.Log.d("API_TEST", "Mountain Weather: ${mountainWeather.mountain_name}, Status: ${mountainWeather.status}")
                 if (mountainWeather.data != null) {
-                    android.util.Log.d("API_TEST", "Peak Current Temp: ${mountainWeather.data.current_weather.temperature}°C, Wind: ${mountainWeather.data.current_weather.windspeed} km/h")
+                    Log.d("API_TEST", "Weather: ${mountainWeather.mountain_name}, Temp: ${mountainWeather.data.current_weather.temperature}")
                 }
-
-                // Test Route Weather (e.g., Route ID = 4 for Via Selo)
                 val routeWeather = routeRepository.getRouteWeather(4)
-                android.util.Log.d("API_TEST", "Route Weather: ${routeWeather.route_name}, Basecamp Alt: ${routeWeather.basecamp_altitude} mdpl")
-                if (routeWeather.data != null) {
-                    android.util.Log.d("API_TEST", "Basecamp Current Temp: ${routeWeather.data.current_weather.temperature}°C, Wind: ${routeWeather.data.current_weather.windspeed} km/h")
-                }
-
-                _testState.value = UiState.Success("Weather APIs tested successfully! Check Logcat API_TEST.")
+                Log.d("API_TEST", "Route Weather: ${routeWeather.route_name}")
+                _testState.value = UiState.Success("Weather APIs tested successfully!")
             } catch (e: Exception) {
-                android.util.Log.e("API_TEST", "Error testing Weather API: ${e.message}", e)
+                Log.e("API_TEST", "Error testing Weather API: ${e.message}", e)
                 _testState.value = UiState.Error("Weather Test failed: ${e.message}")
             }
         }
@@ -100,14 +189,9 @@ class AuthViewModel @Inject constructor(
             _loginState.value = UiState.Loading
             try {
                 val response = authRepository.login(request)
-                // On success -> token is saved in repository via DataStore
                 _loginState.value = UiState.Success(response)
             } catch (e: HttpException) {
-                if (e.code() == 401) {
-                    _loginState.value = UiState.Error("Email atau password salah.")
-                } else {
-                    _loginState.value = UiState.Error("Terjadi kesalahan dari server: ${e.code()}")
-                }
+                _loginState.value = UiState.Error(if (e.code() == 401) "Email atau password salah." else "Server error: ${e.code()}")
             } catch (e: IOException) {
                 _loginState.value = UiState.Error("Tidak ada koneksi internet")
             } catch (e: Exception) {
@@ -120,25 +204,13 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _testState.value = UiState.Loading
             try {
-                // 1. GET /api/mountains
                 val mountains = mountainRepository.getMountains()
-                android.util.Log.d("API_TEST", "Mountains count: ${mountains.size}, First: ${mountains.firstOrNull()?.name}")
-
-                // 2. GET /api/user
+                Log.d("API_TEST", "Mountains count: ${mountains.size}")
                 val user = authRepository.getUserProfile()
-                android.util.Log.d("API_TEST", "User profile: ID=${user.id}, Name=${user.name}, Email=${user.email}")
-
-                // 3. GET /api/transactions
-                val transactions = transactionRepository.getTransactions()
-                android.util.Log.d("API_TEST", "Transactions count: ${transactions.data.size}")
-                if (transactions.data.isNotEmpty()) {
-                    val firstTx = transactions.data.first()
-                    android.util.Log.d("API_TEST", "First Tx: ID=${firstTx.id}, Status=${firstTx.status}, GrossAmount=${firstTx.grossAmount}")
-                }
-
-                _testState.value = UiState.Success("All endpoints tested successfully! Check Logcat API_TEST.")
+                Log.d("API_TEST", "User profile: ${user.name}")
+                _testState.value = UiState.Success("All endpoints tested successfully!")
             } catch (e: Exception) {
-                android.util.Log.e("API_TEST", "Error testing API: ${e.message}", e)
+                Log.e("API_TEST", "Error testing API: ${e.message}", e)
                 _testState.value = UiState.Error("Test failed: ${e.message}")
             }
         }
