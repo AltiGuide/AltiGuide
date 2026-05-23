@@ -2,6 +2,8 @@ package com.example.altiguide_mobile.ui.auth
 
 import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +28,8 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -63,10 +66,10 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = loginState !is UiState.Loading
         ) {
-            Text("Login API Test")
+            Text("1. Login API Test")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
@@ -75,10 +78,22 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = testState !is UiState.Loading
         ) {
-            Text("Test Authorized Endpoints")
+            Text("2. Test Mountains & Basic Auth")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                viewModel.testTransactionsAndEticket()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = testState !is UiState.Loading
+        ) {
+            Text("3. Test Transactions & E-Ticket")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
@@ -87,10 +102,22 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = testState !is UiState.Loading
         ) {
-            Text("Test Hiking Sessions & Navigation")
+            Text("4. Test Hiking Sessions")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                viewModel.testAdditionalFeatures()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = testState !is UiState.Loading
+        ) {
+            Text("5. Test NIK & Profile Update")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
@@ -99,7 +126,19 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = testState !is UiState.Loading
         ) {
-            Text("Test Weather API")
+            Text("6. Test Weather API")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                viewModel.testProfileAndLogout()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = testState !is UiState.Loading
+        ) {
+            Text("7. Test Profile & Logout")
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -113,7 +152,7 @@ fun LoginScreen(
             is UiState.Success -> {
                 Log.d("API_TEST", "Login sukses! Token: ${state.data.token}")
                 Text(
-                    text = "Login Sukses! Cek Logcat (API_TEST)",
+                    text = "Login Sukses! Token tersimpan.",
                     color = Color.Green
                 )
             }
@@ -135,7 +174,7 @@ fun LoginScreen(
             is UiState.Success -> {
                 Text(
                     text = state.data,
-                    color = Color.Green
+                    color = Color(0xFF388E3C)
                 )
             }
             is UiState.Error -> {
