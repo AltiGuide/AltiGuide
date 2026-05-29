@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -28,34 +28,15 @@ const submitLogin = () => {
 /* ── Sign-up form ─────────────────────────────────────────────── */
 const signupForm = useForm({
     name: '',
-    last_name: '',
     email: '',
-    password: '',
-    password_confirmation: '',
     phone_number: '',
-    age: '',
-    address: '',
-    emergency_contact: '',
-    nik: '',
+    password: '',
 })
 
 const submitSignup = () => {
-    // Generate a random 16-digit NIK
-    const randomNik = Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join('')
-
-    signupForm.transform((data) => ({
-        ...data,
-        name: data.email.split('@')[0] || 'User AltiGuide',
-        password_confirmation: data.password,
-        phone_number: '081234567890',
-        age: 25,
-        address: 'AltiGuide User Address',
-        emergency_contact: '081234567899',
-        nik: randomNik,
-    })).post('/register', {
+    signupForm.post('/register', {
         onFinish: () => {
             signupForm.reset('password')
-            signupForm.reset('password_confirmation')
         },
     })
 }
@@ -63,6 +44,17 @@ const submitSignup = () => {
 const togglePassword = () => {
     showPassword.value = !showPassword.value
 }
+
+const isLoginValid = computed(() => {
+    return loginForm.email.trim() !== '' && loginForm.password.trim() !== ''
+})
+
+const isSignupValid = computed(() => {
+    return signupForm.name.trim() !== '' &&
+           signupForm.email.trim() !== '' &&
+           signupForm.phone_number.trim() !== '' &&
+           signupForm.password.trim() !== ''
+})
 </script>
 
 <template>
@@ -89,7 +81,7 @@ const togglePassword = () => {
             <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
                 <Link href="/" class="hover:text-black transition">Home</Link>
                 <Link href="#" class="hover:text-black transition">Article</Link>
-                <Link href="#" class="hover:text-black transition">Booking</Link>
+                <Link href="/booking" class="hover:text-black transition">Booking</Link>
                 <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
                     Login
                 </Link>
@@ -181,7 +173,7 @@ const togglePassword = () => {
                                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0 1 12 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 0 1 1.563-3.029m5.858.908a3 3 0 1 1 4.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88 3 3m6.878 6.879L21 21"/>
                                 </svg>
-                                <span class="text-xs">{{ showPassword ? 'Show' : 'Hide' }}</span>
+                                <span class="text-xs">{{ showPassword ? 'Hide' : 'Show' }}</span>
                             </button>
                         </div>
                         <input
@@ -204,6 +196,7 @@ const togglePassword = () => {
                         <button
                             type="submit"
                             class="submit-btn"
+                            :class="{ 'btn-ready': isLoginValid }"
                             :disabled="loginForm.processing"
                         >
                             <span v-if="loginForm.processing">Logging in...</span>
@@ -216,6 +209,19 @@ const togglePassword = () => {
                 <!--  SIGN-UP FORM                                          -->
                 <!-- ═══════════════════════════════════════════════════════ -->
                 <form v-else @submit.prevent="submitSignup" class="auth-form">
+
+                    <!-- Nama Lengkap -->
+                    <div class="field-group">
+                        <label for="signup-name" class="field-label">Nama Lengkap</label>
+                        <input
+                            id="signup-name"
+                            type="text"
+                            v-model="signupForm.name"
+                            required
+                            class="field-input"
+                        />
+                        <div v-if="signupForm.errors.name" class="field-error">{{ signupForm.errors.name }}</div>
+                    </div>
 
                     <!-- Email -->
                     <div class="field-group">
@@ -230,6 +236,19 @@ const togglePassword = () => {
                         <div v-if="signupForm.errors.email" class="field-error">{{ signupForm.errors.email }}</div>
                     </div>
 
+                    <!-- No. HP -->
+                    <div class="field-group">
+                        <label for="signup-phone" class="field-label">No. Handphone</label>
+                        <input
+                            id="signup-phone"
+                            type="text"
+                            v-model="signupForm.phone_number"
+                            required
+                            class="field-input"
+                        />
+                        <div v-if="signupForm.errors.phone_number" class="field-error">{{ signupForm.errors.phone_number }}</div>
+                    </div>
+
                     <!-- Password -->
                     <div class="field-group">
                         <div class="flex items-center justify-between">
@@ -242,7 +261,7 @@ const togglePassword = () => {
                                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0 1 12 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 0 1 1.563-3.029m5.858.908a3 3 0 1 1 4.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88 3 3m6.878 6.879L21 21"/>
                                 </svg>
-                                <span class="text-xs">{{ showPassword ? 'Show' : 'Hide' }}</span>
+                                <span class="text-xs">{{ showPassword ? 'Hide' : 'Show' }}</span>
                             </button>
                         </div>
                         <input
@@ -265,6 +284,7 @@ const togglePassword = () => {
                         <button
                             type="submit"
                             class="submit-btn"
+                            :class="{ 'btn-ready': isSignupValid }"
                             :disabled="signupForm.processing"
                         >
                             <span v-if="signupForm.processing">Creating account...</span>
@@ -468,18 +488,23 @@ const togglePassword = () => {
     font-weight: 600;
     font-size: 20px;
     border: none;
-    cursor: pointer;
+    cursor: not-allowed;
     transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-.submit-btn:hover:not(:disabled) {
-    background-color: #A5A07C;
+.submit-btn.btn-ready {
+    background-color: #64823E;
+    cursor: pointer;
+}
+
+.submit-btn.btn-ready:hover:not(:disabled) {
+    background-color: #BEBAAF;
     transform: translateY(-1px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
 
-.submit-btn:active:not(:disabled) {
+.submit-btn.btn-ready:active:not(:disabled) {
     transform: translateY(0);
 }
 

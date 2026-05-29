@@ -24,6 +24,7 @@ class User extends Authenticatable
         'address',
         'emergency_contact',
         'nik',
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -40,7 +41,21 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'email_verified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Check if user profile is complete.
+     */
+    public function isProfileComplete(): bool
+    {
+        return !empty($this->name)
+            && !empty($this->phone_number)
+            && !empty($this->age)
+            && !empty($this->address)
+            && !empty($this->emergency_contact)
+            && !empty($this->nik);
     }
 
     // ──── Relationships ────

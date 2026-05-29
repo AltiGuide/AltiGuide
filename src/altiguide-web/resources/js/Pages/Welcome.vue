@@ -93,7 +93,7 @@ onUnmounted(() => {
         <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
           <Link href="/" class="hover:text-black transition">Home</Link>
           <Link href="#" class="hover:text-black transition">Article</Link>
-          <Link href="#" class="hover:text-black transition">Booking</Link>
+          <Link href="/booking" class="hover:text-black transition">Booking</Link>
           <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
             Login
           </Link>
@@ -296,7 +296,7 @@ onUnmounted(() => {
               <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
                 <Link href="#" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
+                <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
                 <Link href="#" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
