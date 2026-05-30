@@ -31,6 +31,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/register',  [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
 
+    // Route Verifikasi OTP Pendaftaran
+    Route::get('/register/verify',           [RegisterController::class, 'showVerifyForm'])->name('register.verify');
+    Route::post('/register/verify',          [RegisterController::class, 'verifyOtp'])->name('register.verify.post');
+    Route::post('/register/verify/resend',   [RegisterController::class, 'resendOtp'])->name('register.verify.resend');
+
     // Route untuk flow Forgot Password
     Route::get('/forgot-password',           [\App\Http\Controllers\Auth\PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password/email',    [\App\Http\Controllers\Auth\PasswordResetController::class, 'sendResetCodeEmail'])->name('password.email');
@@ -52,6 +57,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    // Profile completion
+    Route::put('/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
+    // Booking route with profile check
+    Route::get('/booking', function () {
+        $user = Auth::user();
+        if (!$user->isProfileComplete()) {
+            return redirect()->route('dashboard')
+                ->with('warning', 'Silakan lengkapi profil Anda terlebih dahulu sebelum melakukan booking pendakian.');
+        }
+
+        return Inertia::render('Booking');
+    })->name('booking');
 });
 
 // ── Admin routes ────────────────────────────────────────────────────────

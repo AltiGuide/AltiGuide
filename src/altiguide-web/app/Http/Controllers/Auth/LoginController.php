@@ -33,6 +33,16 @@ class LoginController extends Controller
             ])->onlyInput('email');
         }
 
+        $user = Auth::user();
+        if ($user && is_null($user->email_verified_at)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('register.verify', ['email' => $user->email])
+                             ->with('error', 'Akun Anda belum terverifikasi. Silakan lakukan verifikasi OTP terlebih dahulu.');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended('/dashboard');
