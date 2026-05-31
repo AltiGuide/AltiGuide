@@ -229,6 +229,8 @@ watch(currentSlug, () => {
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <template v-if="selectedRoute">
 
+
+
       <!-- ── Section 1: Curved Title ────────────────────────────────── -->
       <section class="route-hero">
         <div class="route-hero__inner">
@@ -238,7 +240,7 @@ watch(currentSlug, () => {
               <!-- Circular arc with larger radius for an even flatter curve -->
               <path
                 id="title-curve"
-                d="M -100,240 A 2200,2200 0 0,1 1000,240"
+                d="M -500,340 A 2200,2200 0 0,1 1400,340"
                 fill="none"
               />
               <!-- Drop shadow filter -->
@@ -252,14 +254,14 @@ watch(currentSlug, () => {
               class="route-hero__text-stroke"
               filter="url(#title-shadow)"
             >
-              <textPath href="#title-curve" startOffset="51.5%" text-anchor="middle">JALUR PENDAKIAN {{ selectedRoute.toUpperCase().replace('JALUR ', '') }}</textPath>
+              <textPath href="#title-curve" startOffset="50%" text-anchor="middle">{{ selectedRoute.toUpperCase() }}</textPath>
             </text>
 
             <!-- Fill layer (on top) -->
             <text
               class="route-hero__text-fill"
             >
-              <textPath href="#title-curve" startOffset="51.5%" text-anchor="middle">JALUR PENDAKIAN {{ selectedRoute.toUpperCase().replace('JALUR ', '') }}</textPath>
+              <textPath href="#title-curve" startOffset="50%" text-anchor="middle">{{ selectedRoute.toUpperCase() }}</textPath>
             </text>
           </svg>
         </div>
@@ -343,7 +345,7 @@ watch(currentSlug, () => {
           <div class="route-stats-wrapper">
             <!-- Left: Image Gallery -->
             <div class="route-stats-gallery">
-              <div v-for="n in 2" :key="n" class="relative w-full h-[280px] rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]">
+              <div v-for="n in 2" :key="n" class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]">
                 <!-- Image Placeholder -->
                 <div class="flex-1 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#A2825B]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
@@ -471,56 +473,19 @@ watch(currentSlug, () => {
         </div>
       </section>
 
-      <!-- ── Section 7: Footer ───────────────────────────────────────── -->
-      <footer class="route-footer">
-        <div class="route-footer__inner">
-          <!-- Left: Brand -->
-          <div class="route-footer__brand">
-            <div class="route-footer__logo">
-              <img src="/images/logo_2.png" alt="AltiGuide" class="w-10 h-10 object-contain" />
-              <span class="route-footer__logo-text">AltiGuide</span>
-            </div>
-          </div>
-
-          <!-- Center: Action Buttons -->
-          <div class="route-footer__actions">
-            <button class="route-footer__btn route-footer__btn--outline">Selengkapnya</button>
-            <button class="route-footer__btn route-footer__btn--primary">Start Guiding</button>
-          </div>
-
-          <!-- Right: Links -->
-          <div class="route-footer__links">
-            <div class="route-footer__link-group">
-              <h4>Fitur</h4>
-              <a href="#">Lorem Ipsum</a>
-              <a href="#">Lorem Ipsum</a>
-              <a href="#">Lorem Ipsum</a>
-            </div>
-            <div class="route-footer__link-group">
-              <h4>Tentang</h4>
-              <a href="#">Lorem Ipsum</a>
-              <a href="#">Lorem Ipsum</a>
-              <a href="#">Lorem Ipsum</a>
-            </div>
-            <div class="route-footer__link-group">
-              <h4>Bantuan</h4>
-              <a href="#">Lorem Ipsum</a>
-              <a href="#">Lorem Ipsum</a>
-              <a href="#">Lorem Ipsum</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom Bar -->
-        <div class="route-footer__bottom">
-          <span>AltiGuide.com</span>
-          <div class="route-footer__social">
-            <a href="#" aria-label="Instagram">📷</a>
-            <a href="#" aria-label="Twitter">🐦</a>
-            <a href="#" aria-label="Facebook">📘</a>
-          </div>
-        </div>
-      </footer>
+      <!-- Back Button (Bottom) -->
+      <div class="w-full max-w-[1180px] mx-auto px-6 pb-16 flex justify-center mt-8">
+        <button 
+          @click="selectedRoute = null" 
+          class="flex items-center gap-2 bg-[#374426] text-[#F8F3E4] font-medium text-[14px] px-5 py-2.5 rounded-lg hover:opacity-90 transition-all shadow-sm hover:scale-[1.02]" 
+          style="font-family: 'Montserrat', sans-serif;"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Kembali ke Informasi {{ currentMountain.name }}
+        </button>
+      </div>
 
     </template>
 
@@ -557,6 +522,86 @@ watch(currentSlug, () => {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ── Section 7: Footer (Global) ───────────────────────────────────────── -->
+    <div class="w-full flex flex-col mt-auto">
+      <!-- CTA Banner -->
+      <div class="w-full bg-[#E0DBBE] py-10 px-8 md:px-16 xl:px-24 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" />
+          <span class="text-2xl md:text-3xl xl:text-[32px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
+            Contact Us
+          </Link>
+          <Link href="#" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+            Start Summit
+          </Link>
+        </div>
+      </div>
+
+      <!-- Main Footer Links -->
+      <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
+          <!-- Left: Logo & Social -->
+          <div class="flex flex-col gap-[96px]">
+            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+              AltiGuide.com
+            </Link>
+            <div class="flex items-center gap-6 text-[#828282]">
+              <a href="#" class="hover:text-[#374426] transition-colors">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+              </a>
+              <a href="#" class="hover:text-[#374426] transition-colors">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
+              </a>
+              <a href="#" class="hover:text-[#374426] transition-colors">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: Links -->
+          <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
+            <div class="flex flex-col gap-5">
+              <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
+              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+                <Link href="#" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
+                <Link href="#" class="hover:text-[#374426] transition-colors">Jalur Pendakian</Link>
+                <Link href="#" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+              </div>
+            </div>
+            
+            <div class="flex flex-col gap-5">
+              <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
+              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+                <Link href="#" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+                <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
+                <Link href="#" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-5">
+              <h5 class="text-[#374426] font-semibold text-[18px]">Komunitas</h5>
+              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+                <Link href="#" class="hover:text-[#374426] transition-colors">Event Mendaki</Link>
+                <Link href="#" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
+                <Link href="#" class="hover:text-[#374426] transition-colors">Tentang Kami</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
+          <p class="text-[#5A684C] font-medium text-[14px]">
+            © 2026 AltiGuide Team. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -785,7 +830,7 @@ h1 {
 .route-stats-wrapper {
   display: flex;
   gap: 32px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .route-stats-gallery {
@@ -1007,136 +1052,4 @@ h1 {
   color: #fff;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SECTION 7: FOOTER
-   ═══════════════════════════════════════════════════════════════════════ */
-
-.route-footer {
-  width: 100%;
-  background: #2C3E1E;
-  color: #D7DDC2;
-  padding: 40px 24px 0;
-}
-
-.route-footer__inner {
-  max-width: 1180px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 40px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.route-footer__brand {
-  flex-shrink: 0;
-}
-
-.route-footer__logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.route-footer__logo-text {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 800;
-  font-size: 24px;
-  color: #F8F3E4;
-}
-
-.route-footer__actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.route-footer__btn {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.route-footer__btn--outline {
-  background: transparent;
-  border: 1px solid #D7DDC2;
-  color: #D7DDC2;
-}
-
-.route-footer__btn--outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.route-footer__btn--primary {
-  background: #5F8D4E;
-  border: 1px solid #5F8D4E;
-  color: #fff;
-}
-
-.route-footer__btn--primary:hover {
-  background: #4E7A3E;
-}
-
-.route-footer__links {
-  display: flex;
-  gap: 40px;
-}
-
-.route-footer__link-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.route-footer__link-group h4 {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  color: #F8F3E4;
-  margin-bottom: 4px;
-}
-
-.route-footer__link-group a {
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  color: #A8B497;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.route-footer__link-group a:hover {
-  color: #F8F3E4;
-}
-
-.route-footer__bottom {
-  max-width: 1180px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 0;
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  color: #A8B497;
-}
-
-.route-footer__social {
-  display: flex;
-  gap: 12px;
-}
-
-.route-footer__social a {
-  font-size: 18px;
-  text-decoration: none;
-  transition: opacity 0.2s;
-}
-
-.route-footer__social a:hover {
-  opacity: 0.7;
-}
 </style>
