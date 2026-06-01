@@ -92,7 +92,7 @@ onUnmounted(() => {
 
         <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
           <Link href="/" class="hover:text-black transition">Home</Link>
-          <Link href="#" class="hover:text-black transition">Article</Link>
+          <Link href="/article" class="hover:text-black transition">Article</Link>
           <Link href="/booking" class="hover:text-black transition">Booking</Link>
           <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
             Login

@@ -19,6 +19,10 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+Route::get('/article', function () {
+    return Inertia::render('Article/Show');
+})->name('article.show');
+
 // ── Guest routes (hanya bisa diakses kalau BELUM login) ─────────────────
 
 Route::middleware('guest')->group(function () {
