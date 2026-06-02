@@ -2,7 +2,6 @@
 import { Link, Head, usePage, router } from '@inertiajs/vue3'
 import { computed, watch, ref } from 'vue'
 
-// ── Data semua gunung ────────────────────────────────────────────────────
 const allMountains = [
   {
     slug: 'gunung-sumbing',
@@ -103,7 +102,6 @@ const allMountains = [
   },
 ]
 
-// ── Ambil slug dari query parameter URL ──────────────────────────────────
 const page = usePage()
 
 const currentSlug = computed(() => {
@@ -131,7 +129,7 @@ watch(currentSlug, () => {
   <Head :title="`Article - ${currentMountain.name}`" />
 
   <div class="min-h-screen bg-[#F8F3E4] font-sans">
-    <!-- Navbar -->
+
     <nav class="w-full flex justify-between items-center px-4 md:px-8 xl:px-12 py-4 border-b border-[#D7DDC2]/50 shadow-sm bg-[#374426]/20">
       <div class="flex items-center gap-2 xl:gap-3">
         <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
@@ -148,9 +146,7 @@ watch(currentSlug, () => {
       </div>
     </nav>
 
-    <!-- Main Content Container -->
     <div v-if="!selectedRoute" class="w-full flex justify-center py-10">
-      <!-- Outer Container -->
       <div 
         class="relative rounded-[40px] shadow-2xl p-10 flex flex-col items-center"
         style="
@@ -159,31 +155,24 @@ watch(currentSlug, () => {
           background: linear-gradient(180deg, rgba(126,98,63,0.8) 26%, rgba(60,38,12,0.8) 87%);
         "
       >
-        <!-- If Mountain View -->
         <template v-if="!selectedRoute">
-          <!-- Title -->
           <h1 class="text-[#F8F3E4] text-[64px] font-semibold mb-10 drop-shadow-[0_2px_8px_rgba(255,255,255,0.6)] tracking-wide font-sans text-center">
             {{ currentMountain.name }}
           </h1>
 
-          <!-- Content Area -->
           <div class="w-full flex gap-10">
-            
-            <!-- Left Column -->
             <div class="w-[504px] flex flex-col gap-6 shrink-0">
-              <!-- Image -->
+
               <div class="w-full h-[1176px] rounded-[30px] overflow-hidden shadow-lg border-2 border-white/10">
                 <img :src="currentMountain.image" :alt="currentMountain.name" class="w-full h-full object-cover" />
               </div>
 
-              <!-- Routes Section -->
               <div class="w-full flex flex-col gap-3">
-                <!-- Title Container -->
                 <div class="w-full bg-[#FFFFFF]/20 backdrop-blur-[4px] border border-white/20 shadow-sm rounded-[20px] py-4 px-6">
                   <h3 class="text-[#EDE6D2] font-semibold text-[20px]" style="font-family: 'Montserrat', sans-serif;">Jalur Pendakian Resmi</h3>
                 </div>
                 
-                <!-- Routes Container -->
+
                 <div class="w-full bg-[#FFFFFF]/20 backdrop-blur-[4px] border border-white/20 shadow-sm rounded-[20px] p-6 flex flex-col gap-3">
                   <button 
                     v-for="(route, idx) in currentMountain.routes" 
@@ -198,16 +187,16 @@ watch(currentSlug, () => {
               </div>
             </div>
 
-            <!-- Right Column (Text Content) -->
+
             <div class="flex-1 flex flex-col gap-8 text-[#F8F3E4] leading-relaxed pr-4" style="font-family: 'Poppins', sans-serif;">
               
               <template v-for="(section, idx) in currentMountain.content" :key="idx">
-                <!-- First paragraph (with bold mountain name) -->
+
                 <p v-if="!section.title" class="text-justify text-[20px]">
                   <span class="font-semibold">{{ currentMountain.name }}</span> {{ section.text.substring(section.text.indexOf(' ') + 1) }}
                 </p>
 
-                <!-- Sub-sections with title -->
+
                 <div v-else class="flex flex-col gap-2">
                   <h3 class="font-semibold text-xl text-[#F8F3E4]">{{ section.title }}</h3>
                   <p class="text-justify text-[20px]">{{ section.text }}</p>
@@ -218,38 +207,35 @@ watch(currentSlug, () => {
           </div>
         </template>
 
-        <!-- If Route View -->
         <template v-else>
         </template>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- ROUTE DETAIL PAGE (full-width, outside the mountain container)    -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
     <template v-if="selectedRoute">
 
 
 
-      <!-- ── Section 1: Curved Title ────────────────────────────────── -->
+
       <section class="route-hero">
         <div class="route-hero__inner">
-          <!-- Curved Title using SVG textPath -->
+
           <svg class="route-hero__svg" :viewBox="`0 0 900 220`" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <!-- Circular arc with larger radius for an even flatter curve -->
+
               <path
                 id="title-curve"
                 d="M -500,340 A 2200,2200 0 0,1 1400,340"
                 fill="none"
               />
-              <!-- Drop shadow filter -->
+
               <filter id="title-shadow" x="-10%" y="-10%" width="130%" height="150%">
                 <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.25)" />
               </filter>
             </defs>
 
-            <!-- Stroke outline layer (behind) -->
+
             <text
               class="route-hero__text-stroke"
               filter="url(#title-shadow)"
@@ -257,7 +243,7 @@ watch(currentSlug, () => {
               <textPath href="#title-curve" startOffset="50%" text-anchor="middle">{{ selectedRoute.toUpperCase() }}</textPath>
             </text>
 
-            <!-- Fill layer (on top) -->
+
             <text
               class="route-hero__text-fill"
             >
@@ -267,11 +253,11 @@ watch(currentSlug, () => {
         </div>
       </section>
 
-      <!-- ── Section 2: Peta Jalur (placeholder) ─────────────────────── -->
+
       <section class="route-section route-map-section">
         <div class="route-container">
           <div class="route-map-frame">
-            <!-- Empty map placeholder -->
+
             <div class="route-map-empty">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 text-[#A2825B]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
@@ -282,7 +268,7 @@ watch(currentSlug, () => {
         </div>
       </section>
 
-      <!-- ── Section 3: Deskripsi ────────────────────────────────────── -->
+
       <section class="route-section route-deskripsi-section">
         <div class="route-container">
           <div class="route-card">
@@ -294,13 +280,13 @@ watch(currentSlug, () => {
         </div>
       </section>
 
-      <!-- ── Section 4: Estimasi Waktu per Pos ───────────────────────── -->
+
       <section class="route-section route-estimasi-section">
         <div class="route-container">
           <div class="route-card">
             <h2 class="route-card__title text-center mb-8">Estimasi waktu per Pos</h2>
             <div class="route-estimasi-grid">
-              <!-- Pos items -->
+
               <div v-for="pos in 6" :key="pos" class="route-pos-item">
                 <div class="route-pos-item__icon mt-1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#374426]" viewBox="0 0 24 24" fill="currentColor">
@@ -324,7 +310,7 @@ watch(currentSlug, () => {
               </div>
             </div>
             
-            <!-- Legends -->
+
             <div class="route-estimasi-legends mt-10 flex flex-col gap-1">
               <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-[#8CB4D6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S12 3 12 3s-4.5 4.03-4.5 9 2.015 9 4.5 9Z" /></svg>
@@ -339,20 +325,20 @@ watch(currentSlug, () => {
         </div>
       </section>
 
-      <!-- ── Section 5: Gallery + Statistik & Tips ───────────────────── -->
+
       <section class="route-section route-stats-section">
         <div class="route-container">
           <div class="route-stats-wrapper">
-            <!-- Left: Image Gallery -->
+
             <div class="route-stats-gallery">
               <div v-for="n in 2" :key="n" class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]">
-                <!-- Image Placeholder -->
+
                 <div class="flex-1 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#A2825B]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
                   </svg>
                 </div>
-                <!-- Text Container -->
+
                 <div class="w-full bg-[#7E623F] px-6 py-4 flex justify-between items-center z-10">
                   <span class="font-['Montserrat'] font-semibold text-[22px] text-[#F8F3E4]">{{ selectedRoute }}</span>
                   <span class="font-['Montserrat'] font-medium text-[16px] text-[#F8F3E4]">{{ currentMountain.name.replace('Gunung ', '') }}</span>
@@ -360,7 +346,7 @@ watch(currentSlug, () => {
               </div>
             </div>
 
-            <!-- Right: Statistik & Tips -->
+
             <div class="route-stats-info route-card">
               <div class="route-stats-block">
                 <h3 class="route-stats-block__title">Statistik Jalur</h3>
@@ -392,7 +378,7 @@ watch(currentSlug, () => {
         </div>
       </section>
 
-      <!-- ── Section 6: Cuaca / Weather ──────────────────────────────── -->
+
       <section class="route-section route-weather-section">
         <div class="route-container">
           <div class="route-weather-card">
@@ -400,14 +386,14 @@ watch(currentSlug, () => {
               <span class="route-weather-card__badge">Cuaca</span>
             </div>
             <div class="route-weather-card__body">
-              <!-- Left: Current Weather -->
+
               <div class="route-weather-current">
                 <div class="route-weather-current__mountain">
                   <h3>Gunung</h3>
                   <h2>Sumbing</h2>
                 </div>
                 <div class="route-weather-current__icon">
-                  <!-- Sun + cloud icon placeholder -->
+
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
                   </svg>
@@ -419,7 +405,7 @@ watch(currentSlug, () => {
                 <div class="route-weather-current__condition">Berawan Sebagian</div>
               </div>
 
-              <!-- Right: Forecast Table -->
+
               <div class="route-weather-forecast">
                 <table class="route-weather-table">
                   <thead>
@@ -442,7 +428,7 @@ watch(currentSlug, () => {
               </div>
             </div>
 
-            <!-- Bottom: Additional Info -->
+
             <div class="route-weather-card__footer">
               <div class="route-weather-info-item">
                 <span class="route-weather-info-item__label">🌡 Kelembaban</span>
@@ -473,7 +459,7 @@ watch(currentSlug, () => {
         </div>
       </section>
 
-      <!-- Back Button (Bottom) -->
+
       <div class="w-full max-w-[1180px] mx-auto px-6 pb-16 flex justify-center mt-8">
         <button 
           @click="selectedRoute = null" 
@@ -489,7 +475,7 @@ watch(currentSlug, () => {
 
     </template>
 
-    <!-- Other Destinations Section -->
+
     <div v-if="!selectedRoute" class="w-full flex flex-col items-center mt-[40px] pb-24 px-4">
       <div class="w-full max-w-[1180px] flex flex-col">
         <h2 class="text-[#64823E] font-bold text-[48px] mb-[32px]" style="font-family: 'Montserrat', sans-serif;">Other Destinations</h2>
@@ -500,7 +486,7 @@ watch(currentSlug, () => {
             :key="dest.slug"
             class="w-[360px] h-[450px] rounded-[30px] overflow-hidden bg-[#D6CCAF] flex flex-col shadow-lg"
           >
-            <!-- Image Area -->
+
             <div class="relative w-full h-[210px] shrink-0">
               <img :src="dest.image" :alt="dest.name" class="w-full h-full object-cover" />
               <Link 
@@ -512,7 +498,7 @@ watch(currentSlug, () => {
               </Link>
             </div>
             
-            <!-- Content Area -->
+
             <div class="flex-1 p-6 flex flex-col gap-3">
               <h4 class="text-[#374426] font-bold text-[28px] leading-tight" style="font-family: 'Montserrat', sans-serif;">{{ dest.name }}</h4>
               <p class="text-[16px] font-normal leading-relaxed text-[#5A684C]" style="font-family: 'Montserrat', sans-serif;">
@@ -524,9 +510,9 @@ watch(currentSlug, () => {
       </div>
     </div>
 
-    <!-- ── Section 7: Footer (Global) ───────────────────────────────────────── -->
+
     <div class="w-full flex flex-col mt-auto">
-      <!-- CTA Banner -->
+
       <div class="w-full bg-[#E0DBBE] py-10 px-8 md:px-16 xl:px-24 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
           <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" />
@@ -543,10 +529,10 @@ watch(currentSlug, () => {
         </div>
       </div>
 
-      <!-- Main Footer Links -->
+
       <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
         <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
-          <!-- Left: Logo & Social -->
+
           <div class="flex flex-col gap-[96px]">
             <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
               AltiGuide.com
@@ -564,7 +550,7 @@ watch(currentSlug, () => {
             </div>
           </div>
 
-          <!-- Right: Links -->
+
           <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
@@ -595,7 +581,7 @@ watch(currentSlug, () => {
           </div>
         </div>
 
-        <!-- Copyright -->
+
         <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
           <p class="text-[#5A684C] font-medium text-[14px]">
             © 2026 AltiGuide Team. All rights reserved.
@@ -610,9 +596,6 @@ watch(currentSlug, () => {
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@700;800;900&display=swap');
 
-/* ═══════════════════════════════════════════════════════════════════════
-   BASE / SHARED
-   ═══════════════════════════════════════════════════════════════════════ */
 
 h1 {
   font-family: 'Montserrat', sans-serif;
@@ -643,9 +626,6 @@ h1 {
   text-align: center;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SECTION 1: HERO — CURVED TITLE
-   ═══════════════════════════════════════════════════════════════════════ */
 
 .route-hero {
   width: 100%;
@@ -673,7 +653,7 @@ h1 {
   overflow: visible;
 }
 
-/* Stroke outline layer — renders behind the fill */
+
 .route-hero__text-stroke {
   font-family: 'Jost', sans-serif;
   font-weight: 700;
@@ -686,7 +666,7 @@ h1 {
   paint-order: stroke fill;
 }
 
-/* Fill layer — renders on top */
+
 .route-hero__text-fill {
   font-family: 'Jost', sans-serif;
   font-weight: 700;
@@ -695,9 +675,6 @@ h1 {
   fill: #FFFEF0;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SECTION 2: MAP PLACEHOLDER
-   ═══════════════════════════════════════════════════════════════════════ */
 
 .route-map-section {
   background: #F8F3E4;
@@ -730,9 +707,6 @@ h1 {
   opacity: 0.5;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   COMMON CARD STYLES
-   ═══════════════════════════════════════════════════════════════════════ */
 
 .route-card {
   background: linear-gradient(135deg, #E5E6D5 0%, #C3CE8F 100%);
@@ -819,9 +793,6 @@ h1 {
   color: #374426;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SECTION 5: GALLERY + STATISTIK & TIPS
-   ═══════════════════════════════════════════════════════════════════════ */
 
 .route-stats-section {
   background: #F8F3E4;
@@ -907,9 +878,6 @@ h1 {
   text-align: justify;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SECTION 6: WEATHER / CUACA
-   ═══════════════════════════════════════════════════════════════════════ */
 
 .route-weather-section {
   background: #F8F3E4;
