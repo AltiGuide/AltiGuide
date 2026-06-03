@@ -35,6 +35,7 @@ class MerbabuSeeder extends Seeder
                 'latitude' => -7.4725, 
                 'longitude' => 110.3705,
                 'image' => 'routes/merbabu-suwanting.jpg',
+                'map_image' => 'waypoints/peta-suwanting.jpg',
             ]
         );
 
@@ -190,6 +191,7 @@ class MerbabuSeeder extends Seeder
                 'latitude' => -7.4912, 
                 'longitude' => 110.4501,
                 'image' => 'routes/merbabu-selo.png',
+                'map_image' => 'waypoints/peta-selo.jpg',
             ]
         );
 
@@ -349,6 +351,7 @@ class MerbabuSeeder extends Seeder
                 'latitude' => -7.4201, 
                 'longitude' => 110.4201,
                 'image' => 'routes/merbabu-wekas.jpg',
+                'map_image' => 'waypoints/peta-wekas.jpg',
             ]
         );
 
@@ -512,7 +515,8 @@ class MerbabuSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.4050, 
-                'longitude' => 110.4285
+                'longitude' => 110.4285,
+                'map_image' => 'waypoints/peta-thekelan.jpg',
             ]
         );
 

@@ -34,6 +34,7 @@ class AndongSeeder extends Seeder
                 'latitude' => -7.3831,
                 'longitude' => 110.3705,
                 'image' => 'routes/andong-pendem.jpg',
+                'map_image' => 'waypoints/peta-pendem.jpg',
             ]
         );
 
@@ -142,6 +143,7 @@ class AndongSeeder extends Seeder
                 'latitude' => -7.3820,
                 'longitude' => 110.3725,
                 'image' => 'routes/andong-sawit.jpg',
+                'map_image' => 'waypoints/peta-sawit.jpg',
             ]
         );
 
@@ -237,6 +239,7 @@ class AndongSeeder extends Seeder
                 'latitude' => -7.3800,
                 'longitude' => 110.3750,
                 'image' => 'routes/andong-gogik.jpg',
+                'map_image' => 'waypoints/peta-gogik.jpg',
             ]
         );
 

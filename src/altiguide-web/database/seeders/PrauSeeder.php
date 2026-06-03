@@ -35,6 +35,7 @@ class PrauSeeder extends Seeder
                 'latitude' => -7.2185, 
                 'longitude' => 109.9077,
                 'image' => 'routes/prau-dieng.jpg',
+                'map_image' => 'waypoints/peta-dieng.jpg',
             ]
         );
 
@@ -144,6 +145,7 @@ class PrauSeeder extends Seeder
                 'latitude' => -7.2185, 
                 'longitude' => 109.9077,
                 'image' => 'routes/prau-patakbanteng.jpg',
+                'map_image' => 'waypoints/peta-patakbanteng.jpg',
             ]
         );
 
@@ -273,6 +275,7 @@ class PrauSeeder extends Seeder
                 'latitude' => -7.2185, 
                 'longitude' => 109.9077,
                 'image' => 'routes/prau-kalilembu.jpg',
+                'map_image' => 'waypoints/peta-kalilembu.jpg',
             ]
         );
 
@@ -360,6 +363,7 @@ class PrauSeeder extends Seeder
                 'latitude' => -7.2185, 
                 'longitude' => 109.9077,
                 'image' => 'routes/prau-dwarawati.jpg',
+                'map_image' => 'waypoints/peta-dwarawati.jpg',
             ]
         );
 
@@ -480,6 +484,7 @@ class PrauSeeder extends Seeder
                 'latitude' => -7.2185, 
                 'longitude' => 109.9077,
                 'image' => 'routes/prau-wates.jpg',
+                'map_image' => 'waypoints/peta-wates.jpg',
             ]
         );
 
@@ -625,6 +630,7 @@ class PrauSeeder extends Seeder
                 'latitude' => -7.2185, 
                 'longitude' => 109.9077,
                 'image' => 'routes/prau-igirmanak.jpg',
+                'map_image' => 'waypoints/peta-igirmanak.jpg',
             ]
         );
 

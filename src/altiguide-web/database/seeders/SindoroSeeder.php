@@ -160,6 +160,7 @@ class SindoroSeeder extends Seeder
                 'latitude' => -7.3400, 
                 'longitude' => 110.0200,
                 'image' => 'routes/sindoro-alangalangsewu.jpg',
+                'map_image' => 'waypoints/peta-alangalangsewu.jpg',
             ]
         );
 
@@ -277,6 +278,7 @@ class SindoroSeeder extends Seeder
                 'latitude' => -7.3400, 
                 'longitude' => 110.0200,
                 'image' => 'routes/sindoro-bansari.jpg',
+                'map_image' => 'waypoints/peta-bansari.jpg',
             ]
         );
 
@@ -405,6 +407,7 @@ class SindoroSeeder extends Seeder
                 'latitude' => -7.3400, 
                 'longitude' => 110.0200,
                 'image' => 'routes/sindoro-sigedang.jpg',
+                'map_image' => 'waypoints/peta-sigedang.jpg',
             ]
         );
 
@@ -499,6 +502,7 @@ class SindoroSeeder extends Seeder
                 'latitude' => -7.3400, 
                 'longitude' => 110.0200,
                 'image' => 'routes/sindoro-ndoroarum.jpg',
+                'map_image' => 'waypoints/peta-ndoroarum.jpg',
             ]
         );
 
