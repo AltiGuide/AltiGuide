@@ -61,16 +61,10 @@ Route::middleware('auth')->group(function () {
     // Profile completion
     Route::put('/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
-    // Booking route with profile check
-    Route::get('/booking', function () {
-        $user = Auth::user();
-        if (!$user->isProfileComplete()) {
-            return redirect()->route('dashboard')
-                ->with('warning', 'Silakan lengkapi profil Anda terlebih dahulu sebelum melakukan booking pendakian.');
-        }
-
-        return Inertia::render('Booking');
-    })->name('booking');
+    // Booking routes
+    Route::get('/booking', [\App\Http\Controllers\BookingController::class, 'create'])->name('booking');
+    Route::post('/booking/checkout', [\App\Http\Controllers\BookingController::class, 'store'])->name('booking.checkout');
+    Route::post('/booking/validate-nik', [\App\Http\Controllers\Api\MemberValidationController::class, 'validateNik'])->name('booking.validate-nik');
 });
 
 // ── Admin routes ────────────────────────────────────────────────────────

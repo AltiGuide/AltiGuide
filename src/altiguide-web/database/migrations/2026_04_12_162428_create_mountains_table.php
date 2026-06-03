@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('mountains', function (Blueprint $table) {
-            $table->id('id')->primary();
+            $table->id('id');
             $table->string('name', 100);
             $table->string('slug')->unique();
             $table->string('location', 100); // Kabupaten/Provinsi

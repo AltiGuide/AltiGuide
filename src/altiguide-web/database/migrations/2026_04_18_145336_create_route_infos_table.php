@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('route_infos', function (Blueprint $table) {
-            $table->id('id')->primary();
+            $table->id('id');
             $table->foreignId('route_id')->constrained('routes')->onDelete('cascade');
             $table->text('basecamp_address')->nullable();
             $table->integer('basecamp_altitude')->nullable();
