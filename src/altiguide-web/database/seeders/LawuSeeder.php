@@ -35,6 +35,7 @@ class LawuSeeder extends Seeder
                 'latitude' => -7.5949205,
                 'longitude' => 111.1571055,
                 'image' => 'routes/lawu-cetho.jpg',
+                'map_image' => 'waypoints/peta-cetho.jpg',
             ]
             );
         $candiCetho->routeInfo()->updateOrCreate(['route_id' => $candiCetho->id],
@@ -185,6 +186,7 @@ class LawuSeeder extends Seeder
                 'latitude' => -7.659647402366767,
                 'longitude' =>  111.18669651322048,
                 'image' => 'routes/lawu-cemorokandang.jpg',
+                'map_image' => 'waypoints/peta-cemorokandang.jpg',
             ]
             );
         $cemoroKandang->routeInfo()->updateOrCreate(['route_id' => $cemoroKandang->id],
@@ -315,6 +317,7 @@ class LawuSeeder extends Seeder
                 'latitude' => -7.663454736206656,
                 'longitude' =>  111.19143967601048,
                 'image' => 'routes/lawu-cemorosewu.jpg',
+                'map_image' => 'waypoints/peta-cemorosewu.jpg',
             ]
             );
         $cemoroSewu->routeInfo()->updateOrCreate(['route_id' => $cemoroSewu->id],
@@ -464,6 +467,7 @@ class LawuSeeder extends Seeder
                 'latitude' => -7.66028401876209, 
                 'longitude' => 111.22763803494152,
                 'image' => 'routes/lawu-singolangu.jpg',
+                'map_image' => 'waypoints/peta-singolangu.jpg',
             ]
             );
         $singolangu->routeInfo()->updateOrCreate(['route_id' => $singolangu->id],

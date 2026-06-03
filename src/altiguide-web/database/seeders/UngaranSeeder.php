@@ -34,6 +34,7 @@ class UngaranSeeder extends Seeder
                 'latitude' => -7.2188, 
                 'longitude' => 110.3541,
                 'image' => 'routes/ungaran-perantunan.jpg',
+                'map_image' => 'waypoints/peta-perantunan.jpg',
             ]
         );
 
@@ -170,6 +171,7 @@ class UngaranSeeder extends Seeder
                 'latitude' => -7.1991,  
                 'longitude' => 110.3541,
                 'image' => 'routes/ungaran-mawar.jpg',
+                'map_image' => 'waypoints/peta-mawar.jpg',
             ]
         );
 

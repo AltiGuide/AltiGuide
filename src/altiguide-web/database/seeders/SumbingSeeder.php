@@ -33,6 +33,7 @@ class SumbingSeeder extends Seeder
                 'latitude' => -7.3501, 
                 'longitude' => 109.9910,
                 'image' => 'routes/sumbing-garung.jpg',
+                'map_image' => 'waypoints/peta-garung.jpg',
             ]
         );
 
@@ -131,6 +132,7 @@ class SumbingSeeder extends Seeder
                 'latitude' => -7.3590, 
                 'longitude' => 110.1500,
                 'image' => 'routes/sumbing-banaran.jpg',
+                'map_image' => 'waypoints/peta-banaran.jpg',
             ]
         );
 
@@ -247,6 +249,7 @@ class SumbingSeeder extends Seeder
                 'latitude' => -7.4205, 
                 'longitude' => 110.0150,
                 'image' => 'routes/sumbing-bowongso.jpg',
+                'map_image' => 'waypoints/peta-bowongso.jpg',
             ]
         );
 
@@ -354,6 +357,7 @@ class SumbingSeeder extends Seeder
                 'latitude' => -7.4201, 
                 'longitude' => 110.0551,
                 'image' => 'routes/sumbing-kaliangkrik.jpg',
+                'map_image' => 'waypoints/peta-kaliangkrik.jpg',
             ]
         );
 
@@ -547,6 +551,7 @@ class SumbingSeeder extends Seeder
                 'latitude' => -7.3917, 
                 'longitude' => 110.0236,
                 'image' => 'routes/sumbing-gajahmungkur.jpg',
+                'map_image' => 'waypoints/peta-gajahmungkur.jpg',
             ]
         );
 

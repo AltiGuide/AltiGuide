@@ -35,6 +35,7 @@ class SlametSeeder extends Seeder
                 'latitude' => -7.226027520383221, 
                 'longitude' => 109.26484551030069,
                 'image' => 'routes/slamet-bambangan.jpg',
+                'map_image' => 'waypoints/peta-bambangan.jpg',
             ]
             );
         $bambangan->routeInfo()->updateOrCreate(['route_id' => $bambangan->id],
@@ -206,6 +207,7 @@ class SlametSeeder extends Seeder
                 'latitude' => -7.213233,
                 'longitude' => 109.171802,
                 'image' => 'routes/slamet-permadiguci.jpg',
+                'map_image' => 'waypoints/peta-permadiguci.jpg',
             ]
         );
 
@@ -330,6 +332,7 @@ class SlametSeeder extends Seeder
                 'latitude' => -7.2185, 
                 'longitude' => 109.2811,
                 'image' => 'routes/slamet-gunungmalang.jpg',
+                'map_image' => 'waypoints/peta-gunungmalang.jpg',
             ]
         );
 
