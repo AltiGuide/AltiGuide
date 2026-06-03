@@ -17,7 +17,8 @@ class SumbingSeeder extends Seeder
                 'altitude' => 3371,
                 'description' => 'Gunung Sumbing merupakan gunung tertinggi kedua di Jawa Tengah yang kokoh berdiri melintasi perbatasan Wonosobo, Temanggung, dan Magelang. Dengan puncaknya yang berbatu dan kawahnya yang masih aktif berasap, Sumbing adalah primadona para pendaki yang menyukai tantangan dan trek ekstrem.',
                 'latitude' => -7.3847,  
-                'longitude' => 110.0706, 
+                'longitude' => 110.0706,
+                'image' => 'mountains/sumbing.png',
             ]
         );
 
@@ -30,7 +31,8 @@ class SumbingSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.3501, 
-                'longitude' => 109.9910
+                'longitude' => 109.9910,
+                'image' => 'routes/sumbing-garung.jpg',
             ]
         );
 
@@ -127,7 +129,8 @@ class SumbingSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.3590, 
-                'longitude' => 110.1500
+                'longitude' => 110.1500,
+                'image' => 'routes/sumbing-banaran.jpg',
             ]
         );
 
@@ -242,7 +245,8 @@ class SumbingSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.4205, 
-                'longitude' => 110.0150
+                'longitude' => 110.0150,
+                'image' => 'routes/sumbing-bowongso.jpg',
             ]
         );
 
@@ -348,7 +352,8 @@ class SumbingSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.4201, 
-                'longitude' => 110.0551
+                'longitude' => 110.0551,
+                'image' => 'routes/sumbing-kaliangkrik.jpg',
             ]
         );
 
@@ -540,7 +545,8 @@ class SumbingSeeder extends Seeder
                 'difficulty' => 'hard', // Karena tanjakan ekstrem di akhir dan medan terbuka
                 'is_active' => true,
                 'latitude' => -7.3917, 
-                'longitude' => 110.0236
+                'longitude' => 110.0236,
+                'image' => 'routes/sumbing-gajahmungkur.jpg',
             ]
         );
 

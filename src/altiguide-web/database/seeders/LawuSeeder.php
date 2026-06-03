@@ -22,7 +22,7 @@ class LawuSeeder extends Seeder
                 'description' => 'Gunung Lawu adalah sebuah gunung berapi aktif yang terletak di Pulau Jawa, tepatnya di perbatasan Jawa Tengah dan Jawa Timur, Indonesia. Gunung Lawu memiliki ketinggian sekitar 3.265 mdpl. Gunung Lawu terletak di antara tiga kabupaten, yaitu Karanganyar di Jawa Tengah, Ngawi, dan Magetan di Jawa Timur.',
                 'latitude' => -7.6275,
                 'longitude' => 111.1941666,
-
+                'image' => 'mountains/lawu.png',
             ]
             );
         $candiCetho = Route::firstOrCreate(
@@ -33,7 +33,8 @@ class LawuSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.5949205,
-                'longitude' => 111.1571055
+                'longitude' => 111.1571055,
+                'image' => 'routes/lawu-cetho.jpg',
             ]
             );
         $candiCetho->routeInfo()->updateOrCreate(['route_id' => $candiCetho->id],
@@ -182,7 +183,8 @@ class LawuSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.659647402366767,
-                'longitude' =>  111.18669651322048
+                'longitude' =>  111.18669651322048,
+                'image' => 'routes/lawu-cemorokandang.jpg',
             ]
             );
         $cemoroKandang->routeInfo()->updateOrCreate(['route_id' => $cemoroKandang->id],
@@ -311,7 +313,8 @@ class LawuSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.663454736206656,
-                'longitude' =>  111.19143967601048
+                'longitude' =>  111.19143967601048,
+                'image' => 'routes/lawu-cemorosewu.jpg',
             ]
             );
         $cemoroSewu->routeInfo()->updateOrCreate(['route_id' => $cemoroSewu->id],
@@ -459,7 +462,8 @@ class LawuSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.66028401876209, 
-                'longitude' => 111.22763803494152
+                'longitude' => 111.22763803494152,
+                'image' => 'routes/lawu-singolangu.jpg',
             ]
             );
         $singolangu->routeInfo()->updateOrCreate(['route_id' => $singolangu->id],

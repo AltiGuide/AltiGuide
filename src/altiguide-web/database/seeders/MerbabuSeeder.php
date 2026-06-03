@@ -17,7 +17,8 @@ class MerbabuSeeder extends Seeder
                 'altitude' => 3142,
                 'description' => 'Gunung Merbabu adalah gunung api tipe Strato yang sangat populer berkat sabana yang membentang luas serta padang edelweis yang memukau. Ketinggiannya membentang di perbatasan Magelang, Boyolali, dan Semarang. Gunung ini memiliki lima rute pendakian yang fenomenal dan memiliki karakteristiknya masing-masing.',
                 'latitude' => -7.4556,  
-                'longitude' => 110.4389, 
+                'longitude' => 110.4389,
+                'image' => 'mountains/merbabu.png',
             ]
         );
 
@@ -32,7 +33,8 @@ class MerbabuSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.4725, 
-                'longitude' => 110.3705
+                'longitude' => 110.3705,
+                'image' => 'routes/merbabu-suwanting.jpg',
             ]
         );
 
@@ -186,7 +188,8 @@ class MerbabuSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.4912, 
-                'longitude' => 110.4501
+                'longitude' => 110.4501,
+                'image' => 'routes/merbabu-selo.png',
             ]
         );
 
@@ -344,7 +347,8 @@ class MerbabuSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.4201, 
-                'longitude' => 110.4201
+                'longitude' => 110.4201,
+                'image' => 'routes/merbabu-wekas.jpg',
             ]
         );
 
