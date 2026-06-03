@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('routes', function (Blueprint $table) {
-            $table->id('id')->primary();
+            $table->id('id');
             $table->foreignid('mountain_id')->constrained('mountains')->onDelete('cascade');
             $table->string('name', 100);
             $table->string('slug')->unique();
