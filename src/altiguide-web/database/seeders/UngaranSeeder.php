@@ -19,6 +19,7 @@ class UngaranSeeder extends Seeder
                 'description' => 'Gunung Ungaran adalah gunung berapi bertipe stratovolcano yang terletak di Kabupaten Semarang, Jawa Tengah. Gunung Ungaran memiliki kawasan hutan Dipterokarp Bukit, hutan Dipterokarp Atas, hutan Montane, dan hutan Ericaceous atau hutan gunung. Terdapat beberapa rute pendakian populer seperti Mawar, Perantunan, dan Promasan.',
                 'latitude' => -7.186667, 
                 'longitude' => 110.342222,
+                'image' => 'mountains/ungaran.png',
             ]
         );
 
@@ -31,7 +32,8 @@ class UngaranSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.2188, 
-                'longitude' => 110.3541
+                'longitude' => 110.3541,
+                'image' => 'routes/ungaran-perantunan.jpg',
             ]
         );
 
@@ -166,7 +168,8 @@ class UngaranSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.1991,  
-                'longitude' => 110.3541
+                'longitude' => 110.3541,
+                'image' => 'routes/ungaran-mawar.jpg',
             ]
         );
 

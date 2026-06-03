@@ -22,6 +22,7 @@ class SlametSeeder extends Seeder
                 'description' => 'Gunung Slamet (3.428 mdpl) adalah gunung berapi aktif tertinggi di Jawa Tengah dan kedua tertinggi di Pulau Jawa, sering dijuluki "Atap Jawa Tengah". Berlokasi di lima kabupaten (Banyumas, Pemalang, Tegal, Brebes, Purbalingga), gunung ini populer untuk pendakian ekstrim dan ekowisata',
                 'latitude' => -7.239344828010259,
                 'longitude' =>  109.21453003544529,
+                'image' => 'mountains/slamet.png',
             ]
             );
         $bambangan = Route::firstOrCreate(
@@ -32,7 +33,8 @@ class SlametSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.226027520383221, 
-                'longitude' => 109.26484551030069
+                'longitude' => 109.26484551030069,
+                'image' => 'routes/slamet-bambangan.jpg',
             ]
             );
         $bambangan->routeInfo()->updateOrCreate(['route_id' => $bambangan->id],
@@ -202,7 +204,8 @@ class SlametSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.213233,
-                'longitude' => 109.171802 
+                'longitude' => 109.171802,
+                'image' => 'routes/slamet-permadiguci.jpg',
             ]
         );
 
@@ -325,7 +328,8 @@ class SlametSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.2185, 
-                'longitude' => 109.2811
+                'longitude' => 109.2811,
+                'image' => 'routes/slamet-gunungmalang.jpg',
             ]
         );
 

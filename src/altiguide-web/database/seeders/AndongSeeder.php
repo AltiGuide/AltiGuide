@@ -19,6 +19,7 @@ class AndongSeeder extends Seeder
                 'description' => 'Gunung Andong adalah sebuah gunung bertipe perisai di Kabupaten Magelang, Jawa Tengah. Gunung ini merupakan salah satu gunung yang ramah untuk pendaki pemula karena ketinggiannya yang bersahabat dan medannya yang tidak terlalu sulit, serta menyuguhkan pemandangan spektakuler 360 derajat.',
                 'latitude' => -7.3872,  
                 'longitude' => 110.3663, 
+                'image' => 'mountains/andong.png',
             ]
         );
 
@@ -30,8 +31,9 @@ class AndongSeeder extends Seeder
                 'estimated_time' => 100, // 15+30+35+15+5
                 'difficulty' => 'easy',
                 'is_active' => true,
-                'latitude' => -7.3831, 
-                'longitude' => 110.3705
+                'latitude' => -7.3831,
+                'longitude' => 110.3705,
+                'image' => 'routes/andong-pendem.jpg',
             ]
         );
 
@@ -137,8 +139,9 @@ class AndongSeeder extends Seeder
                 'estimated_time' => 110, // 30+25+30+20+5
                 'difficulty' => 'easy',
                 'is_active' => true,
-                'latitude' => -7.3820, 
-                'longitude' => 110.3725
+                'latitude' => -7.3820,
+                'longitude' => 110.3725,
+                'image' => 'routes/andong-sawit.jpg',
             ]
         );
 
@@ -231,8 +234,9 @@ class AndongSeeder extends Seeder
                 'estimated_time' => 155, // 35+40+35+30+15
                 'difficulty' => 'easy',
                 'is_active' => true,
-                'latitude' => -7.3800, 
-                'longitude' => 110.3750
+                'latitude' => -7.3800,
+                'longitude' => 110.3750,
+                'image' => 'routes/andong-gogik.jpg',
             ]
         );
 
@@ -304,8 +308,9 @@ class AndongSeeder extends Seeder
                 'estimated_time' => 135, // 35+30+35+30+5
                 'difficulty' => 'easy',
                 'is_active' => true,
-                'latitude' => -7.3750, 
-                'longitude' => 110.3700
+                'latitude' => -7.3750,
+                'longitude' => 110.3700,
+                'image' => 'routes/andong-temukidul.jpg',
             ]
         );
 

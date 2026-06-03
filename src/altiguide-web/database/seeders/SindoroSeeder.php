@@ -17,7 +17,8 @@ class SindoroSeeder extends Seeder
                 'altitude' => 3153,
                 'description' => 'Gunung Sindoro merupakan gunung api aktif yang memiliki bentuk kerucut sempurna (stratovolcano) dan berdiri berdampingan secara megah dengan Gunung Sumbing.',
                 'latitude' => -7.3000, 
-                'longitude' => 110.0000, 
+                'longitude' => 110.0000,
+                'image' => 'mountains/sindoro.png',
             ]
         );
 
@@ -32,7 +33,8 @@ class SindoroSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.3400, 
-                'longitude' => 110.0200 
+                'longitude' => 110.0200,
+                'image' => 'routes/sindoro-kledung.jpg',
             ]
         );
 
@@ -156,7 +158,8 @@ class SindoroSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.3400, 
-                'longitude' => 110.0200 
+                'longitude' => 110.0200,
+                'image' => 'routes/sindoro-alangalangsewu.jpg',
             ]
         );
 
@@ -272,7 +275,8 @@ class SindoroSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.3400, 
-                'longitude' => 110.0200 
+                'longitude' => 110.0200,
+                'image' => 'routes/sindoro-bansari.jpg',
             ]
         );
 
@@ -399,7 +403,8 @@ class SindoroSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.3400, 
-                'longitude' => 110.0200 
+                'longitude' => 110.0200,
+                'image' => 'routes/sindoro-sigedang.jpg',
             ]
         );
 
@@ -492,7 +497,8 @@ class SindoroSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.3400, 
-                'longitude' => 110.0200 
+                'longitude' => 110.0200,
+                'image' => 'routes/sindoro-ndoroarum.jpg',
             ]
         );
 

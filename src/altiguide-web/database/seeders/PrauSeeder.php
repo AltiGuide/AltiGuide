@@ -18,6 +18,7 @@ class PrauSeeder extends Seeder
                 'description' => 'Gunung Prau merupakan gunung dengan puncak berwujud padang sabana luas yang menjadi favorit pendaki di Jawa Tengah. Puncak Prau sangat terkenal akan pemandangan (golden sunrise) yang dilatari kemegahan siluet duo Gunung Sindoro dan Gunung Sumbing.',
                 'latitude' => -7.1887,
                 'longitude' => 109.9238,
+                'image' => 'mountains/prau.png',
             ]
         );
 
@@ -32,7 +33,8 @@ class PrauSeeder extends Seeder
                 'difficulty' => 'easy',
                 'is_active' => true,
                 'latitude' => -7.2185, 
-                'longitude' => 109.9077 
+                'longitude' => 109.9077,
+                'image' => 'routes/prau-dieng.jpg',
             ]
         );
 
@@ -140,7 +142,8 @@ class PrauSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.2185, 
-                'longitude' => 109.9077 
+                'longitude' => 109.9077,
+                'image' => 'routes/prau-patakbanteng.jpg',
             ]
         );
 
@@ -268,7 +271,8 @@ class PrauSeeder extends Seeder
                 'difficulty' => 'easy',
                 'is_active' => true,
                 'latitude' => -7.2185, 
-                'longitude' => 109.9077 
+                'longitude' => 109.9077,
+                'image' => 'routes/prau-kalilembu.jpg',
             ]
         );
 
@@ -354,7 +358,8 @@ class PrauSeeder extends Seeder
                 'difficulty' => 'easy',
                 'is_active' => true,
                 'latitude' => -7.2185, 
-                'longitude' => 109.9077 
+                'longitude' => 109.9077,
+                'image' => 'routes/prau-dwarawati.jpg',
             ]
         );
 
@@ -473,7 +478,8 @@ class PrauSeeder extends Seeder
                 'difficulty' => 'easy',
                 'is_active' => true,
                 'latitude' => -7.2185, 
-                'longitude' => 109.9077 
+                'longitude' => 109.9077,
+                'image' => 'routes/prau-wates.jpg',
             ]
         );
 
@@ -617,7 +623,8 @@ class PrauSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.2185, 
-                'longitude' => 109.9077 
+                'longitude' => 109.9077,
+                'image' => 'routes/prau-igirmanak.jpg',
             ]
         );
 
