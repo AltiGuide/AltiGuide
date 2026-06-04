@@ -27,6 +27,13 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        // 1. Coba login sebagai Admin terlebih dahulu
+        if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended('/admin/dashboard');
+        }
+
+        // 2. Jika bukan Admin, coba login sebagai User (Pendaki)
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors([
                 'email' => 'Email atau password salah.',
