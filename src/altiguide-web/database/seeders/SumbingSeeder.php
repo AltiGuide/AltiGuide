@@ -10,6 +10,9 @@ class SumbingSeeder extends Seeder
 {
     public function run(): void
     {
+        $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
+        $content = collect($articles)->firstWhere('slug', 'gunung-sumbing')['content'] ?? [];
+
         $sumbing = Mountain::firstOrCreate(
             ['name' => 'Gunung Sumbing'],
             [
@@ -19,7 +22,7 @@ class SumbingSeeder extends Seeder
                 'latitude' => -7.3847,  
                 'longitude' => 110.0706,
                 'image' => 'mountains/sumbing.png',
-            ]
+                'content' => $content]
         );
 
         // 1. VIA GARUNG
@@ -445,9 +448,11 @@ class SumbingSeeder extends Seeder
                 'difficulty' => 'moderate',
                 'is_active' => true,
                 'latitude' => -7.3401, 
-                'longitude' => 110.0201
+                'longitude' => 110.0201,
+                'image' => 'routes/sumbing-batursari.png',
             ]
         );
+        $batursari->update(['image' => 'routes/sumbing-batursari.png']);
 
         $batursari->routeInfo()->updateOrCreate(['route_id' => $batursari->id],
             [

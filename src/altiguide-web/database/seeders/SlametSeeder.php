@@ -14,6 +14,9 @@ class SlametSeeder extends Seeder
      */
     public function run(): void
     {
+        $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
+        $content = collect($articles)->firstWhere('slug', 'gunung-slamet')['content'] ?? [];
+
         $slamet = Mountain::firstOrCreate(
             ['name' => 'Gunung Slamet'],
             [
@@ -23,7 +26,7 @@ class SlametSeeder extends Seeder
                 'latitude' => -7.239344828010259,
                 'longitude' =>  109.21453003544529,
                 'image' => 'mountains/slamet.png',
-            ]
+                'content' => $content]
             );
         $bambangan = Route::firstOrCreate(
             ['mountain_id' => $slamet->id, 'name' => 'Gunung Slamet via Bambangan'],

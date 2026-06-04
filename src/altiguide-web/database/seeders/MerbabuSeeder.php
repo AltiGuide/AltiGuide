@@ -10,6 +10,9 @@ class MerbabuSeeder extends Seeder
 {
     public function run(): void
     {
+        $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
+        $content = collect($articles)->firstWhere('slug', 'gunung-merbabu')['content'] ?? [];
+
         $merbabu = Mountain::firstOrCreate(
             ['name' => 'Gunung Merbabu'],
             [
@@ -19,7 +22,7 @@ class MerbabuSeeder extends Seeder
                 'latitude' => -7.4556,  
                 'longitude' => 110.4389,
                 'image' => 'mountains/merbabu.png',
-            ]
+                'content' => $content]
         );
 
         // ==========================================
@@ -516,6 +519,7 @@ class MerbabuSeeder extends Seeder
                 'is_active' => true,
                 'latitude' => -7.4050, 
                 'longitude' => 110.4285,
+                'image' => 'routes/merbabu-thekelan.jpeg',
                 'map_image' => 'waypoints/peta-thekelan.jpg',
             ]
         );
@@ -697,7 +701,9 @@ class MerbabuSeeder extends Seeder
                 'difficulty' => 'hard',
                 'is_active' => true,
                 'latitude' => -7.4930, 
-                'longitude' => 110.4350
+                'longitude' => 110.4350,
+                'image' => 'routes/merbabu-gancik.png',
+                'map_image' => 'waypoints/peta-gancik.png',
             ]
         );
 

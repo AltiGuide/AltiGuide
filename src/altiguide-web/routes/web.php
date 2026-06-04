@@ -19,9 +19,7 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('/article', function () {
-    return Inertia::render('Article/Show');
-})->name('article.show');
+Route::get('/article', [\App\Http\Controllers\ArticleController::class, 'show'])->name('article.show');
 
 // ── Guest routes (hanya bisa diakses kalau BELUM login) ─────────────────
 

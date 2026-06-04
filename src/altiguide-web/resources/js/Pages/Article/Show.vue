@@ -1,132 +1,163 @@
 <script setup>
 import { Link, Head, usePage, router } from '@inertiajs/vue3'
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, onMounted } from 'vue'
 
-const allMountains = [
-  {
-    slug: 'gunung-sumbing',
-    name: 'Gunung Sumbing',
-    image: '/images/gunung_sumbing_4.png',
-    routes: ['Jalur Garung', 'Jalur Bowongso', 'Jalur Cepit', 'Jalur Banaran', 'Jalur Mangli', 'Jalur Gajah Mungkur', 'Jalur Batusari'],
-    content: [
-      { title: null, text: 'Gunung Sumbing dengan ketinggian menjulang 3.371 mdpl, merupakan gunung tertinggi kedua di Jawa Tengah setelah Gunung Slamet. Terletak megah di antara Kabupaten Magelang, Temanggung, dan Wonosobo, gunung api aktif ini menawarkan panorama kawah yang eksotis dan sabana luas yang menantang. Bagi pengguna AltiGuide, Sumbing adalah medan pembuktian fisik yang sesungguhnya. Jalur pendakiannya dikenal memiliki kecuraman yang konsisten dari awal hingga puncak, sehingga fitur Real-time Elevation pada aplikasi kami akan sangat membantu kamu memantau sisa ketinggian yang harus ditempuh.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Medan Sumbing didominasi oleh tanjakan terjal dengan sedikit bonus jalur landai. Sangat disarankan untuk melakukan latihan fisik intensif minimal dua minggu sebelum pendakian. Tergantung jalur yang dipilih (seperti Garung atau Bowongso), sumber air sangat terbatas di area atas. Pastikan logistik air kamu tercukupi dan pantau fitur Weather Analytics AltiGuide, karena badai angin seringkali menerjang area punggungan menuju puncak saat cuaca tidak menentu.' },
-      { title: 'Keajaiban Kawah & Puncak Sejati', text: 'Berbeda dengan Merbabu yang hijau, Sumbing menawarkan keindahan kawah belerang yang aktif dan sangat luas. Dari Puncak Rajawali atau Puncak Sejati, kamu bisa melihat lubang kawah yang mengeluarkan asap solfatara dengan latar belakang Gunung Sindoro yang berdiri sejajar di utara. Keindahan ini menjadikannya magnet bagi fotografer lanskap, terutama saat momen sunrise di mana cahaya keemasan menyapu dinding kawah yang tandus dan gagah.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Gunung Sumbing memiliki ekosistem yang sensitif, terutama di area padang sabana dan hutan lamtoro. AltiGuide berkomitmen mendukung pelestarian alam dengan fitur Check-list Trash, yang membantu pendaki mencatat barang bawaan potensial sampah. Kami menghimbau setiap pendaki untuk tidak meninggalkan apapun selain jejak kaki dan tidak merusak vegetasi langka seperti bunga Edelweiss yang tumbuh subur di lereng-lereng menuju puncak.' },
-      { title: 'Puncak Tertinggi: Rajawali & Puncak Sejati', text: 'Momen paling magis di Gunung Sumbing adalah saat fajar menyingsing di bibir kawah yang luas. Dari Puncak Rajawali atau Puncak Sejati, kamu akan disuguhi pemandangan spektakuler berupa lubang kawah aktif yang mengeluarkan asap solfatara dengan latar belakang "Samudra Awan". Keindahan jajaran gunung kembar Sindoro, Merapi, dan Merbabu dari titik ini menjadikannya salah satu pemandangan paling gagah dan dicari oleh para pecinta petualangan tinggi.' },
-    ],
-  },
-  {
-    slug: 'gunung-sindoro',
-    name: 'Gunung Sindoro',
-    image: '/images/gunung_sindoro_8.png',
-    routes: ['Jalur Kledung', 'Jalur Sigedang', 'Jalur Buntu', 'Jalur Tambi'],
-    content: [
-      { title: null, text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tincidunt, nunc vel tincidunt lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Donec euismod, nisl eget aliquam tincidunt, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.' },
-      { title: 'Keindahan Puncak', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut facilisis. Cras placerat accumsan nulla. Aenean volutpat faucibus eros in condimentum.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula.' },
-    ],
-  },
-  {
-    slug: 'gunung-prau',
-    name: 'Gunung Prau',
-    image: '/images/gunung_prau_7.png',
-    routes: ['Jalur Dieng', 'Jalur Patak Banteng', 'Jalur Kalilembu', 'Jalur Igirmranak'],
-    content: [
-      { title: null, text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tincidunt, nunc vel tincidunt lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Donec euismod, nisl eget aliquam tincidunt, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.' },
-      { title: 'Keindahan Puncak', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut facilisis. Cras placerat accumsan nulla. Aenean volutpat faucibus eros in condimentum.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula.' },
-    ],
-  },
-  {
-    slug: 'gunung-merbabu',
-    name: 'Gunung Merbabu',
-    image: '/images/gunung_merbabu_6.png',
-    routes: ['Jalur Selo', 'Jalur Suwanting', 'Jalur Thekelan', 'Jalur Cuntel', 'Jalur Wekas'],
-    content: [
-      { title: null, text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tincidunt, nunc vel tincidunt lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Donec euismod, nisl eget aliquam tincidunt, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.' },
-      { title: 'Keindahan Puncak', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut facilisis. Cras placerat accumsan nulla. Aenean volutpat faucibus eros in condimentum.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula.' },
-    ],
-  },
-  {
-    slug: 'gunung-lawu',
-    name: 'Gunung Lawu',
-    image: '/images/gunung_lawu_2.png',
-    routes: ['Jalur Cemoro Sewu', 'Jalur Cemoro Kandang', 'Jalur Candi Cetho', 'Jalur Singolangu'],
-    content: [
-      { title: null, text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tincidunt, nunc vel tincidunt lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Donec euismod, nisl eget aliquam tincidunt, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.' },
-      { title: 'Keindahan Puncak', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut facilisis. Cras placerat accumsan nulla. Aenean volutpat faucibus eros in condimentum.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula.' },
-    ],
-  },
-  {
-    slug: 'gunung-andong',
-    name: 'Gunung Andong',
-    image: '/images/gunung_andong_1.png',
-    routes: ['Jalur Sawit', 'Jalur Pendem'],
-    content: [
-      { title: null, text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tincidunt, nunc vel tincidunt lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Donec euismod, nisl eget aliquam tincidunt, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.' },
-      { title: 'Keindahan Puncak', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut facilisis. Cras placerat accumsan nulla. Aenean volutpat faucibus eros in condimentum.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula.' },
-    ],
-  },
-  {
-    slug: 'gunung-ungaran',
-    name: 'Gunung Ungaran',
-    image: '/images/gunung_ungaran_5.png',
-    routes: ['Jalur Mawar', 'Jalur Medini', 'Jalur Promasan'],
-    content: [
-      { title: null, text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tincidunt, nunc vel tincidunt lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Donec euismod, nisl eget aliquam tincidunt, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.' },
-      { title: 'Keindahan Puncak', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut facilisis. Cras placerat accumsan nulla. Aenean volutpat faucibus eros in condimentum.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula.' },
-    ],
-  },
-  {
-    slug: 'gunung-slamet',
-    name: 'Gunung Slamet',
-    image: '/images/gunung_slamet_3.png',
-    routes: ['Jalur Bambangan', 'Jalur Dipajaya', 'Jalur Jurangmangu', 'Jalur Guci'],
-    content: [
-      { title: null, text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-      { title: 'Persiapan Fisik & Logistik', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tincidunt, nunc vel tincidunt lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Donec euismod, nisl eget aliquam tincidunt, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.' },
-      { title: 'Keindahan Puncak', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut facilisis. Cras placerat accumsan nulla. Aenean volutpat faucibus eros in condimentum.' },
-      { title: 'Konservasi & Etika Pendakian', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula.' },
-    ],
-  },
-]
+const props = defineProps({
+  mountains: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const allMountains = computed(() => props.mountains)
 
 const page = usePage()
 
 const currentSlug = computed(() => {
   const url = new URL(page.url, window.location.origin)
-  return url.searchParams.get('mountain') || 'gunung-sumbing'
+  return url.searchParams.get('mountain')
 })
 
 const currentMountain = computed(() => {
-  return allMountains.find(m => m.slug === currentSlug.value) || allMountains[0]
+  if (!currentSlug.value) return null
+  return allMountains.value.find(m => m.slug === currentSlug.value) || null
 })
 
 const selectedRoute = ref(null)
+const mapLightbox = ref(false)
 
-const otherDestinations = computed(() => {
-  return allMountains.filter(m => m.slug !== currentSlug.value).slice(0, 6)
+const routeName = computed(() => {
+  if (!selectedRoute.value) return ''
+  return selectedRoute.value.short_name || selectedRoute.value.name || ''
 })
 
+const otherDestinations = computed(() => {
+  if (!currentSlug.value) return []
+  return allMountains.value.filter(m => m.slug !== currentSlug.value).slice(0, 6)
+})
+
+// ── Weather ──────────────────────────────────────────────────────────────────
+const weather = ref(null)
+const weatherLoading = ref(false)
+const weatherError = ref(null)
+
+const WMO_CODES = {
+  0:  { label: 'Cerah', icon: '☀️' },
+  1:  { label: 'Hampir Cerah', icon: '🌤️' },
+  2:  { label: 'Berawan Sebagian', icon: '⛅' },
+  3:  { label: 'Berawan Penuh', icon: '☁️' },
+  45: { label: 'Berkabut', icon: '🌫️' },
+  48: { label: 'Kabut Beku', icon: '🌫️' },
+  51: { label: 'Gerimis Ringan', icon: '🌦️' },
+  53: { label: 'Gerimis', icon: '🌦️' },
+  55: { label: 'Gerimis Lebat', icon: '🌧️' },
+  61: { label: 'Hujan Ringan', icon: '🌧️' },
+  63: { label: 'Hujan Sedang', icon: '🌧️' },
+  65: { label: 'Hujan Lebat', icon: '🌧️' },
+  71: { label: 'Salju Ringan', icon: '❄️' },
+  80: { label: 'Hujan Lokal', icon: '🌦️' },
+  95: { label: 'Badai Petir', icon: '⛈️' },
+}
+
+function getWmoLabel(code) {
+  return WMO_CODES[code]?.label ?? 'Tidak Diketahui'
+}
+function getWmoIcon(code) {
+  return WMO_CODES[code]?.icon ?? '🌡️'
+}
+
+function formatHour(isoStr) {
+  if (!isoStr) return '--:--'
+  return isoStr.slice(11, 16)
+}
+
+const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+
+async function fetchWeather(lat, lon) {
+  weatherLoading.value = true
+  weatherError.value = null
+  weather.value = null
+  try {
+    const url = new URL('https://api.open-meteo.com/v1/forecast')
+    url.searchParams.set('latitude', lat)
+    url.searchParams.set('longitude', lon)
+    url.searchParams.set('current', [
+      'temperature_2m',
+      'weathercode',
+      'windspeed_10m',
+      'relativehumidity_2m',
+      'precipitation',
+      'visibility',
+      'surface_pressure',
+    ].join(','))
+    url.searchParams.set('daily', [
+      'weathercode',
+      'temperature_2m_max',
+      'temperature_2m_min',
+      'windspeed_10m_max',
+      'sunrise',
+      'sunset',
+      'precipitation_sum',
+    ].join(','))
+    url.searchParams.set('timezone', 'Asia/Jakarta')
+    url.searchParams.set('forecast_days', '6')
+
+    const res = await fetch(url.toString())
+    if (!res.ok) throw new Error('Gagal mengambil data cuaca')
+    const data = await res.json()
+    weather.value = data
+  } catch (err) {
+    weatherError.value = err.message || 'Terjadi kesalahan'
+  } finally {
+    weatherLoading.value = false
+  }
+}
+
+// ── Watchers ─────────────────────────────────────────────────────────────────
 watch(currentSlug, () => {
   selectedRoute.value = null
+  weather.value = null
   window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+watch(selectedRoute, (route) => {
+  mapLightbox.value = false
+  if (route && route.latitude && route.longitude) {
+    fetchWeather(route.latitude, route.longitude)
+  }
+})
+
+// ── Difficulty label ──────────────────────────────────────────────────────────
+function difficultyLabel(d) {
+  if (d === 'easy') return 'Mudah'
+  if (d === 'moderate') return 'Menengah'
+  if (d === 'hard') return 'Sulit'
+  return d || '-'
+}
+
+function formatDuration(minutes) {
+  if (!minutes) return '-'
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m} menit`
+  if (m === 0) return `${h} jam`
+  return `${h} jam ${m} menit`
+}
+
+function formatRupiah(val) {
+  if (!val) return '-'
+  return 'Rp ' + Number(val).toLocaleString('id-ID')
+}
+
+// ── Water source waypoints ────────────────────────────────────────────────────
+const waterSourceWaypoints = computed(() => {
+  if (!selectedRoute.value?.waypoints) return []
+  return selectedRoute.value.waypoints.filter(wp => wp.has_water_source)
 })
 </script>
 
 <template>
-  <Head :title="`Article - ${currentMountain.name}`" />
+  <Head :title="currentMountain ? `Article - ${currentMountain.name}` : 'Artikel Gunung Jawa Tengah - AltiGuide'" />
 
   <div class="min-h-screen bg-[#F8F3E4] font-sans">
 
@@ -146,379 +177,548 @@ watch(currentSlug, () => {
       </div>
     </nav>
 
-    <div v-if="!selectedRoute" class="w-full flex justify-center py-10">
-      <div 
-        class="relative rounded-[40px] shadow-2xl p-10 flex flex-col items-center"
-        style="
-          width: 1180px; 
-          min-height: 1820px; 
-          background: linear-gradient(180deg, rgba(126,98,63,0.8) 26%, rgba(60,38,12,0.8) 87%);
-        "
-      >
-        <template v-if="!selectedRoute">
+    <!-- ── Mountain listing ─────────────────────────────────────────────────── -->
+    <div v-if="!currentSlug" class="w-full flex flex-col items-center py-12">
+      <div class="w-full max-w-[1340px] px-6 mb-12 flex flex-col items-center">
+        <h1 class="text-[#374426] text-[48px] font-bold tracking-tight mb-4 text-center" style="font-family: 'Montserrat', sans-serif;">
+          Artikel Gunung Jawa Tengah
+        </h1>
+        <p class="text-[#5A684C] text-[18px] font-medium text-center max-w-[650px] leading-relaxed" style="font-family: 'Montserrat', sans-serif;">
+          Temukan info rute pendakian resmi, estimasi waktu perjalanan, informasi cuaca real-time, dan tips keselamatan penting untuk petualangan summit Anda berikutnya.
+        </p>
+      </div>
+
+      <div class="w-full max-w-[1340px] px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
+          <div
+            v-for="dest in allMountains"
+            :key="dest.slug"
+            class="w-full h-[450px] rounded-[30px] overflow-hidden bg-[#D6CCAF] flex flex-col shadow-lg transition duration-300 hover:scale-[1.03] hover:shadow-xl"
+          >
+            <div class="relative w-full h-[210px] shrink-0 group overflow-hidden">
+              <img :src="dest.image" :alt="dest.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" @error="e => e.target.style.display='none'" />
+              <Link
+                :href="`/article?mountain=${dest.slug}`"
+                class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#374426]/20 backdrop-blur-[6px] border border-white/15 shadow-md text-white font-bold px-8 py-2.5 rounded-full text-[18px] hover:bg-[#374426]/40 transition duration-200 whitespace-nowrap cursor-pointer"
+                style="font-family: 'Montserrat', sans-serif;"
+              >
+                Read More
+              </Link>
+            </div>
+
+            <div class="flex-1 p-6 flex flex-col justify-between bg-[#D6CCAF]">
+              <div class="flex flex-col gap-3">
+                <h4 class="text-[#374426] font-bold text-[28px] leading-tight" style="font-family: 'Montserrat', sans-serif;">{{ dest.name }}</h4>
+                <p class="text-[15px] font-normal leading-relaxed text-[#5A684C] line-clamp-3" style="font-family: 'Montserrat', sans-serif;">
+                  {{ dest.content[0]?.text }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Mountain detail ──────────────────────────────────────────────────── -->
+    <template v-else-if="currentMountain">
+      <!-- Mountain overview panel (no route selected) -->
+      <div v-if="!selectedRoute" class="w-full flex justify-center py-10">
+        <div
+          class="relative rounded-[40px] shadow-2xl p-10 flex flex-col items-center"
+          style="max-width: 1340px; width: 100%; min-height: 1000px; background: linear-gradient(180deg, rgba(126,98,63,0.8) 26%, rgba(60,38,12,0.8) 87%);"
+        >
           <h1 class="text-[#F8F3E4] text-[64px] font-semibold mb-10 drop-shadow-[0_2px_8px_rgba(255,255,255,0.6)] tracking-wide font-sans text-center">
             {{ currentMountain.name }}
           </h1>
 
-          <div class="w-full flex gap-10">
-            <div class="w-[504px] flex flex-col gap-6 shrink-0">
-
-              <div class="w-full h-[1176px] rounded-[30px] overflow-hidden shadow-lg border-2 border-white/10">
-                <img :src="currentMountain.image" :alt="currentMountain.name" class="w-full h-full object-cover" />
+          <div class="w-full flow-root text-[#F8F3E4] leading-relaxed pr-4" style="font-family: 'Poppins', sans-serif;">
+            <!-- Left column -->
+            <div class="float-left w-[504px] mr-10 mb-6 flex flex-col gap-6">
+              <div class="w-full h-[600px] rounded-[30px] overflow-hidden shadow-lg border-2 border-white/10">
+                <img :src="currentMountain.image" :alt="currentMountain.name" class="w-full h-full object-cover" @error="e => e.target.style.opacity='0'" />
               </div>
 
               <div class="w-full flex flex-col gap-3">
                 <div class="w-full bg-[#FFFFFF]/20 backdrop-blur-[4px] border border-white/20 shadow-sm rounded-[20px] py-4 px-6">
                   <h3 class="text-[#EDE6D2] font-semibold text-[20px]" style="font-family: 'Montserrat', sans-serif;">Jalur Pendakian Resmi</h3>
                 </div>
-                
 
                 <div class="w-full bg-[#FFFFFF]/20 backdrop-blur-[4px] border border-white/20 shadow-sm rounded-[20px] p-6 flex flex-col gap-3">
-                  <button 
-                    v-for="(route, idx) in currentMountain.routes" 
-                    :key="idx"
+                  <button
+                    v-for="(route, idx) in currentMountain.routes"
+                    :key="route.id"
                     @click="selectedRoute = route"
-                    class="w-full bg-[#D6CCAF] text-[#7E623F] text-[17px] font-medium py-3 px-5 rounded-xl shadow-sm text-left hover:bg-[#c4b998] hover:scale-[1.02] transition-all cursor-pointer" 
+                    class="w-full bg-[#D6CCAF] text-[#7E623F] text-[17px] font-medium py-3 px-5 rounded-xl shadow-sm text-left hover:bg-[#c4b998] hover:scale-[1.02] transition-all cursor-pointer"
                     style="font-family: 'Montserrat', sans-serif;"
                   >
-                    {{ route }}
+                    {{ route.short_name }}
                   </button>
                 </div>
               </div>
             </div>
 
+            <!-- Right column / article content -->
+            <template v-for="(section, idx) in currentMountain.content" :key="idx">
+              <p v-if="!section.title" class="text-justify text-[18px] mb-8">
+                <span class="font-semibold">{{ currentMountain.name }}</span> {{ section.text.substring(section.text.indexOf(' ') + 1) }}
+              </p>
 
-            <div class="flex-1 flex flex-col gap-8 text-[#F8F3E4] leading-relaxed pr-4" style="font-family: 'Poppins', sans-serif;">
-              
-              <template v-for="(section, idx) in currentMountain.content" :key="idx">
+              <div v-else class="flex flex-col gap-2 mb-8">
+                <h3 class="font-semibold text-xl text-[#F8F3E4]">{{ section.title }}</h3>
+                <p class="text-justify text-[18px]">{{ section.text }}</p>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
 
-                <p v-if="!section.title" class="text-justify text-[20px]">
-                  <span class="font-semibold">{{ currentMountain.name }}</span> {{ section.text.substring(section.text.indexOf(' ') + 1) }}
-                </p>
+      <!-- ── Route detail ─────────────────────────────────────────────────── -->
+      <template v-else>
 
+        <!-- Hero: curved route name -->
+        <section class="route-hero">
+          <div class="route-hero__inner">
+            <svg class="route-hero__svg" :viewBox="`0 0 900 220`" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <path id="title-curve" d="M -500,340 A 2200,2200 0 0,1 1400,340" fill="none" />
+                <filter id="title-shadow" x="-10%" y="-10%" width="130%" height="150%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.25)" />
+                </filter>
+              </defs>
+              <text class="route-hero__text-stroke" filter="url(#title-shadow)">
+                <textPath href="#title-curve" startOffset="50%" text-anchor="middle">{{ routeName.toUpperCase() }}</textPath>
+              </text>
+              <text class="route-hero__text-fill">
+                <textPath href="#title-curve" startOffset="50%" text-anchor="middle">{{ routeName.toUpperCase() }}</textPath>
+              </text>
+            </svg>
+          </div>
+        </section>
 
-                <div v-else class="flex flex-col gap-2">
-                  <h3 class="font-semibold text-xl text-[#F8F3E4]">{{ section.title }}</h3>
-                  <p class="text-justify text-[20px]">{{ section.text }}</p>
+        <!-- ── Peta ─────────────────────────────────────────────────────── -->
+        <section class="route-section route-map-section">
+          <div class="route-container">
+            <div class="route-map-frame">
+              <!-- Ada gambar peta -->
+              <template v-if="selectedRoute.map_image">
+                <div class="route-map-img-wrapper">
+                  <img
+                    :src="selectedRoute.map_image"
+                    :alt="`Peta jalur ${routeName}`"
+                    class="route-map-img"
+                    @error="e => e.target.closest('.route-map-img-wrapper').innerHTML = '<div class=\'route-map-empty\'><span class=\'route-map-empty__title\'>Peta tidak dapat dimuat</span></div>'"
+                  />
+                  <!-- Tombol perbesar -->
+                  <button
+                    @click="mapLightbox = true"
+                    class="route-map-zoom-btn"
+                    title="Perbesar peta"
+                    aria-label="Perbesar peta jalur"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" />
+                    </svg>
+                    Perbesar
+                  </button>
                 </div>
+
+                <!-- Lightbox modal -->
+                <Teleport to="body">
+                  <Transition name="lightbox">
+                    <div
+                      v-if="mapLightbox"
+                      class="route-lightbox"
+                      @click.self="mapLightbox = false"
+                    >
+                      <div class="route-lightbox__inner">
+                        <button
+                          @click="mapLightbox = false"
+                          class="route-lightbox__close"
+                          aria-label="Tutup"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                        <img
+                          :src="selectedRoute.map_image"
+                          :alt="`Peta jalur ${routeName}`"
+                          class="route-lightbox__img"
+                        />
+                        <p class="route-lightbox__caption">Peta Jalur — {{ routeName }}</p>
+                      </div>
+                    </div>
+                  </Transition>
+                </Teleport>
               </template>
 
+              <!-- Peta belum tersedia -->
+              <div v-else class="route-map-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 text-[#A2825B]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+                </svg>
+                <span class="route-map-empty__title">Peta Jalur Pendakian</span>
+                <span class="route-map-empty__text">Peta jalur <strong>{{ routeName }}</strong> sedang dalam proses. Segera tersedia.</span>
+              </div>
             </div>
           </div>
-        </template>
+        </section>
 
-        <template v-else>
-        </template>
-      </div>
-    </div>
+        <!-- ── Deskripsi ─────────────────────────────────────────────────── -->
+        <section class="route-section route-deskripsi-section">
+          <div class="route-container">
+            <div class="route-card">
+              <h2 class="route-card__title mb-6">Informasi Basecamp</h2>
 
-
-    <template v-if="selectedRoute">
-
-
-
-
-      <section class="route-hero">
-        <div class="route-hero__inner">
-
-          <svg class="route-hero__svg" :viewBox="`0 0 900 220`" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-
-              <path
-                id="title-curve"
-                d="M -500,340 A 2200,2200 0 0,1 1400,340"
-                fill="none"
-              />
-
-              <filter id="title-shadow" x="-10%" y="-10%" width="130%" height="150%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.25)" />
-              </filter>
-            </defs>
-
-
-            <text
-              class="route-hero__text-stroke"
-              filter="url(#title-shadow)"
-            >
-              <textPath href="#title-curve" startOffset="50%" text-anchor="middle">{{ selectedRoute.toUpperCase() }}</textPath>
-            </text>
-
-
-            <text
-              class="route-hero__text-fill"
-            >
-              <textPath href="#title-curve" startOffset="50%" text-anchor="middle">{{ selectedRoute.toUpperCase() }}</textPath>
-            </text>
-          </svg>
-        </div>
-      </section>
-
-
-      <section class="route-section route-map-section">
-        <div class="route-container">
-          <div class="route-map-frame">
-
-            <div class="route-map-empty">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 text-[#A2825B]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
-              </svg>
-              <span class="route-map-empty__text">Peta Jalur Pendakian akan ditampilkan di sini</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <section class="route-section route-deskripsi-section">
-        <div class="route-container">
-          <div class="route-card">
-            <h2 class="route-card__title mb-8">Deskripsi</h2>
-            <p class="route-card__text">
-              Jalur Cepit merupakan rute pendakian Gunung Sumbing yang dikenal sebagai jalur tercepat namun memiliki tantangan fisik yang luar biasa karena sudut kemiringannya yang sangat ekstrem. Terletak di Desa Cepit, Kabupaten Temanggung, jalur ini menawarkan suasana yang jauh lebih tenang dan sunyi dibandingkan jalur Garung, melewati hutan alam yang masih sangat asri hingga mencapai area kawah yang luas.
-            </p>
-          </div>
-        </div>
-      </section>
-
-
-      <section class="route-section route-estimasi-section">
-        <div class="route-container">
-          <div class="route-card">
-            <h2 class="route-card__title text-center mb-8">Estimasi waktu per Pos</h2>
-            <div class="route-estimasi-grid">
-
-              <div v-for="pos in 6" :key="pos" class="route-pos-item">
-                <div class="route-pos-item__icon mt-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#374426]" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
+              <!-- Info grid -->
+              <div class="route-info-grid">
+                <div class="route-info-item">
+                  <span class="route-info-item__label">📍 Alamat Basecamp</span>
+                  <span class="route-info-item__value">{{ selectedRoute.route_info?.basecamp_address ?? '-' }}</span>
                 </div>
-                <div class="route-pos-item__content">
-                  <div class="flex items-center gap-2 mb-1">
-                    <h4 class="route-pos-item__title">Pos {{ pos }} Lorem Ipsum (1.000 mdpl)</h4>
-                  </div>
-                  <p class="route-pos-item__desc">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  </p>
-                  <div class="route-pos-item__time mt-1 flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                <div class="route-info-item">
+                  <span class="route-info-item__label">⛰️ Ketinggian Basecamp</span>
+                  <span class="route-info-item__value">{{ selectedRoute.route_info?.basecamp_altitude ? selectedRoute.route_info.basecamp_altitude + ' mdpl' : '-' }}</span>
+                </div>
+                <div class="route-info-item">
+                  <span class="route-info-item__label">🎫 Simaksi</span>
+                  <span class="route-info-item__value">{{ formatRupiah(selectedRoute.route_info?.simaksi_price) }}</span>
+                </div>
+                <div class="route-info-item" v-if="selectedRoute.route_info?.ojek_description">
+                  <span class="route-info-item__label">🛵 Ojek</span>
+                  <span class="route-info-item__value">{{ selectedRoute.route_info.ojek_description }}</span>
+                </div>
+              </div>
+
+              <!-- Deskripsi jalur -->
+              <div v-if="selectedRoute.route_info?.logistics_description" class="mt-8">
+                <h3 class="route-card__subtitle">Karakteristik Jalur</h3>
+                <p class="route-card__text mt-3">{{ selectedRoute.route_info.logistics_description }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Estimasi waktu per pos ─────────────────────────────────────── -->
+        <section class="route-section route-estimasi-section">
+          <div class="route-container">
+            <div class="route-card">
+              <h2 class="route-card__title text-center mb-8">Estimasi Waktu per Pos</h2>
+
+              <div v-if="selectedRoute.waypoints?.length" class="route-estimasi-grid">
+                <div v-for="wp in selectedRoute.waypoints" :key="wp.order_index" class="route-pos-item">
+                  <div class="route-pos-item__icon mt-1">
+                    <!-- Water source icon -->
+                    <svg v-if="wp.has_water_source" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#4A90D9]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9V8h2v9zm4 0h-2V8h2v9z"/>
                     </svg>
-                    <span>{{ pos * 15 }} Menit</span>
+                    <!-- Camp / pos icon -->
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#374426]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                  </div>
+
+                  <div class="route-pos-item__content">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                      <h4 class="route-pos-item__title">{{ wp.name }}</h4>
+                      <span v-if="wp.altitude" class="route-pos-item__badge">{{ wp.altitude }} mdpl</span>
+                      <span v-if="wp.has_water_source" class="route-pos-item__water-badge">💧 Sumber Air</span>
+                    </div>
+                    <p class="route-pos-item__desc">{{ wp.description }}</p>
+                    <div class="route-pos-item__time mt-2 flex items-center gap-1.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                      <span>{{ formatDuration(wp.estimated_time_minutes) }} dari pos sebelumnya</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
 
-            <div class="route-estimasi-legends mt-10 flex flex-col gap-1">
-              <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-[#8CB4D6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S12 3 12 3s-4.5 4.03-4.5 9 2.015 9 4.5 9Z" /></svg>
-                <span class="text-[#8CB4D6] font-medium text-[18px]" style="font-family: 'Montserrat', sans-serif;">Water Source</span>
+              <div v-else class="text-center text-[#A2825B] py-8" style="font-family: 'Poppins', sans-serif;">
+                Data waypoint untuk jalur ini belum tersedia.
               </div>
-              <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-[#374426]" viewBox="0 0 24 24" fill="currentColor"><path d="M17.49 17L12 6.5 6.51 17h10.98zM12 2L1 21h22L12 2z"/></svg>
-                <span class="text-[#374426] font-medium text-[18px]" style="font-family: 'Montserrat', sans-serif;">Campsite</span>
+
+              <!-- Legend -->
+              <div class="route-estimasi-legends mt-10 flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-[#4A90D9]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9V8h2v9zm4 0h-2V8h2v9z"/></svg>
+                  <span class="text-[#4A90D9] font-medium text-[18px]" style="font-family: 'Montserrat', sans-serif;">Sumber Air</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-[#374426]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                  <span class="text-[#374426] font-medium text-[18px]" style="font-family: 'Montserrat', sans-serif;">Pos / Campsite</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Galeri + Statistik + Tips ─────────────────────────────────── -->
+        <section class="route-section route-stats-section">
+          <div class="route-container">
+            <div class="route-stats-wrapper">
+
+              <!-- Galeri foto rute (2 frame) -->
+              <div class="route-stats-gallery">
+                <!-- Frame 1: foto rute -->
+                <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
+                  <img
+                    v-if="selectedRoute.image"
+                    :src="selectedRoute.image"
+                    :alt="`Foto jalur ${routeName}`"
+                    class="w-full flex-1 object-cover"
+                  />
+                  <div v-else class="flex-1 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#A2825B]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
+                    </svg>
+                  </div>
+                  <div class="w-full bg-[#7E623F] px-6 py-3 flex justify-between items-center">
+                    <span class="font-['Montserrat'] font-semibold text-[18px] text-[#F8F3E4]">{{ routeName }}</span>
+                    <span class="font-['Montserrat'] font-medium text-[14px] text-[#F8F3E4]/80">Foto Jalur</span>
+                  </div>
+                </div>
+
+                <!-- Frame 2: foto gunung (placeholder sampai foto rute ke-2 tersedia) -->
+                <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
+                  <img
+                    v-if="currentMountain.image"
+                    :src="currentMountain.image"
+                    :alt="`Foto ${currentMountain.name}`"
+                    class="w-full flex-1 object-cover"
+                  />
+                  <div v-else class="flex-1 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#A2825B]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
+                    </svg>
+                  </div>
+                  <div class="w-full bg-[#7E623F] px-6 py-3 flex justify-between items-center">
+                    <span class="font-['Montserrat'] font-semibold text-[18px] text-[#F8F3E4]">{{ currentMountain.name }}</span>
+                    <span class="font-['Montserrat'] font-medium text-[14px] text-[#F8F3E4]/80">Foto Gunung</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Statistik + Tips -->
+              <div class="route-stats-info route-card">
+                <!-- Statistik Jalur -->
+                <div class="route-stats-block">
+                  <h3 class="route-stats-block__title">Statistik Jalur</h3>
+                  <ul class="route-stats-list">
+                    <li v-if="selectedRoute.distance">
+                      <strong>Jarak Tempuh:</strong> ± {{ selectedRoute.distance }} km
+                    </li>
+                    <li v-if="selectedRoute.estimated_time">
+                      <strong>Estimasi Total:</strong> {{ formatDuration(selectedRoute.estimated_time) }}
+                    </li>
+                    <li v-if="selectedRoute.difficulty">
+                      <strong>Tingkat Kesulitan:</strong> {{ difficultyLabel(selectedRoute.difficulty) }}
+                    </li>
+                    <li v-if="currentMountain.altitude">
+                      <strong>Ketinggian Puncak:</strong> {{ currentMountain.altitude }} mdpl
+                    </li>
+                    <li v-if="selectedRoute.route_info?.basecamp_altitude">
+                      <strong>Ketinggian Basecamp:</strong> {{ selectedRoute.route_info.basecamp_altitude }} mdpl
+                    </li>
+                    <li v-if="waterSourceWaypoints.length">
+                      <strong>Sumber Air:</strong>
+                      {{ waterSourceWaypoints.map(w => w.name).join(', ') }}
+                    </li>
+                    <li v-else>
+                      <strong>Sumber Air:</strong> Tidak ada di jalur — bawa dari basecamp
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Tips Khusus -->
+                <div class="route-stats-block">
+                  <h3 class="route-stats-block__title">Tips Khusus</h3>
+                  <div v-if="selectedRoute.route_info?.logistics_description" class="route-stats-tip">
+                    <span class="route-stats-tip__label">🏔️ Karakteristik:</span>
+                    <p class="route-stats-block__text">{{ selectedRoute.route_info.logistics_description }}</p>
+                  </div>
+                  <div v-if="selectedRoute.route_info?.ojek_description" class="route-stats-tip">
+                    <span class="route-stats-tip__label">🛵 Transportasi Ojek:</span>
+                    <p class="route-stats-block__text">{{ selectedRoute.route_info.ojek_description }}</p>
+                  </div>
+                  <div v-if="selectedRoute.route_info?.facilities_description" class="route-stats-tip">
+                    <span class="route-stats-tip__label">🏠 Fasilitas Basecamp:</span>
+                    <p class="route-stats-block__text">{{ selectedRoute.route_info.facilities_description }}</p>
+                  </div>
+                  <p v-if="!selectedRoute.route_info" class="route-stats-block__text text-[#A2825B]">
+                    Informasi tips belum tersedia untuk jalur ini.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Cuaca ─────────────────────────────────────────────────────── -->
+        <section class="route-section route-weather-section">
+          <div class="route-container">
+
+            <!-- Loading -->
+            <div v-if="weatherLoading" class="route-weather-card flex items-center justify-center" style="min-height: 220px;">
+              <div class="flex flex-col items-center gap-4 text-white/70">
+                <svg class="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span style="font-family: 'Poppins', sans-serif;">Memuat data cuaca...</span>
+              </div>
+            </div>
+
+            <!-- Error -->
+            <div v-else-if="weatherError" class="route-weather-card flex items-center justify-center" style="min-height: 180px;">
+              <div class="text-center text-white/70 px-8" style="font-family: 'Poppins', sans-serif;">
+                <p class="text-lg mb-2">⚠️ Gagal memuat data cuaca</p>
+                <p class="text-sm">{{ weatherError }}</p>
+              </div>
+            </div>
+
+            <!-- Cuaca card -->
+            <div v-else-if="weather" class="route-weather-card">
+              <div class="route-weather-card__header">
+                <span class="route-weather-card__badge">Cuaca Real-Time</span>
+              </div>
+
+              <div class="route-weather-card__body">
+                <!-- Current -->
+                <div class="route-weather-current">
+                  <div class="route-weather-current__mountain">
+                    <h3>Gunung</h3>
+                    <h2>{{ currentMountain.name.replace('Gunung ', '') }}</h2>
+                  </div>
+                  <div class="route-weather-current__icon text-4xl">
+                    {{ getWmoIcon(weather.current?.weathercode) }}
+                  </div>
+                  <div class="route-weather-current__temp">
+                    <span class="route-weather-current__degrees">{{ Math.round(weather.current?.temperature_2m ?? 0) }}</span>
+                    <span class="route-weather-current__unit">°C</span>
+                  </div>
+                  <div class="route-weather-current__condition">{{ getWmoLabel(weather.current?.weathercode) }}</div>
+                </div>
+
+                <!-- Forecast 5 hari ke depan -->
+                <div class="route-weather-forecast">
+                  <table class="route-weather-table">
+                    <thead>
+                      <tr>
+                        <th>Hari</th>
+                        <th>Suhu</th>
+                        <th>Cuaca</th>
+                        <th>Angin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(date, i) in weather.daily?.time?.slice(1, 6)"
+                        :key="date"
+                      >
+                        <td>{{ HARI[new Date(date).getDay()] }}</td>
+                        <td>
+                          {{ Math.round(weather.daily.temperature_2m_min[i + 1]) }}–{{ Math.round(weather.daily.temperature_2m_max[i + 1]) }}°C
+                        </td>
+                        <td>{{ getWmoIcon(weather.daily.weathercode[i + 1]) }} {{ getWmoLabel(weather.daily.weathercode[i + 1]) }}</td>
+                        <td>{{ Math.round(weather.daily.windspeed_10m_max[i + 1]) }} km/j</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Footer info -->
+              <div class="route-weather-card__footer">
+                <div class="route-weather-info-item">
+                  <span class="route-weather-info-item__label">🌡 Kelembaban</span>
+                  <span class="route-weather-info-item__value">{{ weather.current?.relativehumidity_2m ?? '-' }}%</span>
+                </div>
+                <div class="route-weather-info-item">
+                  <span class="route-weather-info-item__label">🌧 Curah Hujan</span>
+                  <span class="route-weather-info-item__value">{{ weather.current?.precipitation ?? '0' }} mm</span>
+                </div>
+                <div class="route-weather-info-item">
+                  <span class="route-weather-info-item__label">💨 Angin</span>
+                  <span class="route-weather-info-item__value">{{ Math.round(weather.current?.windspeed_10m ?? 0) }} km/j</span>
+                </div>
+                <div class="route-weather-info-item">
+                  <span class="route-weather-info-item__label">💧 Tekanan</span>
+                  <span class="route-weather-info-item__value">{{ Math.round(weather.current?.surface_pressure ?? 0) }} hPa</span>
+                </div>
+                <div class="route-weather-info-item">
+                  <span class="route-weather-info-item__label">🌅 Sunrise</span>
+                  <span class="route-weather-info-item__value">{{ formatHour(weather.daily?.sunrise?.[0]) }}</span>
+                </div>
+                <div class="route-weather-info-item">
+                  <span class="route-weather-info-item__label">🌇 Sunset</span>
+                  <span class="route-weather-info-item__value">{{ formatHour(weather.daily?.sunset?.[0]) }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Back button -->
+        <div class="w-full max-w-[1340px] mx-auto px-6 pb-16 flex justify-center mt-8">
+          <button
+            @click="selectedRoute = null"
+            class="flex items-center gap-2 bg-[#374426] text-[#F8F3E4] font-medium text-[14px] px-5 py-2.5 rounded-lg hover:opacity-90 transition-all shadow-sm hover:scale-[1.02]"
+            style="font-family: 'Montserrat', sans-serif;"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Kembali ke Informasi {{ currentMountain.name }}
+          </button>
+        </div>
+
+      </template>
+
+      <!-- Other destinations -->
+      <div v-if="!selectedRoute" class="w-full flex flex-col items-center mt-[40px] pb-24 px-4">
+        <div class="w-full max-w-[1340px] flex flex-col">
+          <h2 class="text-[#64823E] font-bold text-[48px] mb-[32px]" style="font-family: 'Montserrat', sans-serif;">Other Destinations</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
+            <div
+              v-for="dest in otherDestinations"
+              :key="dest.slug"
+              class="w-full h-[450px] rounded-[30px] overflow-hidden bg-[#D6CCAF] flex flex-col shadow-lg transition duration-300 hover:scale-[1.03] hover:shadow-xl"
+            >
+              <div class="relative w-full h-[210px] shrink-0">
+                <img :src="dest.image" :alt="dest.name" class="w-full h-full object-cover" />
+                <Link
+                  :href="`/article?mountain=${dest.slug}`"
+                  class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#374426]/20 backdrop-blur-[4px] shadow-sm text-[#E3E9CD] font-bold px-8 py-2 rounded-full text-[20px] whitespace-nowrap hover:bg-[#374426]/40 transition-colors"
+                  style="font-family: 'Montserrat', sans-serif;"
+                >
+                  Read More
+                </Link>
+              </div>
+
+              <div class="flex-1 p-6 flex flex-col gap-3">
+                <h4 class="text-[#374426] font-bold text-[28px] leading-tight" style="font-family: 'Montserrat', sans-serif;">{{ dest.name }}</h4>
+                <p class="text-[16px] font-normal leading-relaxed text-[#5A684C] line-clamp-3" style="font-family: 'Montserrat', sans-serif;">
+                  {{ dest.content?.[0]?.text }}
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </section>
-
-
-      <section class="route-section route-stats-section">
-        <div class="route-container">
-          <div class="route-stats-wrapper">
-
-            <div class="route-stats-gallery">
-              <div v-for="n in 2" :key="n" class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]">
-
-                <div class="flex-1 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#A2825B]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
-                  </svg>
-                </div>
-
-                <div class="w-full bg-[#7E623F] px-6 py-4 flex justify-between items-center z-10">
-                  <span class="font-['Montserrat'] font-semibold text-[22px] text-[#F8F3E4]">{{ selectedRoute }}</span>
-                  <span class="font-['Montserrat'] font-medium text-[16px] text-[#F8F3E4]">{{ currentMountain.name.replace('Gunung ', '') }}</span>
-                </div>
-              </div>
-            </div>
-
-
-            <div class="route-stats-info route-card">
-              <div class="route-stats-block">
-                <h3 class="route-stats-block__title">Statistik Jalur</h3>
-                <ul class="route-stats-list">
-                  <li><strong>Jarak Tempuh:</strong> ± 7.5 Km</li>
-                  <li><strong>Ketinggian Maksimal:</strong> 3.371 mdpl</li>
-                  <li><strong>Kemiringan Rata-rata:</strong> 31.5 % (Cukup terjal)</li>
-                  <li><strong>Sumber Air:</strong> Tersedia (Pos 2 dan Pos 3)</li>
-                </ul>
-              </div>
-
-              <div class="route-stats-block">
-                <h3 class="route-stats-block__title">Tips Khusus</h3>
-                <p class="route-stats-block__text">
-                  Karakteristik: <br>
-                  Dikenal sebagai "Jalur Spiritual" karena banyaknya petilasan keramat. Medannya didominasi oleh hutan rimbun di awal dan berubah menjadi lautan pasir putih (Segoro Wedi) saat mendekati kawah.
-                </p>
-                <p class="route-stats-block__text">
-                  Saran: <br>
-                  Gunakan jasa ojek dari Basecamp ke Pos 1 jika ingin menghemat waktu 80 menit.
-                </p>
-                <p class="route-stats-block__text">
-                  Moment Terbaik: <br>
-                  Menikmati suasana tenang di Segoro Wedi, sebuah lembah pasir tersembunyi yang dikelilingi tebing megah Sumbing, memberikan sensasi pendakian yang berbeda dari jalur lainnya.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <section class="route-section route-weather-section">
-        <div class="route-container">
-          <div class="route-weather-card">
-            <div class="route-weather-card__header">
-              <span class="route-weather-card__badge">Cuaca</span>
-            </div>
-            <div class="route-weather-card__body">
-
-              <div class="route-weather-current">
-                <div class="route-weather-current__mountain">
-                  <h3>Gunung</h3>
-                  <h2>Sumbing</h2>
-                </div>
-                <div class="route-weather-current__icon">
-
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
-                  </svg>
-                </div>
-                <div class="route-weather-current__temp">
-                  <span class="route-weather-current__degrees">24</span>
-                  <span class="route-weather-current__unit">°C</span>
-                </div>
-                <div class="route-weather-current__condition">Berawan Sebagian</div>
-              </div>
-
-
-              <div class="route-weather-forecast">
-                <table class="route-weather-table">
-                  <thead>
-                    <tr>
-                      <th>Hari</th>
-                      <th>Suhu</th>
-                      <th>Cuaca</th>
-                      <th>Angin</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="day in ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']" :key="day">
-                      <td>{{ day }}</td>
-                      <td>22-26°C</td>
-                      <td>Cerah Berawan</td>
-                      <td>15 km/jam</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-
-            <div class="route-weather-card__footer">
-              <div class="route-weather-info-item">
-                <span class="route-weather-info-item__label">🌡 Kelembaban</span>
-                <span class="route-weather-info-item__value">75%</span>
-              </div>
-              <div class="route-weather-info-item">
-                <span class="route-weather-info-item__label">🌧 Curah Hujan</span>
-                <span class="route-weather-info-item__value">12mm</span>
-              </div>
-              <div class="route-weather-info-item">
-                <span class="route-weather-info-item__label">👁 Visibilitas</span>
-                <span class="route-weather-info-item__value">8 km</span>
-              </div>
-              <div class="route-weather-info-item">
-                <span class="route-weather-info-item__label">🌅 Sunrise</span>
-                <span class="route-weather-info-item__value">05:42</span>
-              </div>
-              <div class="route-weather-info-item">
-                <span class="route-weather-info-item__label">🌇 Sunset</span>
-                <span class="route-weather-info-item__value">17:28</span>
-              </div>
-              <div class="route-weather-info-item">
-                <span class="route-weather-info-item__label">💨 Tekanan</span>
-                <span class="route-weather-info-item__value">1013 hPa</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <div class="w-full max-w-[1180px] mx-auto px-6 pb-16 flex justify-center mt-8">
-        <button 
-          @click="selectedRoute = null" 
-          class="flex items-center gap-2 bg-[#374426] text-[#F8F3E4] font-medium text-[14px] px-5 py-2.5 rounded-lg hover:opacity-90 transition-all shadow-sm hover:scale-[1.02]" 
-          style="font-family: 'Montserrat', sans-serif;"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-          Kembali ke Informasi {{ currentMountain.name }}
-        </button>
       </div>
-
     </template>
 
-
-    <div v-if="!selectedRoute" class="w-full flex flex-col items-center mt-[40px] pb-24 px-4">
-      <div class="w-full max-w-[1180px] flex flex-col">
-        <h2 class="text-[#64823E] font-bold text-[48px] mb-[32px]" style="font-family: 'Montserrat', sans-serif;">Other Destinations</h2>
-        
-        <div class="flex flex-wrap gap-[50px] justify-center md:justify-start">
-          <div 
-            v-for="dest in otherDestinations" 
-            :key="dest.slug"
-            class="w-[360px] h-[450px] rounded-[30px] overflow-hidden bg-[#D6CCAF] flex flex-col shadow-lg"
-          >
-
-            <div class="relative w-full h-[210px] shrink-0">
-              <img :src="dest.image" :alt="dest.name" class="w-full h-full object-cover" />
-              <Link 
-                :href="`/article?mountain=${dest.slug}`" 
-                class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#374426]/20 backdrop-blur-[4px] shadow-sm text-[#E3E9CD] font-bold px-8 py-2 rounded-full text-[20px] whitespace-nowrap hover:bg-[#374426]/40 transition-colors" 
-                style="font-family: 'Montserrat', sans-serif;"
-              >
-                Read More
-              </Link>
-            </div>
-            
-
-            <div class="flex-1 p-6 flex flex-col gap-3">
-              <h4 class="text-[#374426] font-bold text-[28px] leading-tight" style="font-family: 'Montserrat', sans-serif;">{{ dest.name }}</h4>
-              <p class="text-[16px] font-normal leading-relaxed text-[#5A684C]" style="font-family: 'Montserrat', sans-serif;">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
+    <!-- Footer -->
     <div class="w-full flex flex-col mt-auto">
-
       <div class="w-full bg-[#E0DBBE] py-10 px-8 md:px-16 xl:px-24 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
           <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" />
           <span class="text-2xl md:text-3xl xl:text-[32px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
         </div>
-        
+
         <div class="flex items-center gap-4">
           <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
@@ -529,10 +729,8 @@ watch(currentSlug, () => {
         </div>
       </div>
 
-
       <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
         <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
-
           <div class="flex flex-col gap-[96px]">
             <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
               AltiGuide.com
@@ -550,7 +748,6 @@ watch(currentSlug, () => {
             </div>
           </div>
 
-
           <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
@@ -560,7 +757,7 @@ watch(currentSlug, () => {
                 <Link href="#" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
-            
+
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
@@ -581,7 +778,6 @@ watch(currentSlug, () => {
           </div>
         </div>
 
-
         <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
           <p class="text-[#5A684C] font-medium text-[14px]">
             © 2026 AltiGuide Team. All rights reserved.
@@ -596,14 +792,13 @@ watch(currentSlug, () => {
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@700;800;900&display=swap');
 
-
 h1 {
   font-family: 'Montserrat', sans-serif;
 }
 
 .route-container {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1340px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -613,20 +808,7 @@ h1 {
   padding: 40px 0;
 }
 
-.route-section-title {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 32px;
-  color: #374426;
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.route-section-title--center {
-  text-align: center;
-}
-
-
+/* ── Hero ─────────────────────────────────────────────────────────── */
 .route-hero {
   width: 100%;
   background: #F8F3E4;
@@ -640,7 +822,7 @@ h1 {
 
 .route-hero__inner {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1340px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -652,7 +834,6 @@ h1 {
   height: auto;
   overflow: visible;
 }
-
 
 .route-hero__text-stroke {
   font-family: 'Jost', sans-serif;
@@ -666,7 +847,6 @@ h1 {
   paint-order: stroke fill;
 }
 
-
 .route-hero__text-fill {
   font-family: 'Jost', sans-serif;
   font-weight: 700;
@@ -675,7 +855,7 @@ h1 {
   fill: #FFFEF0;
 }
 
-
+/* ── Map ──────────────────────────────────────────────────────────── */
 .route-map-section {
   background: #F8F3E4;
   padding-top: 0;
@@ -684,30 +864,161 @@ h1 {
 .route-map-frame {
   width: 100%;
   border: 2px solid #C8C4A9;
-  border-radius: 4px;
+  border-radius: 16px;
   background: #FFFEF5;
   overflow: hidden;
+  position: relative;
+}
+
+/* Map image: constrained height, full map visible */
+.route-map-img-wrapper {
+  position: relative;
+  width: 100%;
+  background: #F5F0DC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.route-map-img {
+  max-height: 520px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+/* Zoom button overlay */
+.route-map-zoom-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(55, 68, 38, 0.85);
+  backdrop-filter: blur(8px);
+  color: #F8F3E4;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.route-map-zoom-btn:hover {
+  background: rgba(55, 68, 38, 1);
+  transform: scale(1.04);
+}
+
+/* Lightbox */
+.route-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.80);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.route-lightbox__inner {
+  position: relative;
+  max-width: min(1100px, 95vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.route-lightbox__img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 8px 60px rgba(0,0,0,0.5);
+}
+
+.route-lightbox__caption {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.5px;
+}
+
+.route-lightbox__close {
+  position: absolute;
+  top: -44px;
+  right: 0;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.route-lightbox__close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Lightbox transition */
+.lightbox-enter-active,
+.lightbox-leave-active {
+  transition: opacity 0.25s ease;
+}
+.lightbox-enter-from,
+.lightbox-leave-to {
+  opacity: 0;
 }
 
 .route-map-empty {
   width: 100%;
-  min-height: 700px;
+  min-height: 500px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: #F5F0DC;
   gap: 12px;
+  padding: 40px;
+  text-align: center;
+}
+
+.route-map-empty__title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #A2825B;
+  opacity: 0.7;
 }
 
 .route-map-empty__text {
   font-family: 'Poppins', sans-serif;
   font-size: 16px;
   color: #A2825B;
-  opacity: 0.5;
+  opacity: 0.55;
+  max-width: 440px;
+  line-height: 1.6;
 }
 
-
+/* ── Card base ─────────────────────────────────────────────────────── */
 .route-card {
   background: linear-gradient(135deg, #E5E6D5 0%, #C3CE8F 100%);
   border-radius: 40px;
@@ -725,17 +1036,56 @@ h1 {
   line-height: 1.2;
 }
 
+.route-card__subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #4B632B;
+}
+
 .route-card__text {
   font-family: 'Montserrat', sans-serif;
   font-weight: 400;
-  font-size: 22px;
+  font-size: 18px;
   color: #374426;
   line-height: 1.6;
   margin: 0;
   text-align: justify;
 }
 
+/* ── Info grid (basecamp info) ──────────────────────────────────── */
+.route-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
 
+.route-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 16px;
+  padding: 14px 18px;
+}
+
+.route-info-item__label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #5A6840;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.route-info-item__value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  color: #374426;
+  line-height: 1.5;
+}
+
+/* ── Deskripsi section ─────────────────────────────────────────────── */
 .route-deskripsi-section {
   background: #F8F3E4;
   padding-top: 45px;
@@ -745,6 +1095,7 @@ h1 {
   gap: 12px;
 }
 
+/* ── Estimasi section ──────────────────────────────────────────────── */
 .route-estimasi-section {
   background: #F8F3E4;
   padding-top: 45px;
@@ -770,16 +1121,36 @@ h1 {
 .route-pos-item__title {
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: 22px;
+  font-size: 18px;
   color: #374426;
   margin: 0;
   line-height: 1.4;
 }
 
+.route-pos-item__badge {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  background: rgba(55, 68, 38, 0.15);
+  color: #374426;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.route-pos-item__water-badge {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  background: rgba(74, 144, 217, 0.15);
+  color: #2563EB;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
 .route-pos-item__desc {
   font-family: 'Montserrat', sans-serif;
   font-weight: 400;
-  font-size: 22px;
+  font-size: 16px;
   color: #374426;
   line-height: 1.5;
   margin: 0;
@@ -789,11 +1160,16 @@ h1 {
 .route-pos-item__time {
   font-family: 'Montserrat', sans-serif;
   font-weight: 400;
-  font-size: 18px;
-  color: #374426;
+  font-size: 14px;
+  color: #7E623F;
 }
 
+.route-estimasi-legends {
+  border-top: 1px solid rgba(55, 68, 38, 0.2);
+  padding-top: 16px;
+}
 
+/* ── Stats section ─────────────────────────────────────────────────── */
 .route-stats-section {
   background: #F8F3E4;
 }
@@ -811,39 +1187,16 @@ h1 {
   gap: 12px;
 }
 
-.route-stats-gallery__main {
-  width: 100%;
-}
-
-.route-stats-gallery__thumbs {
-  display: flex;
-  gap: 12px;
-}
-
-.route-gallery-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #F0ECD8;
-  border: 2px dashed #D7DDC2;
-  border-radius: 12px;
-}
-
-.route-gallery-placeholder--large {
-  width: 100%;
-  height: 280px;
-}
-
-.route-gallery-placeholder--small {
-  flex: 1;
-  height: 140px;
-}
-
 .route-stats-info {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.route-stats-block {
+  display: flex;
+  flex-direction: column;
 }
 
 .route-stats-block__title {
@@ -866,7 +1219,22 @@ h1 {
 }
 
 .route-stats-list li {
-  padding: 4px 0;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 8px;
+}
+
+.route-stats-tip {
+  margin-bottom: 12px;
+}
+
+.route-stats-tip__label {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #5A6840;
+  margin-bottom: 4px;
 }
 
 .route-stats-block__text {
@@ -874,11 +1242,11 @@ h1 {
   font-size: 14px;
   line-height: 1.7;
   color: #4A4A3A;
-  margin-bottom: 10px;
+  margin: 0;
   text-align: justify;
 }
 
-
+/* ── Weather section ───────────────────────────────────────────────── */
 .route-weather-section {
   background: #F8F3E4;
   padding-bottom: 60px;
@@ -936,7 +1304,7 @@ h1 {
 }
 
 .route-weather-current__icon {
-  color: #FFD700;
+  line-height: 1;
 }
 
 .route-weather-current__temp {
@@ -1019,5 +1387,4 @@ h1 {
   font-size: 16px;
   color: #fff;
 }
-
 </style>
