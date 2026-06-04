@@ -64,6 +64,8 @@ Route::middleware('auth')->group(function () {
     // Booking routes
     Route::get('/booking', [\App\Http\Controllers\BookingController::class, 'create'])->name('booking');
     Route::post('/booking/checkout', [\App\Http\Controllers\BookingController::class, 'store'])->name('booking.checkout');
+    Route::post('/booking/calculate', [\App\Http\Controllers\BookingController::class, 'calculatePrice'])->name('booking.calculate');
+    Route::get('/booking/status/{order_id}', [\App\Http\Controllers\BookingController::class, 'checkStatus'])->name('booking.status');
     Route::post('/booking/validate-nik', [\App\Http\Controllers\Api\MemberValidationController::class, 'validateNik'])->name('booking.validate-nik');
 });
 
