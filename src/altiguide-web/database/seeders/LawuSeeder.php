@@ -14,6 +14,9 @@ class LawuSeeder extends Seeder
      */
     public function run(): void
     {
+        $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
+        $content = collect($articles)->firstWhere('slug', 'gunung-lawu')['content'] ?? [];
+
         $lawu = Mountain::firstOrCreate(
             ['name' => 'Gunung Lawu'],
             [
@@ -23,7 +26,7 @@ class LawuSeeder extends Seeder
                 'latitude' => -7.6275,
                 'longitude' => 111.1941666,
                 'image' => 'mountains/lawu.png',
-            ]
+                'content' => $content]
             );
         $candiCetho = Route::firstOrCreate(
             ['mountain_id' => $lawu->id, 'name' => 'Gunung Lawu via Candi Cetho'],
@@ -202,8 +205,8 @@ class LawuSeeder extends Seeder
             [
                 'name' => 'Pos 1 Taman Sari Bawah',
                 'altitude' => 2237,
-                'distance_from_prev' => null , // km 
-                'estimated_time_minutes' => 90 ,
+                'distance_from_prev' => null, // km 
+                'estimated_time_minutes' => 90,
                 'description' => 'Ritme pendakian dari basecamp ke Pos 1 ini sangat bersahabat buat pemanasan. Lintasannya berupa tanah padat merah yang menembus hutan pinus lebat. Jalurnya cenderung landai dan terus memutar mengitari punggungan bukit, makanya jarak tempuhnya terasa cukup panjang meskipun secara tenaga tidak terlalu menguras fisik.',
                 'has_water_source' => false,
             ],
@@ -242,7 +245,7 @@ class LawuSeeder extends Seeder
             [
                 'name' => 'Hargo Dalem',
                 'altitude' => 3142,
-                'distance_from_prev' => null ,
+                'distance_from_prev' => null,
                 'estimated_time_minutes' => 15,
                 'description' => 'Hargo Dalem adalah "pusat kehidupan" Gunung Lawu. Di sinilah letak Warung Mbok Yem dan beberapa warung lain. Pendaki dari Cemoro Sewu dan Cemoro Kandang pasti akan memusatkan camp dan tempat istirahatnya di sekitar lembah ini. Area ini cukup terlindung dari angin karena berada di lekukan perbukitan.',
                 'has_water_source' => false,
@@ -334,8 +337,8 @@ class LawuSeeder extends Seeder
             [
                 'name' => 'Pos 1 Wes-wesan',
                 'altitude' => 2120,
-                'distance_from_prev' => 1.5 , // km 
-                'estimated_time_minutes' => 75 ,
+                'distance_from_prev' => 1.5, // km 
+                'estimated_time_minutes' => 75,
                 'description' => ' Melewati gapura Pintu Rimba, pendaki langsung disambut oleh lintasan khas Cemoro Sewu, yaitu jalanan berbatu (makadam) yang tersusun sangat rapi menyerupai anak tangga. Kanan dan kiri jalur diapit oleh tegakan pohon cemara gunung dan pinus yang sangat rapat, membuat suasana terasa teduh, sejuk, namun cukup lembap karena sinar matahari terhalang kanopi daun. Tanjakan mulai terasa konstan tanpa banyak jalan mendatar, memaksa otot paha dan betis beradaptasi dengan ritme melangkah naik. Pos 1 ditandai dengan sebuah pondok shelter beratap seng permanen yang cukup luas untuk beristirahat menghindari hujan.',
                 'has_water_source' => true,
             ],
@@ -374,7 +377,7 @@ class LawuSeeder extends Seeder
             [
                 'name' => 'Hargo Dalem',
                 'altitude' => 3142,
-                'distance_from_prev' => 0.3 ,
+                'distance_from_prev' => 0.3,
                 'estimated_time_minutes' => 15,
                 'description' => 'Lintasannya berupa jalan tanah datar berbatu yang melipir (kontur memutar) di tepian bukit. Hargo Dalem adalah pusat peradaban di atas Gunung Lawu. Kawasan ini merupakan titik temu bagi pendaki dari jalur Cemoro Sewu, Cemoro Kandang, dan Candi Cetho. Terdapat kompleks warung makan tertinggi di Indonesia, yang paling terkenal adalah Warung Mbok Yem. Banyak pendaki yang memilih untuk tidak mendirikan tenda dan menyewa tempat tidur di dalam warung-warung ini untuk menghangatkan diri di dekat tungku perapian sambil menikmati nasi pecel. Di area ini juga tersebar beberapa petilasan sakral peninggalan Prabu Brawijaya V, sehingga pendaki sering mencium aroma dupa dan diwajibkan menjaga kesopanan tutur kata.',
                 'has_water_source' => false,
@@ -484,8 +487,8 @@ class LawuSeeder extends Seeder
             [
                 'name' => 'Pos 1 Kerun-kerun / Ompak-ompakan',
                 'altitude' => 1650,
-                'distance_from_prev' => 1.5 , // km 
-                'estimated_time_minutes' => 90 ,
+                'distance_from_prev' => 1.5, // km 
+                'estimated_time_minutes' => 90,
                 'description' => 'Rute awal ini adalah lintasan adaptasi yang tergolong masih cukup landai dan sangat ramah bagi pendaki berbeban berat. Pendaki akan menyusuri area perkebunan warga, ladang rumput gajah, serta tanah terbuka. Sebelum tiba di pos ini, pendaki akan melewati titik ketersediaan air (Sendang Sanggar) dan area yang sering dijadikan camping ground oleh warga atau pendaki pemula bernama Kiteran.',
                 'has_water_source' => false,
             ],
@@ -500,7 +503,7 @@ class LawuSeeder extends Seeder
             [
                 'name' => 'Pos 3 Cemoro Tukul / Hutan Cemara',
                 'altitude' => 2350,
-                'distance_from_prev' => 1.5 , // km 
+                'distance_from_prev' => 1.5, // km 
                 'estimated_time_minutes' => 120, 
                 'description' => 'Menuju Pos 3, pendaki resmi memasuki kawasan "hutan perawan" Singolangu. Vegetasi berubah drastis didominasi oleh tegakan pohon cemara gunung yang sangat lebat dan tinggi menjulang. Trek pendakian didominasi oleh tanah liat padat yang bercampur dengan akar pohon besar. Suasana di sepanjang area ini sangat hening, sejuk, dan lembap karena minimnya sinar matahari yang bisa menembus tajuk pepohonan.',
                 'has_water_source' => false,
@@ -524,7 +527,7 @@ class LawuSeeder extends Seeder
             [
                 'name' => 'Hargo Dalem / Sendang Drajat',
                 'altitude' => 3142,
-                'distance_from_prev' => 1.5 ,
+                'distance_from_prev' => 1.5,
                 'estimated_time_minutes' => 120,
                 'description' => '  Menjelang akhir pendakian panjang, lintasan jalur Singolangu akhirnya akan bertemu (bergabung) dengan jalur populer lainnya (Cemoro Sewu/Kandang) di sekitar kawasan Sendang Drajat atau Hargo Dalem. Pendaki yang melewati jalur Singolangu mayoritas akan memilih beristirahat, mengisi air di sumur Sendang Drajat, dan mendirikan tenda (camp) di lembah ini. Area ini dikelilingi oleh banyak warung pecel legendaris untuk menghangatkan perut.',
                 'has_water_source' => true,

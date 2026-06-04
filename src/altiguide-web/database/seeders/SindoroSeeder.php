@@ -10,6 +10,9 @@ class SindoroSeeder extends Seeder
 {
     public function run(): void
     {
+        $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
+        $content = collect($articles)->firstWhere('slug', 'gunung-sindoro')['content'] ?? [];
+
         $sindoro = Mountain::firstOrCreate(
             ['name' => 'Gunung Sindoro'],
             [
@@ -19,7 +22,7 @@ class SindoroSeeder extends Seeder
                 'latitude' => -7.3000, 
                 'longitude' => 110.0000,
                 'image' => 'mountains/sindoro.png',
-            ]
+                'content' => $content]
         );
 
         // ==========================================

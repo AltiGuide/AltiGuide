@@ -10,6 +10,9 @@ class AndongSeeder extends Seeder
 {
     public function run(): void
     {
+        $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
+        $content = collect($articles)->firstWhere('slug', 'gunung-andong')['content'] ?? [];
+
         // 1. MOUNTAIN ANDONG
         $andong = Mountain::firstOrCreate(
             ['name' => 'Gunung Andong'],
@@ -20,7 +23,7 @@ class AndongSeeder extends Seeder
                 'latitude' => -7.3872,  
                 'longitude' => 110.3663, 
                 'image' => 'mountains/andong.png',
-            ]
+                'content' => $content]
         );
 
         // 2. VIA PENDEM

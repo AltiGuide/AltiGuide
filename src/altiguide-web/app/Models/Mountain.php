@@ -18,7 +18,12 @@ class Mountain extends Model
         'longitude',
         'image',
         'status',
+        'content',
         'created_by'
+    ];
+
+    protected $casts = [
+        'content' => 'array',
     ];
 
     public function routes()

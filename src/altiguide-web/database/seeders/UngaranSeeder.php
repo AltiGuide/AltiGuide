@@ -10,6 +10,9 @@ class UngaranSeeder extends Seeder
 {
     public function run(): void
     {
+        $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
+        $content = collect($articles)->firstWhere('slug', 'gunung-ungaran')['content'] ?? [];
+
         // 1. MOUNTAIN UNGARAN
         $ungaran = Mountain::firstOrCreate(
             ['name' => 'Gunung Ungaran'],
@@ -20,7 +23,7 @@ class UngaranSeeder extends Seeder
                 'latitude' => -7.186667, 
                 'longitude' => 110.342222,
                 'image' => 'mountains/ungaran.png',
-            ]
+                'content' => $content]
         );
 
         // 2. VIA PERANTUNAN
