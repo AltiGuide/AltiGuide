@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -53,11 +54,40 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+        $user = Auth::user();
+
+        // Ambil semua transaksi user beserta relasi hiking session, route, dan mountain
+        $transactions = $user->transactions()
+            ->with(['hikingSession.route.mountain', 'hikingSession.members'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($tx) {
+                $session = $tx->hikingSession;
+                return [
+                    'id'           => $tx->id,
+                    'order_id'     => $tx->order_id,
+                    'status'       => $tx->status,
+                    'gross_amount' => $tx->gross_amount,
+                    'expiry_time'  => $tx->expiry_time,
+                    'mountain_name'=> $session?->route?->mountain?->name,
+                    'route_name'   => $session?->route?->name,
+                    'start_date'   => $session?->start_date,
+                    'end_date'     => $session?->end_date,
+                    'member_count' => $session?->members?->count() ?? 0,
+                    'group_name'   => $session?->group_name,
+                ];
+            });
+
+        return Inertia::render('Dashboard', [
+            'bookings' => $transactions,
+        ]);
     })->name('dashboard');
 
-    // Profile completion
-    Route::put('/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    // Profile update (with avatar)
+    Route::post('/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
+    // Password change
+    Route::post('/profile/password', [\App\Http\Controllers\ProfileController::class, 'changePassword'])->name('profile.password');
 
     // Booking routes
     Route::get('/booking', [\App\Http\Controllers\BookingController::class, 'create'])->name('booking');

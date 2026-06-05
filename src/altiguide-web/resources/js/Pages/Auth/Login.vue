@@ -55,6 +55,16 @@ const isSignupValid = computed(() => {
            signupForm.phone_number.trim() !== '' &&
            signupForm.password.trim() !== ''
 })
+
+/* ── Forgot password modal ────────────────────────────────────── */
+const showForgotModal = ref(false)
+const forgotForm = useForm({
+    email: '',
+})
+
+const submitForgot = () => {
+    forgotForm.post('/forgot-password/email')
+}
 </script>
 
 <template>
@@ -188,7 +198,7 @@ const isSignupValid = computed(() => {
 
                     <!-- Forgot password -->
                     <div class="flex justify-end -mt-1">
-                        <Link href="/forgot-password" class="forgot-link">Forget your password</Link>
+                        <button type="button" @click="showForgotModal = true" class="forgot-link bg-none border-none p-0 outline-none cursor-pointer">Forget your password</button>
                     </div>
 
                     <!-- Submit -->
@@ -294,6 +304,56 @@ const isSignupValid = computed(() => {
                 </form>
 
             </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div v-if="showForgotModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showForgotModal = false"></div>
+        
+        <!-- Modal Card -->
+        <div class="relative w-full max-w-[480px] bg-[#F8F3E4] rounded-[20px] border border-[#D6CCAF] shadow-2xl p-8 md:p-10 flex flex-col items-center z-10 animate-fade-in animate-duration-200" style="font-family: 'Montserrat', sans-serif;">
+            <!-- Close Button -->
+            <button @click="showForgotModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition cursor-pointer" aria-label="Close modal">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- Logo -->
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-8 h-8 object-contain" />
+                <span class="text-2xl font-semibold text-[#374426] tracking-tight">AltiGuide</span>
+            </div>
+
+            <h2 class="text-xl font-semibold text-[#333333] text-center mb-2">Forgot Password</h2>
+            <p class="text-sm text-[#666666] text-center mb-6 leading-relaxed">
+                Enter your email address and we'll send you a verification code to reset your password.
+            </p>
+
+            <form @submit.prevent="submitForgot" class="w-full flex flex-col gap-4">
+                <div class="flex flex-col gap-1.5 w-full">
+                    <label for="forgot-email" class="text-sm font-semibold text-[#666666]">Email address</label>
+                    <input
+                        id="forgot-email"
+                        type="email"
+                        v-model="forgotForm.email"
+                        required
+                        class="w-full h-12 border border-[#D7DDC2] rounded-xl px-4 bg-[#F8F3E4] text-[#333333] outline-none focus:border-[#64823E] focus:ring-2 focus:ring-[#64823E]/15 transition"
+                    />
+                    <div v-if="forgotForm.errors.email" class="text-red-500 text-xs mt-1">{{ forgotForm.errors.email }}</div>
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full h-12 rounded-[40px] bg-[#374426] text-white font-semibold text-base mt-2 hover:bg-[#2c361e] transition disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                    :disabled="forgotForm.processing"
+                >
+                    <span v-if="forgotForm.processing">Sending...</span>
+                    <span v-else>Send Verification Code</span>
+                </button>
+            </form>
         </div>
     </div>
 </template>

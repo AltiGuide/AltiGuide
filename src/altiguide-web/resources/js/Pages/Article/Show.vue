@@ -12,6 +12,7 @@ const props = defineProps({
 const allMountains = computed(() => props.mountains)
 
 const page = usePage()
+const authUser = computed(() => page.props.auth?.user)
 
 const currentSlug = computed(() => {
   const url = new URL(page.url, window.location.origin)
@@ -170,10 +171,30 @@ const waterSourceWaypoints = computed(() => {
       <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base font-semibold text-[#374426]">
         <Link href="/" class="hover:text-black transition">Home</Link>
         <Link href="/article" class="hover:text-black transition">Article</Link>
-        <Link href="#" class="hover:text-black transition">Booking</Link>
-        <Link href="/login" class="border border-[#374426] px-4 md:px-6 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap">
-          Login
-        </Link>
+        <Link href="/booking" class="hover:text-black transition">Booking</Link>
+        <!-- Auth Button -->
+        <template v-if="authUser">
+          <Link
+            href="/dashboard"
+            class="flex items-center gap-2 border border-[#374426] px-4 md:px-5 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap"
+          >
+            <img
+              v-if="authUser.avatar_url"
+              :src="authUser.avatar_url"
+              class="w-6 h-6 rounded-full object-cover"
+              :alt="authUser.name"
+            />
+            <span v-else class="w-6 h-6 rounded-full bg-[#64823E] flex items-center justify-center text-white text-xs font-bold">
+              {{ authUser.name?.charAt(0)?.toUpperCase() }}
+            </span>
+            <span>My Dashboard</span>
+          </Link>
+        </template>
+        <template v-else>
+          <Link href="/login" class="border border-[#374426] px-4 md:px-6 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap">
+            Login
+          </Link>
+        </template>
       </div>
     </nav>
 
@@ -723,7 +744,7 @@ const waterSourceWaypoints = computed(() => {
           <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <Link href="#" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
           </Link>
         </div>
