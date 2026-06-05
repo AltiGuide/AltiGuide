@@ -227,9 +227,19 @@ const submitForgot = () => {
 }
 
 // ── Profile completeness ─────────────────────────────────────────────────
+// ── Profile completeness ─────────────────────────────────────────────────
 const isProfileIncomplete = computed(() => {
     return !user.value?.age || !user.value?.address || !user.value?.emergency_contact || !user.value?.nik
 })
+
+// JS Error Catcher for remote debugging
+const jsError = ref(null)
+if (typeof window !== 'undefined') {
+    window.onerror = (message, source, lineno, colno, error) => {
+        jsError.value = `${message} at ${source}:${lineno}:${colno} | Stack: ${error?.stack || ''}`
+        return false
+    }
+}
 
 // ── Booking history ──────────────────────────────────────────────────────
 const bookingSearch = ref('')
@@ -270,12 +280,90 @@ const canceledBookings = computed(() =>
     props.bookings.filter(b => ['cancel', 'expire', 'failure', 'deny'].includes(b.status) &&
         (!bookingSearch.value || b.mountain_name?.toLowerCase().includes(bookingSearch.value.toLowerCase())))
 )
+
+// Sliced lists for display
+const displayedRegisteredBookings = computed(() => {
+    return bookingSearch.value.trim() ? registeredBookings.value : registeredBookings.value.slice(0, 3)
+})
+const displayedPendingBookings = computed(() => {
+    return bookingSearch.value.trim() ? pendingBookings.value : pendingBookings.value.slice(0, 3)
+})
+const displayedCanceledBookings = computed(() => {
+    return bookingSearch.value.trim() ? canceledBookings.value : canceledBookings.value.slice(0, 3)
+})
+
+// Details Modal State
+const showDetailsModal = ref(false)
+const selectedBooking = ref(null)
+
+const viewBookingDetails = (booking) => {
+    selectedBooking.value = booking
+    showDetailsModal.value = true
+}
+
+const downloadBookingETicket = (booking) => {
+    if (!booking) return
+    const ticketHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>E-Ticket AltiGuide - ${booking.order_id}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
+            body { font-family: 'Montserrat', sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; color: #374426; }
+            .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #66533A; padding-bottom: 16px; }
+            .header h1 { font-size: 24px; color: #66533A; }
+            .header p { color: #9F8C74; font-size: 14px; }
+            .order-id { font-size: 20px; font-weight: 700; color: #66533A; text-align: center; margin: 16px 0; }
+            .details { margin: 20px 0; }
+            .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #E5DDD0; }
+            .detail-label { font-weight: 600; font-size: 13px; color: #66533A; }
+            .detail-value { font-size: 13px; color: #374426; }
+            .members { margin-top: 20px; }
+            .members h3 { font-size: 14px; color: #66533A; margin-bottom: 8px; }
+            .member-item { padding: 6px 0; border-bottom: 1px solid #F0EBE0; font-size: 13px; }
+            .footer { text-align: center; margin-top: 30px; padding-top: 16px; border-top: 2px solid #66533A; font-size: 12px; color: #9F8C74; }
+            @media print { body { padding: 20px; } }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🏔️ AltiGuide E-Ticket</h1>
+            <p>Surat Izin Masuk Kawasan Konservasi (SIMAKSI)</p>
+        </div>
+        <div class="order-id">#${booking.order_id}</div>
+        <div class="details">
+            <div class="detail-row"><span class="detail-label">Gunung & Jalur</span><span class="detail-value">${booking.mountain_name} — ${booking.route_name}</span></div>
+            <div class="detail-row"><span class="detail-label">Nama Kelompok</span><span class="detail-value">${booking.group_name}</span></div>
+            <div class="detail-row"><span class="detail-label">Tanggal</span><span class="detail-value">${formatDate(booking.start_date)} — ${formatDate(booking.end_date)}</span></div>
+            <div class="detail-row"><span class="detail-label">Jumlah Anggota</span><span class="detail-value">${booking.member_count} Orang</span></div>
+            <div class="detail-row"><span class="detail-label">Total Pembayaran</span><span class="detail-value">${formatCurrency(booking.gross_amount)}</span></div>
+            <div class="detail-row"><span class="detail-label">Ketua Rombongan</span><span class="detail-value">${booking.leader?.name || '-'} (${booking.leader?.nik || '-'})</span></div>
+        </div>
+        <div class="members">
+            <h3>Daftar Anggota:</h3>
+            ${booking.members && booking.members.length > 0 
+                ? booking.members.map((m, i) => `<div class="member-item">${i + 1}. ${m.full_name} — ${m.identity_number}</div>`).join('')
+                : '<div class="member-item">Tidak ada anggota tambahan</div>'}
+        </div>
+        <div class="footer">
+            <p>E-Ticket ini sah sebagai bukti pendaftaran SIMAKSI digital.</p>
+            <p>Tunjukkan tiket ini (cetak/digital) saat melapor di basecamp.</p>
+            <p>© 2026 AltiGuide Team</p>
+        </div>
+        <script>window.onload = () => window.print();<\/script>
+    </body>
+    </html>`
+
+    const w = window.open('', '_blank')
+    w.document.write(ticketHtml)
+    w.document.close()
+}
 </script>
 
 <template>
-    <Head title="Dashboard - AltiGuide" />
-
     <div class="min-h-screen bg-[#F4F1E6] flex flex-col font-sans">
+        <Head title="Dashboard - AltiGuide" />
 
         <!-- ══════════════ Navbar ══════════════ -->
         <nav class="w-full flex justify-between items-center px-4 md:px-8 xl:px-12 py-4 text-[#3b4b3b] font-semibold bg-[#374426]/10 backdrop-blur-md border-b border-[#D6CCAF] shadow-sm relative z-50">
@@ -311,6 +399,14 @@ const canceledBookings = computed(() =>
             <div v-if="$page.props.flash?.warning" class="mb-2 p-3 bg-yellow-50 border border-yellow-300 rounded-xl text-yellow-900 text-sm flex gap-3 items-center">
                 <span class="text-lg">⚠️</span>
                 <span>{{ $page.props.flash.warning }}</span>
+            </div>
+        </div>
+
+        <!-- JS Error Log for Debugging -->
+        <div v-if="jsError" class="max-w-5xl w-full mx-auto px-4 pt-2">
+            <div class="p-4 bg-red-600 border border-red-800 rounded-xl text-white text-xs font-mono whitespace-pre-wrap break-all shadow-md">
+                <strong>JS Rendering Error Detected:</strong><br>
+                {{ jsError }}
             </div>
         </div>
 
@@ -553,7 +649,7 @@ const canceledBookings = computed(() =>
                                 Tidak ada
                             </div>
                             <div
-                                v-for="booking in registeredBookings"
+                                v-for="booking in displayedRegisteredBookings"
                                 :key="booking.id"
                                 class="border border-[#374426]/30 rounded-xl p-4 flex flex-col gap-3 bg-[#f6f9f2] hover:shadow-sm transition"
                             >
@@ -578,10 +674,10 @@ const canceledBookings = computed(() =>
                                     </span>
                                 </div>
                                 <div class="flex flex-col gap-2 pt-1 border-t border-[#D6CCAF]">
-                                    <button class="w-full py-2 bg-[#374426] text-white text-xs font-semibold rounded-lg hover:bg-[#2c361e] transition">
+                                    <button @click="viewBookingDetails(booking)" class="w-full py-2 bg-[#374426] text-white text-xs font-semibold rounded-lg hover:bg-[#2c361e] transition cursor-pointer">
                                         View Details
                                     </button>
-                                    <button class="w-full py-2 border border-[#374426] text-[#374426] text-xs font-semibold rounded-lg hover:bg-[#374426]/5 transition">
+                                    <button @click="downloadBookingETicket(booking)" class="w-full py-2 border border-[#374426] text-[#374426] text-xs font-semibold rounded-lg hover:bg-[#374426]/5 transition cursor-pointer">
                                         Download E-Ticket
                                     </button>
                                 </div>
@@ -598,7 +694,7 @@ const canceledBookings = computed(() =>
                                 Tidak ada
                             </div>
                             <div
-                                v-for="booking in pendingBookings"
+                                v-for="booking in displayedPendingBookings"
                                 :key="booking.id"
                                 class="border border-amber-300 rounded-xl p-4 flex flex-col gap-3 bg-amber-50 hover:shadow-sm transition"
                             >
@@ -626,11 +722,14 @@ const canceledBookings = computed(() =>
                                     </span>
                                 </div>
                                 <div class="flex flex-col gap-2 pt-1 border-t border-amber-200">
-                                    <button class="w-full py-2 bg-amber-500 text-white text-xs font-semibold rounded-lg hover:bg-amber-600 transition">
+                                    <Link
+                                        :href="`/booking/pay/${booking.order_id}`"
+                                        class="w-full py-2 bg-amber-500 text-white text-xs font-semibold rounded-lg hover:bg-amber-600 transition text-center block animate-pulse"
+                                    >
                                         Complete Payment
-                                    </button>
-                                    <button class="w-full py-2 border border-amber-400 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-100 transition">
-                                        Cancel Booking
+                                    </Link>
+                                    <button @click="viewBookingDetails(booking)" class="w-full py-2 border border-amber-400 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-100 transition cursor-pointer">
+                                        View Details
                                     </button>
                                 </div>
                             </div>
@@ -646,7 +745,7 @@ const canceledBookings = computed(() =>
                                 Tidak ada
                             </div>
                             <div
-                                v-for="booking in canceledBookings"
+                                v-for="booking in displayedCanceledBookings"
                                 :key="booking.id"
                                 class="border border-red-200 rounded-xl p-4 flex flex-col gap-3 bg-red-50 hover:shadow-sm transition"
                             >
@@ -670,7 +769,10 @@ const canceledBookings = computed(() =>
                                         {{ booking.member_count }} Member
                                     </span>
                                 </div>
-                                <div class="pt-1 border-t border-red-100">
+                                <div class="flex flex-col gap-2 pt-1 border-t border-red-100">
+                                    <button @click="viewBookingDetails(booking)" class="w-full py-2 bg-[#8B2020] text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition cursor-pointer">
+                                        View Details
+                                    </button>
                                     <Link href="/booking"
                                         class="block w-full py-2 text-center border border-red-400 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition">
                                         Rebook
@@ -856,6 +958,155 @@ const canceledBookings = computed(() =>
                     class="flex-1 py-2.5 rounded-full bg-[#374426] text-white text-sm font-semibold hover:bg-[#2c361e] transition cursor-pointer"
                 >
                     Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Booking Modal -->
+    <div v-if="showDetailsModal && selectedBooking" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDetailsModal = false"></div>
+        
+        <!-- Modal Card -->
+        <div class="relative w-full max-w-2xl bg-[#F8F3E4] rounded-[20px] border border-[#D6CCAF] shadow-2xl p-6 md:p-8 flex flex-col z-10 max-h-[90vh] overflow-y-auto animate-fade-in" style="font-family: 'Montserrat', sans-serif;">
+            <!-- Close Button -->
+            <button @click="showDetailsModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition cursor-pointer" aria-label="Close modal">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- Header -->
+            <div class="flex items-center gap-3 border-b border-[#D6CCAF] pb-4 mb-6">
+                <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-8 h-8 object-contain" />
+                <div>
+                    <h2 class="text-xl font-bold text-[#374426]">Detail Pemesanan</h2>
+                    <p class="text-xs text-[#9F8C74] font-semibold tracking-wider">ORDER ID: #{{ selectedBooking.order_id }}</p>
+                </div>
+            </div>
+
+            <!-- Modal Content Grid -->
+            <div class="flex flex-col gap-6 text-[#374426]">
+                <!-- Grid 2 Kolom untuk Info Pendakian & Ketua -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Info Pendakian -->
+                    <div class="bg-white/50 border border-[#D6CCAF] rounded-xl p-4 flex flex-col gap-2.5">
+                        <h3 class="text-sm font-bold text-[#66533A] border-b border-[#E5DDD0] pb-1.5 flex items-center gap-1.5">
+                            🏔️ Informasi Pendakian
+                        </h3>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Destinasi</span>
+                            <span class="col-span-2 font-bold">{{ selectedBooking.mountain_name }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Jalur</span>
+                            <span class="col-span-2 font-semibold">{{ selectedBooking.route_name }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Tanggal</span>
+                            <span class="col-span-2 font-semibold">{{ formatDate(selectedBooking.start_date) }} – {{ formatDate(selectedBooking.end_date) }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Tipe</span>
+                            <span class="col-span-2 font-semibold capitalize">{{ selectedBooking.hike_type || 'Camp' }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Kelompok</span>
+                            <span class="col-span-2 font-semibold">{{ selectedBooking.group_name }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Total Biaya</span>
+                            <span class="col-span-2 font-bold text-emerald-700">{{ formatCurrency(selectedBooking.gross_amount) }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs items-center">
+                            <span class="text-gray-500 font-semibold col-span-1">Status</span>
+                            <div class="col-span-2">
+                                <span v-if="['settlement', 'capture'].includes(selectedBooking.status)" class="px-2 py-0.5 bg-[#374426] text-white text-[10px] font-bold rounded">REGISTERED</span>
+                                <span v-else-if="selectedBooking.status === 'pending'" class="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded">PENDING</span>
+                                <span v-else class="px-2 py-0.5 bg-red-600 text-white text-[10px] font-bold rounded">CANCELED</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Ketua -->
+                    <div class="bg-white/50 border border-[#D6CCAF] rounded-xl p-4 flex flex-col gap-2.5">
+                        <h3 class="text-sm font-bold text-[#66533A] border-b border-[#E5DDD0] pb-1.5 flex items-center gap-1.5">
+                            👤 Ketua Rombongan
+                        </h3>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Nama</span>
+                            <span class="col-span-2 font-bold">{{ selectedBooking.leader?.name || '-' }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">NIK</span>
+                            <span class="col-span-2 font-semibold">{{ selectedBooking.leader?.nik || '-' }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Telepon</span>
+                            <span class="col-span-2 font-semibold">{{ selectedBooking.leader?.phone || '-' }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 text-xs">
+                            <span class="text-gray-500 font-semibold col-span-1">Email</span>
+                            <span class="col-span-2 font-semibold truncate">{{ selectedBooking.leader?.email || '-' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Anggota -->
+                <div class="flex flex-col gap-3">
+                    <h3 class="text-sm font-bold text-[#66533A] flex items-center gap-1.5">
+                        👥 Daftar Anggota ({{ selectedBooking.member_count }} Orang)
+                    </h3>
+                    <div class="border border-[#D6CCAF] rounded-xl overflow-hidden bg-white shadow-sm">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-[#F4F1E6] text-[#66533A] font-bold border-b border-[#D6CCAF]">
+                                    <th class="py-2.5 px-4 w-12 text-center">No</th>
+                                    <th class="py-2.5 px-4">Nama Lengkap</th>
+                                    <th class="py-2.5 px-4">NIK</th>
+                                    <th class="py-2.5 px-4">Nomor HP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(member, idx) in selectedBooking.members" :key="idx" class="border-b border-[#F0EBE0] hover:bg-gray-50">
+                                    <td class="py-2.5 px-4 text-center text-gray-500 font-semibold">{{ idx + 1 }}</td>
+                                    <td class="py-2.5 px-4 font-bold">{{ member.full_name }}</td>
+                                    <td class="py-2.5 px-4 text-gray-600 font-mono">{{ member.identity_number }}</td>
+                                    <td class="py-2.5 px-4 text-gray-600">{{ member.phone_number }}</td>
+                                </tr>
+                                <tr v-if="!selectedBooking.members || selectedBooking.members.length === 0">
+                                    <td colspan="4" class="py-6 text-center text-gray-400 font-medium">Tidak ada anggota tambahan.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer / Actions -->
+            <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8 pt-4 border-t border-[#D6CCAF]">
+                <button
+                    v-if="['settlement', 'capture'].includes(selectedBooking.status)"
+                    @click="downloadBookingETicket(selectedBooking)"
+                    class="h-11 px-6 bg-[#374426] text-white rounded-full font-semibold text-sm hover:bg-[#2c361e] transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    Download E-Ticket
+                </button>
+                <Link
+                    v-if="selectedBooking.status === 'pending'"
+                    :href="`/booking/pay/${selectedBooking.order_id}`"
+                    class="h-11 px-6 bg-amber-500 text-white rounded-full font-semibold text-sm hover:bg-amber-600 transition flex items-center justify-center gap-2 shadow-md"
+                >
+                    Complete Payment
+                </Link>
+                <button
+                    type="button"
+                    @click="showDetailsModal = false"
+                    class="h-11 px-6 rounded-full border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition cursor-pointer"
+                >
+                    Tutup
                 </button>
             </div>
         </div>

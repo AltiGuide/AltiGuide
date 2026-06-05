@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import axios from 'axios'
+import { Link } from '@inertiajs/vue3'
 
 const props = defineProps({
     orderId: { type: String, default: '' },
@@ -80,10 +81,35 @@ const generateQR = async () => {
     qrDataUrl.value = qrUrl
 }
 
+const payWithSnap = () => {
+    if (!props.snapToken) return
+    
+    if (window.snap) {
+        window.snap.embed(props.snapToken, {
+            embedId: 'snap-container',
+            onSuccess: function (result) {
+                paymentStatus.value = 'settlement'
+            },
+            onPending: function (result) {
+                paymentStatus.value = 'pending'
+            },
+            onError: function (result) {
+                console.error('Snap error:', result)
+            },
+            onClose: function () {
+                console.log('Snap embedded closed')
+            }
+        })
+    } else {
+        console.error('Midtrans Snap is not loaded')
+    }
+}
+
 onMounted(() => {
     startCountdown()
     startPolling()
     generateQR()
+    payWithSnap()
 })
 
 onUnmounted(() => {
@@ -162,21 +188,15 @@ const downloadETicket = () => {
             <h2 class="order-id">#{{ orderId }}</h2>
 
             <div class="qr-wrapper">
-                <div v-if="!isPaymentSuccess" class="qr-display">
-                    <iframe
-                        v-if="qrDataUrl"
-                        :src="qrDataUrl"
-                        class="qr-iframe"
-                        frameborder="0"
-                        scrolling="no"
-                    ></iframe>
+                <div v-show="!isPaymentSuccess" class="qr-display">
+                    <div v-if="snapToken" id="snap-container" class="snap-embed-container"></div>
                     <div v-else class="qr-placeholder">
                         <div class="spinner-lg"></div>
-                        <p>Memuat QR Code...</p>
+                        <p>Memuat Token Pembayaran...</p>
                     </div>
                 </div>
 
-                <div v-else class="success-icon-wrapper">
+                <div v-if="isPaymentSuccess" class="success-icon-wrapper">
                     <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#66533A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                         <path d="m9 11 3 3L22 4"/>
@@ -197,7 +217,7 @@ const downloadETicket = () => {
 
             <a v-if="!isPaymentSuccess && qrDataUrl" :href="qrDataUrl" target="_blank" class="save-qr-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                Simpan QR Code
+                Buka Halaman Pembayaran (Tab Baru)
             </a>
 
             <transition name="fade">
@@ -206,6 +226,14 @@ const downloadETicket = () => {
                     <button class="download-btn" @click="downloadETicket">
                         Download E-Ticket
                     </button>
+                    <div class="actions-row">
+                        <Link href="/dashboard" class="go-dashboard-btn text-center">
+                            Ke Dashboard Saya
+                        </Link>
+                        <Link href="/" class="go-home-btn text-center">
+                            Kembali ke Home
+                        </Link>
+                    </div>
                 </div>
             </transition>
         </div>
@@ -276,8 +304,8 @@ const downloadETicket = () => {
 }
 
 .qr-wrapper {
-    width: 280px;
-    height: 280px;
+    width: 100%;
+    min-height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -285,6 +313,12 @@ const downloadETicket = () => {
     border-radius: 12px;
     overflow: hidden;
     background: #fff;
+}
+
+.snap-embed-container {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
 }
 
 .qr-display {
@@ -413,6 +447,79 @@ const downloadETicket = () => {
 .download-btn:hover {
     background: #6e1919;
     transform: translateY(-1px);
+}
+
+.actions-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 4px;
+}
+
+.go-dashboard-btn {
+    padding: 14px 28px;
+    background: #374426;
+    color: #FFFEF0;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.25s ease, transform 0.15s ease;
+    box-shadow: 0 4px 16px rgba(55, 68, 38, 0.3);
+}
+.go-dashboard-btn:hover {
+    background: #2c361e;
+    transform: translateY(-1px);
+}
+
+.go-home-btn {
+    padding: 14px 28px;
+    background: #E5DCC5;
+    color: #374426;
+    border: 1px solid rgba(102, 83, 58, 0.15);
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(102, 83, 58, 0.1);
+}
+.go-home-btn:hover {
+    background: #D8CDB2;
+    transform: translateY(-1px);
+}
+
+.pay-snap-btn {
+    padding: 14px 28px;
+    background: #66533A;
+    color: #FFFEF0;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(102, 83, 58, 0.2);
+}
+.pay-snap-btn:hover {
+    background: #54432d;
+    transform: translateY(-1px);
+}
+.pay-snap-subtext {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    color: #9F8C74;
+    max-width: 220px;
+    line-height: 1.4;
+    text-align: center;
+    margin-top: 12px;
 }
 
 .spinner-lg { width: 32px; height: 32px; border: 3px solid #E5DDD0; border-top-color: #66533A; border-radius: 50%; animation: spin 0.7s linear infinite; }

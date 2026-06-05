@@ -16,6 +16,7 @@ class Route extends Model
         'mountain_id',
         'difficulty',
         'image',
+        'map_image',
         'is_active',
         'latitude',
         'longitude',

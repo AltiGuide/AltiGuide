@@ -28,7 +28,7 @@ class SindoroSeeder extends Seeder
         // ==========================================
         // 1. VIA KLEDUNG
         // ==========================================
-        $kledung = Route::firstOrCreate(
+        $kledung = Route::updateOrCreate(
             ['mountain_id' => $sindoro->id, 'name' => 'Gunung Sindoro via Kledung'],
             [
                 'distance' => 7.0, 
@@ -38,6 +38,7 @@ class SindoroSeeder extends Seeder
                 'latitude' => -7.3400, 
                 'longitude' => 110.0200,
                 'image' => 'routes/sindoro-kledung.jpg',
+                'map_image' => 'waypoints/peta-kledung.png',
             ]
         );
 

@@ -18,6 +18,7 @@ class Mountain extends Model
         'longitude',
         'image',
         'status',
+        'min_members',
         'content',
         'created_by'
     ];

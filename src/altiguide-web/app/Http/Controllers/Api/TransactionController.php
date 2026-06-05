@@ -132,6 +132,9 @@ class TransactionController extends Controller
                 ],
                 // Kita kunci ke QRIS karena sesuai desain UI (payment methodnya hanya qris)
                 'enabled_payments' => ['gopay', 'shopeepay', 'other_qris'], 
+                'callbacks' => [
+                    'finish' => env('APP_URL', 'http://localhost:8000') . '/dashboard',
+                ],
             ];
 
             // Tembak API Midtrans untuk dapatkan Snap Payment URL

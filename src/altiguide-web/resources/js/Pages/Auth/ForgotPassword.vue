@@ -11,16 +11,15 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Forgot Password - AltiGuide">
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    </Head>
-
     <div
         class="min-h-screen w-full bg-cover bg-center bg-no-repeat relative flex flex-col"
         :style="{ backgroundImage: `url('/images/mountain_bg.png')` }"
     >
+        <Head title="Forgot Password - AltiGuide">
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+            <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        </Head>
         <div class="absolute inset-0 bg-black/10 z-0"></div>
 
         <!-- Navbar -->

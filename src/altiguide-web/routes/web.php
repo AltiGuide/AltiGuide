@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Midtrans\Config as MidtransConfig;
+use Midtrans\Transaction as MidtransTransaction;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -54,33 +56,100 @@ Route::post('/reset-password',           [\App\Http\Controllers\Auth\PasswordRes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    Route::get('/dashboard', function () {
+    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $user = Auth::user();
+
+        // Otomatis ubah status pembayaran di database jika menerima redirect sukses dari Midtrans (sangat berguna untuk demo lokal)
+        if ($request->has('order_id') && $request->has('transaction_status')) {
+            $orderId = $request->input('order_id');
+            $status = $request->input('transaction_status');
+            
+            if ($status === 'settlement' || $status === 'capture') {
+                $transaction = \App\Models\Transaction::where('order_id', $orderId)
+                    ->where('user_id', $user->id)
+                    ->first();
+                    
+                if ($transaction && $transaction->status === 'pending') {
+                    $transaction->status = 'settlement';
+                    $transaction->save();
+                    
+                    // Kirim E-Ticket secara sinkron/antrean
+                    dispatch(new \App\Jobs\SendETicketJob($transaction));
+                }
+            }
+        }
 
         // Ambil semua transaksi user beserta relasi hiking session, route, dan mountain
         $transactions = $user->transactions()
-            ->with(['hikingSession.route.mountain', 'hikingSession.members'])
+            ->with(['hikingSession.route.mountain', 'hikingSession.members', 'hikingSession.leader'])
             ->orderByDesc('created_at')
-            ->get()
-            ->map(function ($tx) {
-                $session = $tx->hikingSession;
-                return [
-                    'id'           => $tx->id,
-                    'order_id'     => $tx->order_id,
-                    'status'       => $tx->status,
-                    'gross_amount' => $tx->gross_amount,
-                    'expiry_time'  => $tx->expiry_time,
-                    'mountain_name'=> $session?->route?->mountain?->name,
-                    'route_name'   => $session?->route?->name,
-                    'start_date'   => $session?->start_date,
-                    'end_date'     => $session?->end_date,
-                    'member_count' => $session?->members?->count() ?? 0,
-                    'group_name'   => $session?->group_name,
-                ];
-            });
+            ->get();
+
+        // Cek status pending ke Midtrans secara real-time untuk sinkronisasi database lokal
+        $hasPending = $transactions->contains(fn($tx) => $tx->status === 'pending');
+        if ($hasPending) {
+            try {
+                MidtransConfig::$serverKey = env('MIDTRANS_SERVER_KEY', 'SB-Mid-server-YOUR_KEY_HERE');
+                MidtransConfig::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+
+                foreach ($transactions as $tx) {
+                    if ($tx->status === 'pending') {
+                        try {
+                            $statusResponse = MidtransTransaction::status($tx->order_id);
+                            $midtransStatus = $statusResponse->transaction_status ?? null;
+
+                            if ($midtransStatus === 'settlement' || $midtransStatus === 'capture') {
+                                $tx->status = 'settlement';
+                                $tx->save();
+                                dispatch(new \App\Jobs\SendETicketJob($tx));
+                            } elseif (in_array($midtransStatus, ['expire', 'cancel', 'deny'])) {
+                                $tx->status = 'expire';
+                                $tx->save();
+                            }
+                        } catch (\Exception $e) {
+                            // Abaikan error individual per order_id agar tidak mengganggu loading dashboard
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Abaikan error setup
+            }
+        }
+
+        $mappedTransactions = $transactions->map(function ($tx) {
+            $session = $tx->hikingSession;
+            return [
+                'id'           => $tx->id,
+                'order_id'     => $tx->order_id,
+                'status'       => $tx->status,
+                'gross_amount' => $tx->gross_amount,
+                'expiry_time'  => $tx->expiry_time,
+                'mountain_name'=> $session?->route?->mountain?->name,
+                'route_name'   => $session?->route?->name,
+                'start_date'   => $session?->start_date,
+                'end_date'     => $session?->end_date,
+                'member_count' => $session?->members?->count() ?? 0,
+                'group_name'   => $session?->group_name,
+                'hike_type'    => $session?->hike_type,
+                'leader'       => $session?->leader ? [
+                    'name'  => $session->leader->name,
+                    'email' => $session->leader->email,
+                    'phone' => $session->leader->phone_number,
+                    'nik'   => $session->leader->nik,
+                ] : null,
+                'members'      => $session?->members->map(function ($m) {
+                    return [
+                        'full_name'       => $m->full_name,
+                        'identity_number' => $m->identity_number,
+                        'phone_number'    => $m->phone_number,
+                        'emergency_contact' => $m->emergency_contact,
+                    ];
+                }) ?? [],
+            ];
+        });
 
         return Inertia::render('Dashboard', [
-            'bookings' => $transactions,
+            'bookings' => $mappedTransactions,
         ]);
     })->name('dashboard');
 
@@ -95,6 +164,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking/checkout', [\App\Http\Controllers\BookingController::class, 'store'])->name('booking.checkout');
     Route::post('/booking/calculate', [\App\Http\Controllers\BookingController::class, 'calculatePrice'])->name('booking.calculate');
     Route::get('/booking/status/{order_id}', [\App\Http\Controllers\BookingController::class, 'checkStatus'])->name('booking.status');
+    Route::get('/booking/pay/{order_id}', [\App\Http\Controllers\BookingController::class, 'repay'])->name('booking.repay');
     Route::post('/booking/validate-nik', [\App\Http\Controllers\Api\MemberValidationController::class, 'validateNik'])->name('booking.validate-nik');
 });
 
