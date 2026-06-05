@@ -35,18 +35,19 @@ Route::middleware('guest')->group(function () {
     Route::post('/register/verify',          [RegisterController::class, 'verifyOtp'])->name('register.verify.post');
     Route::post('/register/verify/resend',   [RegisterController::class, 'resendOtp'])->name('register.verify.resend');
 
-    // Route untuk flow Forgot Password
-    Route::get('/forgot-password',           [\App\Http\Controllers\Auth\PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
-    Route::post('/forgot-password/email',    [\App\Http\Controllers\Auth\PasswordResetController::class, 'sendResetCodeEmail'])->name('password.email');
-
-    // Route Verifikasi Kode OTP
-    Route::get('/forgot-password/verify',    [\App\Http\Controllers\Auth\PasswordResetController::class, 'showVerifyCodeForm'])->name('password.verify');
-    Route::post('/forgot-password/verify',   [\App\Http\Controllers\Auth\PasswordResetController::class, 'verifyResetCode'])->name('password.verify.post');
-
-    // Route Reset Password (setelah kode OTP divalidasi)
-    Route::get('/reset-password',            [\App\Http\Controllers\Auth\PasswordResetController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password',           [\App\Http\Controllers\Auth\PasswordResetController::class, 'resetPassword'])->name('password.update');
 });
+
+// Route untuk flow Forgot Password (accessible by guests & auth users)
+Route::get('/forgot-password',           [\App\Http\Controllers\Auth\PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password/email',    [\App\Http\Controllers\Auth\PasswordResetController::class, 'sendResetCodeEmail'])->name('password.email');
+
+// Route Verifikasi Kode OTP
+Route::get('/forgot-password/verify',    [\App\Http\Controllers\Auth\PasswordResetController::class, 'showVerifyCodeForm'])->name('password.verify');
+Route::post('/forgot-password/verify',   [\App\Http\Controllers\Auth\PasswordResetController::class, 'verifyResetCode'])->name('password.verify.post');
+
+// Route Reset Password (setelah kode OTP divalidasi)
+Route::get('/reset-password',            [\App\Http\Controllers\Auth\PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password',           [\App\Http\Controllers\Auth\PasswordResetController::class, 'resetPassword'])->name('password.update');
 
 // ── User protected routes (harus login sebagai User) ────────────────────
 
