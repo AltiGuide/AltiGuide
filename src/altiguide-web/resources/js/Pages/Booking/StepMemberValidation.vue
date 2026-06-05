@@ -127,74 +127,86 @@ const submitStep = () => {
         <!-- Form Body -->
         <div class="form-body">
             <!-- INPUT ANGGOTA -->
-            <h3 class="section-title">INPUT ANGGOTA</h3>
+            <div v-if="maxAdditionalMembers > 0">
+                <h3 class="section-title">INPUT ANGGOTA</h3>
 
-            <div class="nik-row">
-                <div class="field" style="flex:1">
-                    <label class="field-label">NIK Anggota</label>
-                    <input
-                        type="text"
-                        v-model="nikInput"
-                        maxlength="16"
-                        placeholder="Masukkan NIK Anggota"
-                        class="field-input"
-                        @keyup.enter="checkNik"
-                    />
-                </div>
-                <button
-                    class="check-btn"
-                    :disabled="isChecking || nikInput.length !== 16"
-                    @click="checkNik"
-                >
-                    <svg v-if="!isChecking" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                    <span v-if="isChecking" class="spinner"></span>
-                    {{ isChecking ? 'Checking...' : 'Check' }}
-                </button>
-            </div>
-
-            <div v-if="checkError" class="error-msg">{{ checkError }}</div>
-
-            <!-- HASIL VALIDASI -->
-            <transition name="fade">
-                <div v-if="checkResult" class="validation-result">
-                    <h3 class="section-title">HASIL VALIDASI ANGGOTA</h3>
-                    <div class="result-row">
-                        <div class="field">
-                            <label class="field-label">Nama</label>
-                            <input type="text" :value="checkResult.full_name" readonly class="field-input input-readonly" />
-                        </div>
-                        <div class="field">
-                            <label class="field-label">Nomor Telepon</label>
-                            <input type="text" :value="checkResult.phone_number" readonly class="field-input input-readonly" />
-                        </div>
+                <div class="nik-row">
+                    <div class="field" style="flex:1">
+                        <label class="field-label">NIK Anggota</label>
+                        <input
+                            type="text"
+                            v-model="nikInput"
+                            maxlength="16"
+                            placeholder="Masukkan NIK Anggota"
+                            class="field-input"
+                            @keyup.enter="checkNik"
+                        />
                     </div>
-                    <div class="add-member-bar">
-                        <button class="add-btn" @click="addMember" :disabled="members.length >= maxAdditionalMembers">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-                            Tambahkan Anggota
-                        </button>
-                    </div>
-                </div>
-            </transition>
-
-            <hr class="divider" />
-
-            <!-- LIST ANGGOTA TERDAFTAR -->
-            <h3 class="section-title">LIST ANGGOTA TERDAFTAR ({{ members.length }}/{{ maxAdditionalMembers }})</h3>
-
-            <div class="member-list">
-                <div v-for="(member, idx) in members" :key="idx" class="member-item">
-                    <span class="member-number">{{ idx + 1 }}.</span>
-                    <span class="member-name">{{ member.full_name }}</span>
-                    <span class="member-nik">{{ member.identity_number }}</span>
-                    <button class="remove-btn" @click="removeMember(idx)" title="Hapus anggota">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <button
+                        class="check-btn"
+                        :disabled="isChecking || nikInput.length !== 16"
+                        @click="checkNik"
+                    >
+                        <svg v-if="!isChecking" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        <span v-if="isChecking" class="spinner"></span>
+                        {{ isChecking ? 'Checking...' : 'Check' }}
                     </button>
                 </div>
-                <div v-for="n in Math.max(0, maxAdditionalMembers - members.length)" :key="'empty-' + n" class="member-item member-empty">
-                    <span class="member-number">{{ members.length + n }}.</span>
-                    <span class="member-placeholder">Belum diisi</span>
+
+                <div v-if="checkError" class="error-msg">{{ checkError }}</div>
+
+                <!-- HASIL VALIDASI -->
+                <transition name="fade">
+                    <div v-if="checkResult" class="validation-result">
+                        <h3 class="section-title">HASIL VALIDASI ANGGOTA</h3>
+                        <div class="result-row">
+                            <div class="field">
+                                <label class="field-label">Nama</label>
+                                <input type="text" :value="checkResult.full_name" readonly class="field-input input-readonly" />
+                            </div>
+                            <div class="field">
+                                <label class="field-label">Nomor Telepon</label>
+                                <input type="text" :value="checkResult.phone_number" readonly class="field-input input-readonly" />
+                            </div>
+                        </div>
+                        <div class="add-member-bar">
+                            <button class="add-btn" @click="addMember" :disabled="members.length >= maxAdditionalMembers">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                                Tambahkan Anggota
+                            </button>
+                        </div>
+                    </div>
+                </transition>
+
+                <hr class="divider" />
+
+                <!-- LIST ANGGOTA TERDAFTAR -->
+                <h3 class="section-title">LIST ANGGOTA TERDAFTAR ({{ members.length }}/{{ maxAdditionalMembers }})</h3>
+
+                <div class="member-list">
+                    <div v-for="(member, idx) in members" :key="idx" class="member-item">
+                        <span class="member-number">{{ idx + 1 }}.</span>
+                        <span class="member-name">{{ member.full_name }}</span>
+                        <span class="member-nik">{{ member.identity_number }}</span>
+                        <button class="remove-btn" @click="removeMember(idx)" title="Hapus anggota">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                    </div>
+                    <div v-for="n in Math.max(0, maxAdditionalMembers - members.length)" :key="'empty-' + n" class="member-item member-empty">
+                        <span class="member-number">{{ members.length + n }}.</span>
+                        <span class="member-placeholder">Belum diisi</span>
+                    </div>
                 </div>
+            </div>
+
+            <!-- TAMPILAN SOLO HIKING NOTE -->
+            <div v-else class="solo-hiking-note">
+                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#66533A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <p class="note-text">Anda terdaftar sebagai Solo Hiker (Pendakian Mandiri)</p>
+                <p class="note-subtext">Gunung {{ selectedMountain?.name }} memperbolehkan pendakian seorang diri. Anda otomatis terdaftar sebagai pendaki tunggal. Tidak ada data anggota tambahan yang perlu divalidasi. Silakan lanjut ke langkah berikutnya.</p>
             </div>
 
             <!-- Navigation -->
@@ -355,5 +367,34 @@ const submitStep = () => {
     .result-row { grid-template-columns: 1fr; }
     .curved-title-text { font-size: 44px; stroke-width: 3px; }
     .curved-title-wrapper { height: 90px; }
+}
+
+.solo-hiking-note {
+    background: rgba(255, 255, 255, 0.55);
+    border: 2px dashed #7E623F;
+    border-radius: 16px;
+    padding: 36px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.note-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #374426;
+    margin: 0;
+}
+.note-subtext {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    color: #66533A;
+    max-width: 480px;
+    line-height: 1.5;
+    margin: 0;
 }
 </style>

@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Midtrans\Transaction as MidtransTransaction;
 use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
@@ -77,13 +78,23 @@ class BookingController extends Controller
         ]);
 
         $route = Route::with(['routeInfo', 'mountain'])->findOrFail($request->route_id);
+
+        $totalMembers = count($request->members);
+
+        // Verifikasi aturan jumlah anggota (Solo Hiking vs Kelompok)
+        $minMembers = $route->mountain->min_members ?? 1;
+        if ($totalMembers < $minMembers) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Gunung {$route->mountain->name} tidak memperbolehkan solo hiking. Jumlah anggota minimal untuk pendakian ini adalah {$minMembers} orang (termasuk ketua).",
+            ], 422);
+        }
+
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         
         $endDate = ($request->hike_type === 'camp') 
                    ? $startDate->copy()->addDay()->endOfDay() 
                    : $startDate->copy()->endOfDay();
-
-        $totalMembers = count($request->members);
 
         // Pengecekan Kuota
         $bookedCount = HikingMember::whereHas('hikingSession', function($query) use ($route, $startDate) {
@@ -139,6 +150,9 @@ class BookingController extends Controller
                     ]
                 ],
                 'enabled_payments' => ['gopay', 'shopeepay', 'other_qris'], 
+                'callbacks' => [
+                    'finish' => route('dashboard'),
+                ],
             ];
 
             // Panggil API Midtrans untuk dapatkan Snap Payment URL
@@ -243,10 +257,80 @@ class BookingController extends Controller
             ], 404);
         }
 
+        // Sinkronisasi status pending secara real-time dengan Midtrans API
+        if ($transaction->status === 'pending') {
+            try {
+                Config::$serverKey = env('MIDTRANS_SERVER_KEY', 'SB-Mid-server-YOUR_KEY_HERE');
+                Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+
+                $statusResponse = MidtransTransaction::status($orderId);
+                $midtransStatus = $statusResponse->transaction_status ?? null;
+
+                if ($midtransStatus === 'settlement' || $midtransStatus === 'capture') {
+                    $transaction->status = 'settlement';
+                    $transaction->save();
+                    dispatch(new \App\Jobs\SendETicketJob($transaction));
+                } elseif (in_array($midtransStatus, ['expire', 'cancel', 'deny'])) {
+                    $transaction->status = 'expire';
+                    $transaction->save();
+                }
+            } catch (\Exception $e) {
+                Log::warning("Gagal memperbarui status Midtrans untuk order_id: {$orderId}. Error: " . $e->getMessage());
+            }
+        }
+
         return response()->json([
             'status'      => $transaction->status,
             'order_id'    => $transaction->order_id,
             'expiry_time' => $transaction->expiry_time,
+        ]);
+    }
+
+    /**
+     * Tampilkan halaman pembayaran ulang untuk transaksi pending.
+     */
+    public function repay($orderId)
+    {
+        $transaction = Transaction::where('order_id', $orderId)
+            ->where('user_id', Auth::id())
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $session = HikingSession::where('transaction_id', $transaction->id)
+            ->with(['route.mountain', 'members'])
+            ->firstOrFail();
+
+        $mountains = Mountain::with(['routes' => function ($query) {
+            $query->where('is_active', true)->with('routeInfo');
+        }])->get();
+
+        $urlParts = explode('/', $transaction->qr_url);
+        $snapToken = end($urlParts);
+
+        return Inertia::render('Booking', [
+            'mountains' => $mountains,
+            'preloadedPayment' => [
+                'orderId'          => $transaction->order_id,
+                'snapToken'         => $snapToken,
+                'paymentUrl'        => $transaction->qr_url,
+                'grossAmount'       => (float) $transaction->gross_amount,
+                'expiryTime'        => $transaction->expiry_time ? $transaction->expiry_time->toIso8601String() : null,
+                'selectedMountain'  => $session->route->mountain,
+                'selectedRoute'     => $session->route,
+                'groupName'         => $session->group_name,
+                'startDate'         => $session->start_date ? \Carbon\Carbon::parse($session->start_date)->toDateString() : null,
+                'endDate'           => $session->end_date ? \Carbon\Carbon::parse($session->end_date)->toDateString() : null,
+                'memberCount'       => $session->members->count(),
+                'members'           => $session->members->map(function($m) {
+                    return [
+                        'user_id' => $m->user_id,
+                        'identity_number' => $m->identity_number,
+                        'full_name' => $m->full_name,
+                        'phone_number' => $m->phone_number,
+                        'emergency_contact' => $m->emergency_contact,
+                    ];
+                })->toArray(),
+            ]
         ]);
     }
 }

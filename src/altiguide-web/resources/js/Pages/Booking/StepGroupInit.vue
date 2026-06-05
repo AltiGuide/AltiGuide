@@ -14,22 +14,56 @@ const props = defineProps({
 
 const emit = defineEmits(['update', 'next', 'prev'])
 
+const initialMemberCount = () => {
+    const min = props.selectedMountain?.min_members ?? 1
+    if (props.memberCount && props.memberCount >= min) {
+        return props.memberCount
+    }
+    return Math.max(2, min)
+}
+
+const initialHikeType = () => {
+    if (props.startDate && props.endDate) {
+        return props.startDate === props.endDate ? 'tektok' : 'camp'
+    }
+    return props.hikeType || 'tektok'
+}
+
 const form = ref({
     groupName: props.groupName || '',
     startDate: props.startDate || '',
     endDate: props.endDate || '',
-    memberCount: props.memberCount || 2,
+    hikeType: initialHikeType(),
+    memberCount: initialMemberCount(),
 })
 
-// Auto-calculate endDate when startDate changes
+// Auto-calculate endDate when startDate changes depending on hikeType
 watch(() => form.value.startDate, (newVal) => {
     if (newVal) {
-        const start = new Date(newVal)
-        const end = new Date(start)
-        end.setDate(end.getDate() + 1)
-        form.value.endDate = end.toISOString().split('T')[0]
+        if (form.value.hikeType === 'tektok') {
+            form.value.endDate = newVal
+        } else {
+            const start = new Date(newVal)
+            const end = new Date(start)
+            end.setDate(end.getDate() + 1)
+            form.value.endDate = end.toISOString().split('T')[0]
+        }
     }
 })
+
+const setHikeType = (type) => {
+    form.value.hikeType = type
+    if (type === 'tektok') {
+        form.value.endDate = form.value.startDate
+    } else {
+        if (form.value.startDate) {
+            const start = new Date(form.value.startDate)
+            const end = new Date(start)
+            end.setDate(end.getDate() + 1)
+            form.value.endDate = end.toISOString().split('T')[0]
+        }
+    }
+}
 
 const today = computed(() => new Date().toISOString().split('T')[0])
 
@@ -51,6 +85,20 @@ const getMountainImage = (mountain) => {
 
 const errors = ref({})
 
+const minMembers = computed(() => props.selectedMountain?.min_members ?? 1)
+
+const memberOptions = computed(() => {
+    const min = minMembers.value
+    const opts = []
+    for (let i = min; i <= 10; i++) {
+        opts.push({
+            value: i,
+            label: i === 1 ? '1 Orang (Solo Hiking)' : `${i} Orang (termasuk ketua)`
+        })
+    }
+    return opts
+})
+
 const validate = () => {
     errors.value = {}
     if (!form.value.groupName.trim()) errors.value.groupName = 'Nama kelompok wajib diisi'
@@ -58,8 +106,10 @@ const validate = () => {
     if (!form.value.endDate) errors.value.endDate = 'Tanggal pulang wajib diisi'
     if (form.value.startDate && form.value.endDate && form.value.endDate < form.value.startDate)
         errors.value.endDate = 'Tanggal pulang tidak boleh sebelum tanggal berangkat'
-    if (form.value.memberCount < 2 || form.value.memberCount > 10)
-        errors.value.memberCount = 'Jumlah anggota harus antara 2 sampai 10'
+    if (form.value.hikeType === 'camp' && form.value.startDate && form.value.endDate && form.value.endDate === form.value.startDate)
+        errors.value.endDate = 'Untuk tipe Camp, tanggal pulang harus minimal 1 hari setelah berangkat'
+    if (form.value.memberCount < minMembers.value || form.value.memberCount > 10)
+        errors.value.memberCount = `Jumlah anggota harus antara ${minMembers.value} sampai 10`
     if (!props.user?.name) errors.value.leaderName = 'Data ketua belum lengkap'
     if (!props.user?.nik) errors.value.leaderNik = 'NIK ketua belum diisi di profil'
     return Object.keys(errors.value).length === 0
@@ -69,7 +119,7 @@ const canProceed = computed(() => {
     return form.value.groupName.trim() &&
            form.value.startDate &&
            form.value.endDate &&
-           form.value.memberCount >= 2 &&
+           form.value.memberCount >= minMembers.value &&
            form.value.memberCount <= 10 &&
            props.user?.name &&
            props.user?.nik
@@ -77,12 +127,11 @@ const canProceed = computed(() => {
 
 const submitStep = () => {
     if (!validate()) return
-    const hikeType = form.value.startDate === form.value.endDate ? 'tektok' : 'camp'
     emit('update', {
         groupName: form.value.groupName.trim(),
         startDate: form.value.startDate,
         endDate: form.value.endDate,
-        hikeType,
+        hikeType: form.value.hikeType,
         memberCount: parseInt(form.value.memberCount),
     })
     emit('next')
@@ -132,6 +181,42 @@ const submitStep = () => {
                 <span v-if="errors.groupName" class="field-error">{{ errors.groupName }}</span>
             </div>
 
+            <!-- Tipe Pendakian (Tektok / Camp) -->
+            <div class="field">
+                <label class="field-label">Tipe Pendakian</label>
+                <div class="hike-type-selector">
+                    <button
+                        type="button"
+                        class="type-btn"
+                        :class="{ active: form.hikeType === 'tektok' }"
+                        @click="setHikeType('tektok')"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8h4"/>
+                            <path d="M6 8h4"/>
+                            <path d="M2 8h4"/>
+                            <path d="m13 18-3-3 3-3"/>
+                            <path d="M10 15h12"/>
+                        </svg>
+                        Tektok (1 Hari)
+                    </button>
+                    <button
+                        type="button"
+                        class="type-btn"
+                        :class="{ active: form.hikeType === 'camp' }"
+                        @click="setHikeType('camp')"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 10 12 3 5 10"/>
+                            <path d="M12 3v18"/>
+                            <path d="m12 13 4-4"/>
+                            <path d="m12 17 6-6"/>
+                        </svg>
+                        Camp (Menginap)
+                    </button>
+                </div>
+            </div>
+
             <div class="field-row">
                 <div class="field">
                     <label class="field-label">Tanggal Berangkat Pendakian</label>
@@ -149,6 +234,8 @@ const submitStep = () => {
                         type="date"
                         v-model="form.endDate"
                         :min="form.startDate || today"
+                        :disabled="form.hikeType === 'tektok'"
+                        :class="{ 'input-readonly': form.hikeType === 'tektok' }"
                         class="field-input"
                     />
                     <span v-if="errors.endDate" class="field-error">{{ errors.endDate }}</span>
@@ -158,7 +245,7 @@ const submitStep = () => {
             <div class="field">
                 <label class="field-label">Jumlah Anggota</label>
                 <select v-model.number="form.memberCount" class="field-input">
-                    <option v-for="n in 9" :key="n+1" :value="n+1">{{ n + 1 }} Orang (termasuk ketua)</option>
+                    <option v-for="opt in memberOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                 </select>
                 <span v-if="errors.memberCount" class="field-error">{{ errors.memberCount }}</span>
             </div>
@@ -461,5 +548,41 @@ select.field-input {
     .field-row { grid-template-columns: 1fr; }
     .curved-title-text { font-size: 40px; stroke-width: 3px; }
     .curved-title-wrapper { height: 90px; }
+}
+
+/* Hike Type Selector */
+.hike-type-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+.type-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    border: 2px solid #7E623F;
+    background: #FFFFFF;
+    color: #66533A;
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+.type-btn:hover {
+    background: rgba(126, 98, 63, 0.08);
+    border-color: #66533A;
+    color: #374426;
+}
+.type-btn.active {
+    background: #66533A;
+    border-color: #66533A;
+    color: #FFFEF0;
+    box-shadow: 0 4px 12px rgba(102, 83, 58, 0.25);
 }
 </style>

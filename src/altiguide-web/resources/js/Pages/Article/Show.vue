@@ -158,9 +158,8 @@ const waterSourceWaypoints = computed(() => {
 </script>
 
 <template>
-  <Head :title="currentMountain ? `Article - ${currentMountain.name}` : 'Artikel Gunung Jawa Tengah - AltiGuide'" />
-
   <div class="min-h-screen bg-[#F8F3E4] font-sans">
+    <Head :title="currentMountain ? `Article - ${currentMountain.name}` : 'Artikel Gunung Jawa Tengah - AltiGuide'" />
 
     <nav class="w-full flex justify-between items-center px-4 md:px-8 xl:px-12 py-4 border-b border-[#D7DDC2]/50 shadow-sm bg-[#374426]/20">
       <div class="flex items-center gap-2 xl:gap-3">

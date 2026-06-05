@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, computed } from 'vue'
+import { reactive, computed, onMounted } from 'vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
 import BookingStepper from './Booking/BookingStepper.vue'
 import StepDestination from './Booking/StepDestination.vue'
@@ -10,6 +10,7 @@ import StepPayment from './Booking/StepPayment.vue'
 
 const props = defineProps({
     mountains: { type: Array, default: () => [] },
+    preloadedPayment: { type: Object, default: null },
 })
 
 const page = usePage()
@@ -34,6 +35,25 @@ const state = reactive({
     paymentUrl: null,
     grossAmount: null,
     expiryTime: null,
+})
+
+onMounted(() => {
+    if (props.preloadedPayment) {
+        state.selectedMountain = props.preloadedPayment.selectedMountain
+        state.selectedRoute = props.preloadedPayment.selectedRoute
+        state.groupName = props.preloadedPayment.groupName
+        state.startDate = props.preloadedPayment.startDate
+        state.endDate = props.preloadedPayment.endDate
+        state.hikeType = props.preloadedPayment.startDate === props.preloadedPayment.endDate ? 'tektok' : 'camp'
+        state.memberCount = props.preloadedPayment.memberCount
+        state.members = props.preloadedPayment.members
+        state.orderId = props.preloadedPayment.orderId
+        state.snapToken = props.preloadedPayment.snapToken
+        state.paymentUrl = props.preloadedPayment.paymentUrl
+        state.grossAmount = props.preloadedPayment.grossAmount
+        state.expiryTime = props.preloadedPayment.expiryTime
+        state.currentStep = 5
+    }
 })
 
 /* ── Step navigation ── */
@@ -95,13 +115,12 @@ const scrollToTop = () => {
 </script>
 
 <template>
-    <Head title="Booking Simaksi - AltiGuide">
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@700&family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    </Head>
-
     <div class="booking-page">
+        <Head title="Booking Simaksi - AltiGuide">
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+            <link href="https://fonts.googleapis.com/css2?family=Jost:wght@700&family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        </Head>
         <!-- ══════════════ Navbar ══════════════ -->
         <nav class="booking-navbar">
             <div class="nav-left">

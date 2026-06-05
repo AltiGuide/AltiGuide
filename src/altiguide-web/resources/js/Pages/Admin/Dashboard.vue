@@ -332,9 +332,8 @@ const docStatusIcon = (status) => {
 </script>
 
 <template>
-  <Head title="Admin Dashboard — AltiGuide" />
-
   <div class="min-h-screen bg-[#F4F1E6] flex flex-col font-sans">
+    <Head title="Admin Dashboard — AltiGuide" />
     <!-- ══════════════ Navbar ══════════════ -->
     <nav class="w-full flex justify-between items-center px-6 py-3 bg-[#F4F1E6] border-b border-[#D6CCAF] relative z-50">
       <div class="flex items-center gap-2">
