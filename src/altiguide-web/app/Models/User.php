@@ -25,7 +25,19 @@ class User extends Authenticatable
         'emergency_contact',
         'nik',
         'email_verified_at',
+        'avatar',
     ];
+
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+        return null;
+    }
+
 
     protected $hidden = [
         'password',

@@ -1,6 +1,10 @@
 <script setup>
 import { onMounted, ref, onUnmounted } from 'vue'
-import { Link, Head } from '@inertiajs/vue3'
+import { Link, Head, usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
+
+const page = usePage()
+const authUser = computed(() => page.props.auth?.user)
 
 const slides = [
   { image: '/images/gunung_andong_1.png', name: 'Gunung Andong', description: 'Pilihan tepat untuk pendakian santai di akhir pekan bersama teman dengan pemandangan 360 derajat yang memperlihatkan deretan gunung di Jawa Tengah.' },
@@ -94,9 +98,29 @@ onUnmounted(() => {
           <Link href="/" class="hover:text-black transition">Home</Link>
           <Link href="/article" class="hover:text-black transition">Article</Link>
           <Link href="/booking" class="hover:text-black transition">Booking</Link>
-          <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
-            Login
-          </Link>
+          <!-- Auth Button -->
+          <template v-if="authUser">
+            <Link
+              href="/dashboard"
+              class="flex items-center gap-2 border border-[#3b4b3b] px-4 md:px-5 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap"
+            >
+              <img
+                v-if="authUser.avatar_url"
+                :src="authUser.avatar_url"
+                class="w-6 h-6 rounded-full object-cover"
+                :alt="authUser.name"
+              />
+              <span v-else class="w-6 h-6 rounded-full bg-[#64823E] flex items-center justify-center text-white text-xs font-bold">
+                {{ authUser.name?.charAt(0)?.toUpperCase() }}
+              </span>
+              <span>My Dashboard</span>
+            </Link>
+          </template>
+          <template v-else>
+            <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
+              Login
+            </Link>
+          </template>
         </div>
       </nav>
 
@@ -254,7 +278,7 @@ onUnmounted(() => {
           <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <Link href="#" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
           </Link>
         </div>
