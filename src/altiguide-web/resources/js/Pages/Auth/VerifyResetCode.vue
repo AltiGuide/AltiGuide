@@ -73,7 +73,8 @@ const submit = () => {
                             required
                             maxlength="6"
                             placeholder="Enter 6-digit code"
-                            class="w-full h-[56px] border border-[#D7DDC2] rounded-xl px-4 bg-[#F8F3E4] text-[#333333] text-center text-2xl tracking-[0.5em] outline-none focus:border-[#64823E] focus:ring-2 focus:ring-[#64823E]/15 transition"
+                            class="w-full h-[56px] border border-[#D7DDC2] rounded-xl px-4 bg-[#F8F3E4] text-[#333333] text-center outline-none focus:border-[#64823E] focus:ring-2 focus:ring-[#64823E]/15 transition"
+                            :class="form.code ? 'text-2xl tracking-[0.5em]' : 'text-base tracking-normal'"
                         />
                         <div v-if="form.errors.code" class="text-red-500 text-xs mt-1">{{ form.errors.code }}</div>
                     </div>
