@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
@@ -199,5 +200,53 @@ class BookingController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Kalkulasi preview biaya booking tanpa membuat transaksi.
+     */
+    public function calculatePrice(Request $request)
+    {
+        $request->validate([
+            'route_id'     => 'required|exists:routes,id',
+            'member_count' => 'required|integer|min:1|max:10',
+        ]);
+
+        $route = Route::with(['routeInfo', 'mountain'])->findOrFail($request->route_id);
+        $simaksiPrice  = $route->routeInfo->simaksi_price ?? 0;
+        $applicationFee = 5000;
+        $memberCount    = (int) $request->member_count;
+
+        return response()->json([
+            'simaksi_price'    => $simaksiPrice,
+            'application_fee'  => $applicationFee,
+            'member_count'     => $memberCount,
+            'subtotal_simaksi' => $simaksiPrice * $memberCount,
+            'subtotal_fee'     => $applicationFee * $memberCount,
+            'total'            => ($simaksiPrice + $applicationFee) * $memberCount,
+        ]);
+    }
+
+    /**
+     * Cek status pembayaran untuk polling dari frontend.
+     */
+    public function checkStatus($orderId)
+    {
+        $transaction = Transaction::where('order_id', $orderId)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$transaction) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Transaksi tidak ditemukan.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status'      => $transaction->status,
+            'order_id'    => $transaction->order_id,
+            'expiry_time' => $transaction->expiry_time,
+        ]);
     }
 }
