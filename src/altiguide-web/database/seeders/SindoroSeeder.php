@@ -13,7 +13,7 @@ class SindoroSeeder extends Seeder
         $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
         $content = collect($articles)->firstWhere('slug', 'gunung-sindoro')['content'] ?? [];
 
-        $sindoro = Mountain::firstOrCreate(
+        $sindoro = Mountain::updateOrCreate(
             ['name' => 'Gunung Sindoro'],
             [
                 'location' => 'Kab. Temanggung, Wonosobo, Jawa Tengah', 

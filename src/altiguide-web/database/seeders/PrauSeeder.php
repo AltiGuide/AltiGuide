@@ -13,7 +13,7 @@ class PrauSeeder extends Seeder
         $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
         $content = collect($articles)->firstWhere('slug', 'gunung-prau')['content'] ?? [];
 
-        $prau = Mountain::firstOrCreate(
+        $prau = Mountain::updateOrCreate(
             ['name' => 'Gunung Prau'],
             [
                 'location' => 'Kab. Wonosobo, Kendal, Batang, Temanggung, Jawa Tengah',

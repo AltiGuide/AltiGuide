@@ -14,7 +14,7 @@ class UngaranSeeder extends Seeder
         $content = collect($articles)->firstWhere('slug', 'gunung-ungaran')['content'] ?? [];
 
         // 1. MOUNTAIN UNGARAN
-        $ungaran = Mountain::firstOrCreate(
+        $ungaran = Mountain::updateOrCreate(
             ['name' => 'Gunung Ungaran'],
             [
                 'location' => 'Kabupaten Semarang, Jawa Tengah', 

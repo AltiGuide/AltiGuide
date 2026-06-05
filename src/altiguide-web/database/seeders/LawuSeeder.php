@@ -17,7 +17,7 @@ class LawuSeeder extends Seeder
         $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
         $content = collect($articles)->firstWhere('slug', 'gunung-lawu')['content'] ?? [];
 
-        $lawu = Mountain::firstOrCreate(
+        $lawu = Mountain::updateOrCreate(
             ['name' => 'Gunung Lawu'],
             [
                 'location' => 'Area Hutan, Gondosuli, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah',

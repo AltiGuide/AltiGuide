@@ -13,7 +13,7 @@ class SumbingSeeder extends Seeder
         $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
         $content = collect($articles)->firstWhere('slug', 'gunung-sumbing')['content'] ?? [];
 
-        $sumbing = Mountain::firstOrCreate(
+        $sumbing = Mountain::updateOrCreate(
             ['name' => 'Gunung Sumbing'],
             [
                 'location' => 'Kab. Wonosobo, Temanggung, Magelang, Jawa Tengah', 
@@ -449,7 +449,7 @@ class SumbingSeeder extends Seeder
                 'is_active' => true,
                 'latitude' => -7.3401, 
                 'longitude' => 110.0201,
-                'image' => 'routes/sumbing-batursari.png',
+                'image' => 'routes/sumbing-batursari.png'
             ]
         );
         $batursari->update(['image' => 'routes/sumbing-batursari.png']);
