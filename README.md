@@ -1,6 +1,19 @@
-# Team Contract - AltiGuide
+# Team Contract & Project Progress - AltiGuide
 
-Dokumen ini merupakan kesepakatan resmi anggota tim untuk memastikan kelancaran kolaborasi selama praktikum Rekayasa Perangkat Lunak (RPL).
+Dokumen ini merupakan kesepakatan resmi anggota tim untuk memastikan kelancaran kolaborasi serta dokumentasi progress berkala selama praktikum Rekayasa Perangkat Lunak (RPL).
+
+## 🚀 Status Progress Fitur Aplikasi (Update Modul P7)
+Berikut adalah daftar fitur utama (*Features*) yang telah berhasil diimplementasikan dan di-merge ke dalam branch `dev`:
+
+### 1. Fitur Utama Tahap 1 (Must-have #1 - Modul P6)
+* **[Selesai] Authentication System**: Sistem Login dan Register fungsional menggunakan arsitektur Laravel + Inertia.js untuk menjamin keamanan akses pendaki.
+* **[Selesai] Landing Page / Dashboard**: Antarmuka awal aplikasi sebagai gerbang informasi utama platform AltiGuide.
+
+### 2. Fitur Utama Tahap 2 (Must-have #2 - Modul P7)
+* **[Selesai] Mountain & Article Detail**: Halaman eksplorasi informasi artikel detail gunung (deskripsi, foto, dan integrasi rute) serta seksi rekomendasi destinasi pendakian lainnya (*Other Destinations*).
+* **[Selesai] Dynamic Route Routing & Database Integration**: Sistem pencarian data berbasis `slug` dan penampilan data dinamis dari database tanpa *hardcoded values*.
+
+---
 
 ## 1. Peran Anggota Tim (Team Roles)
 Setiap anggota bertanggung jawab atas tugas utama berikut:
