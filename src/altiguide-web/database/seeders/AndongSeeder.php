@@ -14,7 +14,7 @@ class AndongSeeder extends Seeder
         $content = collect($articles)->firstWhere('slug', 'gunung-andong')['content'] ?? [];
 
         // 1. MOUNTAIN ANDONG
-        $andong = Mountain::firstOrCreate(
+        $andong = Mountain::updateOrCreate(
             ['name' => 'Gunung Andong'],
             [
                 'location' => 'Kecamatan Ngablak, Kabupaten Magelang, Jawa Tengah', 

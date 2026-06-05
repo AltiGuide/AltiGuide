@@ -13,7 +13,7 @@ class MerbabuSeeder extends Seeder
         $articles = json_decode(file_get_contents(database_path('data/mountain_articles.json')), true);
         $content = collect($articles)->firstWhere('slug', 'gunung-merbabu')['content'] ?? [];
 
-        $merbabu = Mountain::firstOrCreate(
+        $merbabu = Mountain::updateOrCreate(
             ['name' => 'Gunung Merbabu'],
             [
                 'location' => 'Kab. Magelang, Boyolali, Semarang, Jawa Tengah', 
