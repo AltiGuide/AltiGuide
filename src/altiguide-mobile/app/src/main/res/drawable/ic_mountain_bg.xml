@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="1080dp"
+    android:height="720dp"
+    android:viewportWidth="1080"
+    android:viewportHeight="720">
+    <!-- simple mountain silhouette as placeholder -->
+    <path
+        android:fillColor="#2D4A1E"
+        android:pathData="M0,520 L200,320 L360,440 L540,240 L720,460 L900,320 L1080,520 L1080,720 L0,720z" />
+    <path
+        android:fillColor="#AEE1A0"
+        android:fillAlpha="0.15"
+        android:pathData="M540,240 L600,320 L660,300 L720,380 L540,240z" />
+</vector>
+
