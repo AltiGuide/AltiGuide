@@ -33,7 +33,7 @@ interface AltiGuideApiService {
     suspend fun getUserProfile(): UserModel
 
     @PUT("user/profile")
-    suspend fun updateUserProfile(@Body request: Map<String, Any>): Response<AuthResponse>
+    suspend fun updateUserProfile(@Body request: Map<String, @JvmSuppressWildcards Any>): Response<AuthResponse>
 
     @PUT("user/password")
     suspend fun changePassword(@Body request: Map<String, String>): Response<AuthResponse>

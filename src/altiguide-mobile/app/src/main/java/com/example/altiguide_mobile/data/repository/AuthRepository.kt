@@ -43,7 +43,7 @@ class AuthRepository @Inject constructor(
         return apiService.getUserProfile()
     }
 
-    suspend fun updateUserProfile(request: Map<String, Any>): Response<AuthResponse> {
+    suspend fun updateUserProfile(request: Map<String, @JvmSuppressWildcards Any>): Response<AuthResponse> {
         return apiService.updateUserProfile(request)
     }
 
@@ -51,8 +51,18 @@ class AuthRepository @Inject constructor(
         return apiService.changePassword(request)
     }
 
-    suspend fun validateNik(nik: String): Response<Any> {
-        return apiService.validateNik(mapOf("identity_number" to nik))
+    suspend fun validateNik(
+        nik: String,
+        startDate: String = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date()),
+        hikeType: String = "camp"
+    ): Response<Any> {
+        return apiService.validateNik(
+            mapOf(
+                "nik" to nik,
+                "start_date" to startDate,
+                "hike_type" to hikeType
+            )
+        )
     }
 
     suspend fun sendForgotPasswordCode(email: String): Response<Any> {
