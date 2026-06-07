@@ -9,6 +9,7 @@ use Midtrans\Transaction as MidtransTransaction;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/article', [\App\Http\Controllers\ArticleController::class, 'show'])->name('article.show');
+Route::get('/mountains', [\App\Http\Controllers\MountainListController::class, 'index'])->name('mountains.index');
+Route::get('/about', function () {
+    return \Inertia\Inertia::render('About');
+})->name('about');
 
 // ── Guest routes (hanya bisa diakses kalau BELUM login) ─────────────────
 
@@ -37,6 +42,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/register/verify',          [RegisterController::class, 'verifyOtp'])->name('register.verify.post');
     Route::post('/register/verify/resend',   [RegisterController::class, 'resendOtp'])->name('register.verify.resend');
 
+    Route::post('/auth/google', [GoogleAuthController::class, 'handleGoogleLogin']);
+    Route::get('/complete-profile', [GoogleAuthController::class, 'showCompleteProfileForm'])->name('complete-profile');
+    Route::post('/complete-profile', [GoogleAuthController::class, 'completeProfile']);
 });
 
 // Route untuk flow Forgot Password (accessible by guests & auth users)
