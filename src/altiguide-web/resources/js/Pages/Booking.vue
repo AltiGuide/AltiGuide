@@ -129,9 +129,9 @@ const scrollToTop = () => {
             </div>
 
             <div class="nav-right">
-                <Link href="/" class="nav-link-item">Home</Link>
-                <Link href="/article" class="nav-link-item">Article</Link>
-                <Link href="/booking" class="nav-link-item">Booking</Link>
+                <a href="/" class="nav-link-item">Home</a>
+                <a href="/article" class="nav-link-item">Article</a>
+                <a href="/booking" class="nav-link-item">Booking</a>
                 <template v-if="user">
                     <Link
                         href="/logout"
@@ -143,7 +143,7 @@ const scrollToTop = () => {
                     </Link>
                 </template>
                 <template v-else>
-                    <Link href="/login" class="nav-btn-login">Login</Link>
+                    <a href="/login" class="nav-btn-login">Login</a>
                 </template>
             </div>
         </nav>
@@ -251,7 +251,7 @@ const scrollToTop = () => {
                 </div>
                 <div class="cta-buttons">
                     <Link href="mailto:support@altiguide.com" class="cta-btn cta-btn-primary">Contact Us</Link>
-                    <Link href="/booking" class="cta-btn cta-btn-secondary">Start Summit</Link>
+                    <a href="/booking" class="cta-btn cta-btn-secondary">Start Summit</a>
                 </div>
             </div>
 
@@ -259,7 +259,7 @@ const scrollToTop = () => {
             <footer class="footer-links">
                 <div class="footer-top">
                     <div class="footer-left">
-                        <Link href="/" class="footer-site-link">AltiGuide.com</Link>
+                        <a href="/" class="footer-site-link">AltiGuide.com</a>
                         <div class="footer-socials">
                             <a href="#" class="social-icon">
                                 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
@@ -278,21 +278,21 @@ const scrollToTop = () => {
                             <h5 class="footer-col-title">Jelajahi</h5>
                             <div class="footer-col-links">
                                 <Link href="/mountains">Daftar Gunung</Link>
-                                <Link href="/">Weather Analytics</Link>
+                                <a href="/">Weather Analytics</a>
                             </div>
                         </div>
                         <div class="footer-col">
                             <h5 class="footer-col-title">Informasi</h5>
                             <div class="footer-col-links">
-                                <Link href="/article">Tata Tertib</Link>
-                                <Link href="/booking">Booking Simaksi</Link>
-                                <Link href="/article">Tips Keamanan</Link>
+                                <a href="/article">Tata Tertib</a>
+                                <a href="/booking">Booking Simaksi</a>
+                                <a href="/article">Tips Keamanan</a>
                             </div>
                         </div>
                         <div class="footer-col">
                             <h5 class="footer-col-title">Komunitas</h5>
                             <div class="footer-col-links">
-                                <Link href="/">Forum Diskusi</Link>
+                                <a href="/">Forum Diskusi</a>
                                 <!-- <Link href="/about">Tentang Kami</Link> -->
                             </div>
                         </div>

@@ -341,7 +341,7 @@ const docStatusIcon = (status) => {
         <span class="text-xl font-bold text-[#374426] tracking-tight">AltiGuide</span>
       </div>
       <div class="flex items-center gap-6 text-sm font-medium text-[#5A684C]">
-        <Link href="/" class="hover:text-[#374426] transition-colors">Home</Link>
+        <a href="/" class="hover:text-[#374426] transition-colors">Home</a>
         <span class="px-4 py-1.5 rounded-lg border border-[#374426] text-[#374426] font-semibold bg-white/50">Admin Dashboard</span>
       </div>
     </nav>
@@ -679,21 +679,21 @@ const docStatusIcon = (status) => {
               <h5 class="text-[#374426] font-semibold text-sm">Jelajahi</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <Link href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+                <a href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</a>
               </div>
             </div>
             <div class="flex flex-col gap-4">
               <h5 class="text-[#374426] font-semibold text-sm">Informasi</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
-                <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+                <a href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</a>
+                <a href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</a>
+                <a href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</a>
               </div>
             </div>
             <div class="flex flex-col gap-4">
               <h5 class="text-[#374426] font-semibold text-sm">Komunitas</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
-                <Link href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
+                <a href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</a>
                 <!-- <Link href="/about" class="hover:text-[#374426] transition-colors">Tentang Kami</Link> -->
               </div>
             </div>

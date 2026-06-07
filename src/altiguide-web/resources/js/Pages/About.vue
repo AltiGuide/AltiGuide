@@ -18,11 +18,11 @@ const authUser = computed(() => page.props.auth?.user)
       </div>
 
       <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base font-semibold text-[#374426]">
-        <Link href="/" class="hover:text-black transition">Home</Link>
-        <Link href="/article" class="hover:text-black transition">Article</Link>
-        <Link href="/booking" class="hover:text-black transition">Booking</Link>
+        <a href="/" class="hover:text-black transition">Home</a>
+        <a href="/article" class="hover:text-black transition">Article</a>
+        <a href="/booking" class="hover:text-black transition">Booking</a>
         <template v-if="authUser">
-          <Link
+          <a
             href="/dashboard"
             class="flex items-center gap-2 border border-[#374426] px-4 md:px-5 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap"
           >
@@ -31,10 +31,10 @@ const authUser = computed(() => page.props.auth?.user)
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
             </svg>
             <span class="hidden md:inline">{{ authUser.name.split(' ')[0] }}</span>
-          </Link>
+          </a>
         </template>
         <template v-else>
-          <Link href="/login" class="border border-[#374426] px-4 md:px-5 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200">Login</Link>
+          <a href="/login" class="border border-[#374426] px-4 md:px-5 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200">Login</a>
         </template>
       </div>
     </nav>
@@ -121,18 +121,18 @@ const authUser = computed(() => page.props.auth?.user)
           <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <a href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
-          </Link>
+          </a>
         </div>
       </div>
 
       <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
         <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
           <div class="flex flex-col gap-[96px]">
-            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+            <a href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
               AltiGuide.com
-            </Link>
+            </a>
             <div class="flex items-center gap-6 text-[#828282]">
               <a href="#" class="hover:text-[#374426] transition-colors">
                 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
@@ -151,16 +151,16 @@ const authUser = computed(() => page.props.auth?.user)
               <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <Link href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+                <a href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</a>
               </div>
             </div>
 
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
-                <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+                <a href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</a>
+                <a href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</a>
+                <a href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</a>
               </div>
             </div>
 
