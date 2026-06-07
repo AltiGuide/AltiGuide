@@ -43,28 +43,28 @@ const weatherLoading = ref(false)
 const weatherError = ref(null)
 
 const WMO_CODES = {
-  0:  { label: 'Cerah', icon: '☀️' },
-  1:  { label: 'Hampir Cerah', icon: '🌤️' },
-  2:  { label: 'Berawan Sebagian', icon: '⛅' },
-  3:  { label: 'Berawan Penuh', icon: '☁️' },
-  45: { label: 'Berkabut', icon: '🌫️' },
-  48: { label: 'Kabut Beku', icon: '🌫️' },
-  51: { label: 'Gerimis Ringan', icon: '🌦️' },
-  53: { label: 'Gerimis', icon: '🌦️' },
-  55: { label: 'Gerimis Lebat', icon: '🌧️' },
-  61: { label: 'Hujan Ringan', icon: '🌧️' },
-  63: { label: 'Hujan Sedang', icon: '🌧️' },
-  65: { label: 'Hujan Lebat', icon: '🌧️' },
-  71: { label: 'Salju Ringan', icon: '❄️' },
-  80: { label: 'Hujan Lokal', icon: '🌦️' },
-  95: { label: 'Badai Petir', icon: '⛈️' },
+  0:  { label: 'Cerah', icon: '/images/weather-icon/sun.png' },
+  1:  { label: 'Hampir Cerah', icon: '/images/weather-icon/cloudysunny.png' },
+  2:  { label: 'Berawan Sebagian', icon: '/images/weather-icon/cloudysunny.png' },
+  3:  { label: 'Berawan Penuh', icon: '/images/weather-icon/clouds.png' },
+  45: { label: 'Berkabut', icon: '/images/weather-icon/clouds.png' },
+  48: { label: 'Kabut Beku', icon: '/images/weather-icon/clouds.png' },
+  51: { label: 'Gerimis Ringan', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  53: { label: 'Gerimis', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  55: { label: 'Gerimis Lebat', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  61: { label: 'Hujan Ringan', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  63: { label: 'Hujan Sedang', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  65: { label: 'Hujan Lebat', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  71: { label: 'Salju Ringan', icon: '/images/weather-icon/clouds-snow.png' },
+  80: { label: 'Hujan Lokal', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  95: { label: 'Badai Petir', icon: '/images/weather-icon/lightning.png' },
 }
 
 function getWmoLabel(code) {
   return WMO_CODES[code]?.label ?? 'Tidak Diketahui'
 }
 function getWmoIcon(code) {
-  return WMO_CODES[code]?.icon ?? '🌡️'
+  return WMO_CODES[code]?.icon ?? '/images/weather-icon/sun.png'
 }
 
 function formatHour(isoStr) {
@@ -84,12 +84,18 @@ async function fetchWeather(lat, lon) {
     url.searchParams.set('longitude', lon)
     url.searchParams.set('current', [
       'temperature_2m',
+      'apparent_temperature',
+      'cloudcover',
       'weathercode',
       'windspeed_10m',
       'relativehumidity_2m',
       'precipitation',
       'visibility',
       'surface_pressure',
+    ].join(','))
+    url.searchParams.set('hourly', [
+      'temperature_2m',
+      'weathercode'
     ].join(','))
     url.searchParams.set('daily', [
       'weathercode',
@@ -115,6 +121,23 @@ async function fetchWeather(lat, lon) {
 }
 
 // ── Watchers ─────────────────────────────────────────────────────────────────
+const hourlyForecast = computed(() => {
+  if (!weather.value?.hourly?.time) return []
+  const now = new Date()
+  const idx = weather.value.hourly.time.findIndex(t => new Date(t) >= now)
+  const startIndex = idx !== -1 ? idx : 0
+  
+  return weather.value.hourly.time.slice(startIndex, startIndex + 8).map((timeStr, i) => {
+    const actualIndex = startIndex + i
+    const d = new Date(timeStr)
+    return {
+      time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+      temp: Math.round(weather.value.hourly.temperature_2m[actualIndex]),
+      code: weather.value.hourly.weathercode[actualIndex]
+    }
+  })
+})
+
 watch(currentSlug, () => {
   selectedRoute.value = null
   weather.value = null
@@ -591,89 +614,100 @@ const waterSourceWaypoints = computed(() => {
             </div>
 
             <!-- Error -->
-            <div v-else-if="weatherError" class="route-weather-card flex items-center justify-center" style="min-height: 180px;">
-              <div class="text-center text-white/70 px-8" style="font-family: 'Poppins', sans-serif;">
+            <div v-else-if="weatherError" class="w-full flex justify-center py-20">
+              <div class="text-center text-[#E6E6E6]/70 px-8" style="font-family: 'Montserrat', sans-serif;">
                 <p class="text-lg mb-2">⚠️ Gagal memuat data cuaca</p>
                 <p class="text-sm">{{ weatherError }}</p>
               </div>
             </div>
 
-            <!-- Cuaca card -->
-            <div v-else-if="weather" class="route-weather-card">
-              <div class="route-weather-card__header">
-                <span class="route-weather-card__badge">Cuaca Real-Time</span>
-              </div>
+            <div v-else-if="weather" class="w-full mt-8 mb-12 rounded-[40px] p-8 md:p-12 text-[#E6E6E6] relative overflow-hidden shadow-[0_20px_50px_rgba(20,30,80,0.5)]" style="background: linear-gradient(to top left, #4021CB 0%, #7176C9 25%, #122E80 100%); font-family: 'Montserrat', sans-serif;">
+              <!-- Title -->
+              <h2 class="text-center font-bold text-2xl mb-8 tracking-wide">Cuaca</h2>
 
-              <div class="route-weather-card__body">
-                <!-- Current -->
-                <div class="route-weather-current">
-                  <div class="route-weather-current__mountain">
-                    <h3>Gunung</h3>
-                    <h2>{{ currentMountain.name.replace('Gunung ', '') }}</h2>
+              <!-- Top Section: Current & 3-Days Forecast -->
+              <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-8">
+                <!-- Left: Text & Icon Group -->
+                <div class="flex flex-1 flex-col sm:flex-row items-center sm:items-center justify-start gap-4 sm:gap-12 w-full">
+                  <!-- Text info -->
+                  <div class="flex flex-col justify-center">
+                    <h3 class="text-[32px] md:text-[40px] font-bold leading-[1.1] text-center sm:text-left">Gunung<br/>{{ currentMountain.name.replace('Gunung ', '') }}</h3>
+                    <div class="mt-1 text-center sm:text-left">
+                      <span class="text-[56px] md:text-[72px] font-bold leading-none">{{ Math.round(weather.current?.temperature_2m ?? 0) }}°C</span>
+                    </div>
+                    <div class="text-[#E6E6E6]/80 text-lg font-medium -mt-2 text-center sm:text-left">Real feel {{ Math.round(weather.current?.apparent_temperature ?? 0) }}°C</div>
                   </div>
-                  <div class="route-weather-current__icon text-4xl">
-                    {{ getWmoIcon(weather.current?.weathercode) }}
+
+                  <!-- Big Icon -->
+                  <div class="flex justify-center items-center relative">
+                    <img :src="getWmoIcon(weather.current?.weathercode)" alt="Current Weather" class="w-48 h-48 md:w-56 md:h-56 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)] z-10" />
                   </div>
-                  <div class="route-weather-current__temp">
-                    <span class="route-weather-current__degrees">{{ Math.round(weather.current?.temperature_2m ?? 0) }}</span>
-                    <span class="route-weather-current__unit">°C</span>
-                  </div>
-                  <div class="route-weather-current__condition">{{ getWmoLabel(weather.current?.weathercode) }}</div>
                 </div>
 
-                <!-- Forecast 5 hari ke depan -->
-                <div class="route-weather-forecast">
-                  <table class="route-weather-table">
-                    <thead>
-                      <tr>
-                        <th>Hari</th>
-                        <th>Suhu</th>
-                        <th>Cuaca</th>
-                        <th>Angin</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(date, i) in weather.daily?.time?.slice(1, 6)"
-                        :key="date"
-                      >
-                        <td>{{ HARI[new Date(date).getDay()] }}</td>
-                        <td>
-                          {{ Math.round(weather.daily.temperature_2m_min[i + 1]) }}–{{ Math.round(weather.daily.temperature_2m_max[i + 1]) }}°C
-                        </td>
-                        <td>{{ getWmoIcon(weather.daily.weathercode[i + 1]) }} {{ getWmoLabel(weather.daily.weathercode[i + 1]) }}</td>
-                        <td>{{ Math.round(weather.daily.windspeed_10m_max[i + 1]) }} km/j</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <!-- Right: 3 Days Forecast -->
+                <div class="w-full lg:w-[400px] xl:w-[450px] bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shrink-0">
+                  <h4 class="text-sm font-semibold mb-4 text-[#E6E6E6]/90">3 Days Forecast</h4>
+                  <div class="flex flex-col gap-4">
+                    <div v-for="(date, i) in weather.daily?.time?.slice(0, 3)" :key="date" class="flex items-center justify-between border-b border-white/10 pb-3 last:border-0 last:pb-0">
+                      <span class="w-16 text-sm font-medium">{{ i === 0 ? 'Today' : HARI[new Date(date).getDay()].substring(0, 3) }}</span>
+                      <img :src="getWmoIcon(weather.daily.weathercode[i])" class="w-8 h-8 object-contain drop-shadow-sm" />
+                      <span class="flex-1 text-center text-sm font-medium">{{ getWmoLabel(weather.daily.weathercode[i]) }}</span>
+                      <span class="w-20 text-right text-sm font-semibold">{{ Math.round(weather.daily.temperature_2m_max[i]) }}°C / {{ Math.round(weather.daily.temperature_2m_min[i]) }}°C</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- Footer info -->
-              <div class="route-weather-card__footer">
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌡 Kelembaban</span>
-                  <span class="route-weather-info-item__value">{{ weather.current?.relativehumidity_2m ?? '-' }}%</span>
+              <!-- Middle Section: Hourly Forecast -->
+              <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 mb-6">
+                <div class="flex justify-between items-center mb-4 text-sm font-medium">
+                  <span class="text-[#E6E6E6]/90">Hourly Forecast</span>
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>{{ new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }} {{ new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) }}</span>
+                  </div>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌧 Curah Hujan</span>
-                  <span class="route-weather-info-item__value">{{ weather.current?.precipitation ?? '0' }} mm</span>
+                <div class="flex justify-between gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                  <div v-for="hour in hourlyForecast" :key="hour.time" class="flex-1 min-w-[80px] flex flex-col items-center gap-3 border-r border-white/10 last:border-0">
+                    <span class="text-xs font-medium text-[#E6E6E6]/80 whitespace-nowrap">{{ hour.time }}</span>
+                    <img :src="getWmoIcon(hour.code)" class="w-10 h-10 object-contain drop-shadow-sm" />
+                    <span class="text-sm font-bold">{{ hour.temp }}°C</span>
+                  </div>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">💨 Angin</span>
-                  <span class="route-weather-info-item__value">{{ Math.round(weather.current?.windspeed_10m ?? 0) }} km/j</span>
+              </div>
+
+              <!-- Bottom Section: Info Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    <span>Wind Speed</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ Math.round(weather.current?.windspeed_10m ?? 0) }} km/h</span>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">💧 Tekanan</span>
-                  <span class="route-weather-info-item__value">{{ Math.round(weather.current?.surface_pressure ?? 0) }} hPa</span>
+                
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a5 5 0 106 0v-9a3 3 0 00-6 0v9z" /></svg>
+                    <span>Temperature</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ Math.round(weather.current?.temperature_2m ?? 0) }} °C</span>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌅 Sunrise</span>
-                  <span class="route-weather-info-item__value">{{ formatHour(weather.daily?.sunrise?.[0]) }}</span>
+
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3c0 0-4 5-4 9a4 4 0 008 0c0-4-4-9-4-9z" /></svg>
+                    <span>Humidity</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ weather.current?.relativehumidity_2m ?? 0 }} %</span>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌇 Sunset</span>
-                  <span class="route-weather-info-item__value">{{ formatHour(weather.daily?.sunset?.[0]) }}</span>
+
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+                    <span>Clouds</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ weather.current?.cloudcover ?? 0 }} %</span>
                 </div>
               </div>
             </div>
