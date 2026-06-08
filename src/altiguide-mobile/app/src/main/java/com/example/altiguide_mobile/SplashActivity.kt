@@ -8,18 +8,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.altiguide_mobile.databinding.ActivitySplashBinding
 import com.example.altiguide_mobile.util.AuthDataStore
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
-
-    @Inject
-    lateinit var authDataStore: AuthDataStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // apply splash theme (must match style name in res/values/themes.xml)
@@ -28,6 +22,9 @@ class SplashActivity : AppCompatActivity() {
 
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val authDataStore = AuthDataStore(applicationContext)
+        val sharedPrefs = getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
 
         // navigate after 2 seconds safely using coroutines bound to the lifecycle
         lifecycleScope.launch {

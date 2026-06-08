@@ -17,17 +17,14 @@ import com.example.altiguide_mobile.ui.theme.AltiguidemobileTheme
 import com.example.altiguide_mobile.ui.auth.LoginScreen
 import com.example.altiguide_mobile.util.AuthDataStore
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var authDataStore: AuthDataStore
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val authDataStore = AuthDataStore(applicationContext)
         setContent {
             val tokenState = authDataStore.authTokenFlow.collectAsState(initial = null)
             val scope = rememberCoroutineScope()

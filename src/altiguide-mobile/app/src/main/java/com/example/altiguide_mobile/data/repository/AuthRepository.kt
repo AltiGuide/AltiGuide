@@ -24,11 +24,19 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun register(request: RegisterRequest): AuthResponse {
-        val response = apiService.register(request)
+        return apiService.register(request)
+    }
+
+    suspend fun verifyRegisterOtp(email: String, code: String): AuthResponse {
+        val response = apiService.verifyRegisterOtp(mapOf("email" to email, "code" to code))
         response.token?.let {
             authDataStore.saveToken(it)
         }
         return response
+    }
+
+    suspend fun resendRegisterOtp(email: String): Response<Any> {
+        return apiService.resendRegisterOtp(mapOf("email" to email))
     }
 
     suspend fun logout() {
