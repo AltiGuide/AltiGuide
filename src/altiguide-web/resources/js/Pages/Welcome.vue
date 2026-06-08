@@ -17,16 +17,47 @@ const slides = [
   { image: '/images/gunung_sindoro_8.png', name: 'Gunung Sindoro', description: 'Uji fisikmu di jalur menanjak yang menantang menuju puncak kawah vulkanik aktif yang menawarkan pemandangan "saudara kembarnya", Gunung Sumbing.' },
 ]
 
-const faqs = [
-  "Apa itu aplikasi AltiGuide?",
-  "Apakah peta navigasi tetap berfungsi jika tidak ada sinyal?",
-  "Bagaimana cara mendapatkan info terbaru mengenai status jalur?",
-  "Apakah data estimasi waktu tempuh sudah akurat?",
-  "Bisakah saya memesan simaksi atau tiket melalui web AltiGuide?",
-  "Bisakah saya memesan simaksi atau tiket melalui web AltiGuide?",
-  "Bagaimana jika saya tersesat atau keluar dari jalur yang ditentukan?",
-  "Apakah data sumber air dan pos pendakian selalu diperbarui?"
-]
+const faqs = ref([
+  {
+    question: "Apa itu aplikasi AltiGuide?",
+    answer: "AltiGuide adalah platform panduan pendakian gunung digital yang menyediakan informasi rute pendakian, peta offline, pemesanan tiket SIMAKSI secara online, serta pemantauan posisi GPS untuk menunjang keamanan dan kenyamanan pendakian Anda.",
+    open: false
+  },
+  {
+    question: "Apakah peta navigasi tetap berfungsi jika tidak ada sinyal?",
+    answer: "Ya! Aplikasi mobile AltiGuide mendukung fitur peta offline (Offline Maps) yang terintegrasi dengan GPS smartphone Anda. Anda dapat mengunduh peta rute gunung terlebih dahulu sebelum memulai pendakian di area tanpa sinyal.",
+    open: false
+  },
+  {
+    question: "Bagaimana cara mendapatkan info terbaru mengenai status jalur?",
+    answer: "Informasi status jalur pendakian (buka/tutup, cuaca ekstrem, atau kendala lainnya) akan diperbarui secara berkala oleh pengelola basecamp resmi dan ditampilkan langsung pada halaman informasi detail gunung di aplikasi AltiGuide.",
+    open: false
+  },
+  {
+    question: "Apakah data estimasi waktu tempuh sudah akurat?",
+    answer: "Estimasi waktu tempuh dihitung menggunakan algoritma khusus yang mempertimbangkan jarak trek, tingkat kemiringan elevasi rute, dan rata-rata kecepatan pendaki umum. Namun, waktu tempuh aktual tetap bergantung pada kondisi fisik dan durasi istirahat rombongan Anda.",
+    open: false
+  },
+  {
+    question: "Bisakah saya memesan simaksi atau tiket melalui web AltiGuide?",
+    answer: "Tentu saja! Anda dapat melakukan booking tiket SIMAKSI secara mudah dan melakukan pembayaran online secara instan melalui web AltiGuide. E-Ticket resmi akan langsung diterbitkan ke akun Anda setelah pembayaran selesai diverifikasi.",
+    open: false
+  },
+  {
+    question: "Bagaimana jika saya tersesat atau keluar dari jalur yang ditentukan?",
+    answer: "Aplikasi kami dilengkapi fitur pelacak posisi (Track Position) real-time menggunakan GPS. Jika Anda terdeteksi keluar dari jalur resmi, sistem navigasi akan memberikan peringatan dan membantu memandu Anda kembali ke jalur pendakian yang aman.",
+    open: false
+  },
+  {
+    question: "Apakah data sumber air dan pos pendakian selalu diperbarui?",
+    answer: "Ya, semua data titik penting seperti pos pendakian, shelter camp, sumber air terdekat, hingga area rawan bahaya selalu diperbarui berdasarkan laporan basecamp resmi serta kontribusi komunitas pendaki terverifikasi.",
+    open: false
+  }
+])
+
+const toggleFaq = (index) => {
+  faqs.value[index].open = !faqs.value[index].open
+}
 
 const currentSlide = ref(0)
 let slideInterval = null
@@ -255,9 +286,37 @@ onUnmounted(() => {
         </button>
 
         <div class="w-full flex flex-col">
-          <div v-for="(faq, index) in faqs" :key="index" class="w-full flex items-center justify-between py-5 border-b border-[#D7DDC2]">
-            <h3 class="text-[22px] font-medium text-[#374426]" style="font-family: 'Montserrat', sans-serif;">{{ faq }}</h3>
-            <span class="text-[#374426] text-[32px] font-medium leading-none">+</span>
+          <div 
+            v-for="(faq, index) in faqs" 
+            :key="index" 
+            class="w-full border-b border-[#D7DDC2] py-5 cursor-pointer group"
+            @click="toggleFaq(index)"
+          >
+            <!-- Question Header -->
+            <div class="w-full flex items-center justify-between">
+              <h3 
+                class="text-[22px] font-medium text-[#374426] group-hover:text-[#64823E] transition-colors duration-200" 
+                style="font-family: 'Montserrat', sans-serif;"
+              >
+                {{ faq.question }}
+              </h3>
+              <span 
+                class="text-[#374426] text-[32px] font-medium leading-none select-none transition-transform duration-300 ease-in-out origin-center inline-block"
+                :class="{ 'rotate-45 text-[#64823E]': faq.open }"
+              >
+                +
+              </span>
+            </div>
+
+            <!-- Answer Content -->
+            <div 
+              class="overflow-hidden transition-all duration-300 ease-in-out"
+              :style="{ maxHeight: faq.open ? '200px' : '0px', opacity: faq.open ? '1' : '0', marginTop: faq.open ? '12px' : '0px' }"
+            >
+              <p class="text-[16px] md:text-[18px] text-[#5A684C] font-normal leading-relaxed" style="font-family: 'Montserrat', sans-serif;">
+                {{ faq.answer }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
