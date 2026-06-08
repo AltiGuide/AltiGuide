@@ -42,10 +42,10 @@ const resendOtp = () => {
                 <span class="text-xl md:text-2xl xl:text-3xl font-bold text-[#3b4b3b] tracking-tight">AltiGuide</span>
             </div>
             <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
-                <Link href="/" class="hover:text-black transition">Home</Link>
-                <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
+                <a href="/" class="hover:text-black transition">Home</a>
+                <a href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
                     Login
-                </Link>
+                </a>
             </div>
         </nav>
 

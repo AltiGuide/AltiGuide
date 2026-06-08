@@ -341,7 +341,7 @@ const docStatusIcon = (status) => {
         <span class="text-xl font-bold text-[#374426] tracking-tight">AltiGuide</span>
       </div>
       <div class="flex items-center gap-6 text-sm font-medium text-[#5A684C]">
-        <Link href="/" class="hover:text-[#374426] transition-colors">Home</Link>
+        <a href="/" class="hover:text-[#374426] transition-colors">Home</a>
         <span class="px-4 py-1.5 rounded-lg border border-[#374426] text-[#374426] font-semibold bg-white/50">Admin Dashboard</span>
       </div>
     </nav>

@@ -94,12 +94,12 @@ onUnmounted(() => {
         </div>
 
         <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
-          <Link href="/" class="hover:text-black transition">Home</Link>
-          <Link href="/article" class="hover:text-black transition">Article</Link>
-          <Link href="/booking" class="hover:text-black transition">Booking</Link>
+          <a href="/" class="hover:text-black transition">Home</a>
+          <a href="/article" class="hover:text-black transition">Article</a>
+          <a href="/booking" class="hover:text-black transition">Booking</a>
           <!-- Auth Button -->
           <template v-if="authUser">
-            <Link
+            <a
               href="/dashboard"
               class="flex items-center gap-2 border border-[#3b4b3b] px-4 md:px-5 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap"
             >
@@ -113,12 +113,12 @@ onUnmounted(() => {
                 {{ authUser.name?.charAt(0)?.toUpperCase() }}
               </span>
               <span>My Dashboard</span>
-            </Link>
+            </a>
           </template>
           <template v-else>
-            <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
+            <a href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
               Login
-            </Link>
+            </a>
           </template>
         </div>
       </nav>
@@ -277,9 +277,9 @@ onUnmounted(() => {
           <Link href="mailto:support@altiguide.com" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <a href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
-          </Link>
+          </a>
         </div>
       </div>
 
@@ -288,9 +288,9 @@ onUnmounted(() => {
         <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
           <!-- Left: Logo & Social -->
           <div class="flex flex-col gap-[96px]">
-            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+            <a href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
               AltiGuide.com
-            </Link>
+            </a>
             <div class="flex items-center gap-6 text-[#828282]">
               <a href="#" class="hover:text-[#374426] transition-colors">
                 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
