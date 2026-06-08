@@ -227,12 +227,12 @@ const downloadETicket = () => {
                         Download E-Ticket
                     </button>
                     <div class="actions-row">
-                        <a href="/dashboard" class="go-dashboard-btn text-center">
+                        <Link href="/dashboard" class="go-dashboard-btn text-center">
                             Ke Dashboard Saya
-                        </a>
-                        <a href="/" class="go-home-btn text-center">
+                        </Link>
+                        <Link href="/" class="go-home-btn text-center">
                             Kembali ke Home
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </transition>

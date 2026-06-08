@@ -773,10 +773,10 @@ const downloadBookingETicket = (booking) => {
                                     <button @click="viewBookingDetails(booking)" class="w-full py-2 bg-[#8B2020] text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition cursor-pointer">
                                         View Details
                                     </button>
-                                    <a href="/booking"
+                                    <Link href="/booking"
                                         class="block w-full py-2 text-center border border-red-400 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition">
                                         Rebook
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
