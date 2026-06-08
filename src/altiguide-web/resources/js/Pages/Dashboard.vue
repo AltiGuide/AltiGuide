@@ -796,7 +796,7 @@ const downloadBookingETicket = (booking) => {
                 </div>
                 <div class="flex items-center gap-4">
                     <Link href="mailto:support@altiguide.com" class="bg-[#374426] text-[#F8F3E4] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition">Contact Us</Link>
-                    <a href="/booking" class="bg-[#F8F3E4] text-[#374426] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition shadow-sm">Start Summit</a>
+                    <Link href="/booking" class="bg-[#F8F3E4] text-[#374426] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition shadow-sm">Start Summit</Link>
                 </div>
             </div>
 
@@ -821,21 +821,21 @@ const downloadBookingETicket = (booking) => {
                             <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                                 <Link href="/mountains" class="hover:text-[#374426] transition">Daftar Gunung</Link>
-                                <a href="/" class="hover:text-[#374426] transition">Weather Analytics</a>
+                                <Link href="/" class="hover:text-[#374426] transition">Weather Analytics</Link>
                             </div>
                         </div>
                         <div class="flex flex-col gap-4">
                             <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
-                                <a href="/article" class="hover:text-[#374426] transition">Tata Tertib</a>
-                                <a href="/booking" class="hover:text-[#374426] transition">Booking Simaksi</a>
-                                <a href="/article" class="hover:text-[#374426] transition">Tips Keamanan</a>
+                                <Link href="/article" class="hover:text-[#374426] transition">Tata Tertib</Link>
+                                <Link href="/booking" class="hover:text-[#374426] transition">Booking Simaksi</Link>
+                                <Link href="/article" class="hover:text-[#374426] transition">Tips Keamanan</Link>
                             </div>
                         </div>
                         <div class="flex flex-col gap-4">
                             <h5 class="text-[#374426] font-semibold text-base">Komunitas</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
-                                <a href="/" class="hover:text-[#374426] transition">Forum Diskusi</a>
+                                <Link href="/" class="hover:text-[#374426] transition">Forum Diskusi</Link>
                                 <!-- <Link href="/about" class="hover:text-[#374426] transition">Tentang Kami</Link> -->
                             </div>
                         </div>

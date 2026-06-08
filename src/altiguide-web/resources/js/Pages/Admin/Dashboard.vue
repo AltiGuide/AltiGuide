@@ -679,21 +679,21 @@ const docStatusIcon = (status) => {
               <h5 class="text-[#374426] font-semibold text-sm">Jelajahi</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <a href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</a>
+                <Link href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
             <div class="flex flex-col gap-4">
               <h5 class="text-[#374426] font-semibold text-sm">Informasi</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
-                <a href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</a>
-                <a href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</a>
-                <a href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</a>
+                <Link href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+                <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
+                <Link href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
             <div class="flex flex-col gap-4">
               <h5 class="text-[#374426] font-semibold text-sm">Komunitas</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
-                <a href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</a>
+                <Link href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
                 <!-- <Link href="/about" class="hover:text-[#374426] transition-colors">Tentang Kami</Link> -->
               </div>
             </div>

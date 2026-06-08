@@ -762,24 +762,25 @@ const waterSourceWaypoints = computed(() => {
               <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <a href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</a>
+                <Link href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
 
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <a href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</a>
-                <a href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</a>
-                <a href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</a>
+                <Link href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+                <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
+                <Link href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
 
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Komunitas</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <a href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</a>
-                              </div>
+                <Link href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
+                <!-- <Link href="/about" class="hover:text-[#374426] transition-colors">Tentang Kami</Link> -->
+              </div>
             </div>
           </div>
         </div>

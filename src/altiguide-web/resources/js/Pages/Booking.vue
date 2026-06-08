@@ -251,7 +251,7 @@ const scrollToTop = () => {
                 </div>
                 <div class="cta-buttons">
                     <Link href="mailto:support@altiguide.com" class="cta-btn cta-btn-primary">Contact Us</Link>
-                    <a href="/booking" class="cta-btn cta-btn-secondary">Start Summit</a>
+                    <Link href="/booking" class="cta-btn cta-btn-secondary">Start Summit</Link>
                 </div>
             </div>
 
@@ -278,21 +278,21 @@ const scrollToTop = () => {
                             <h5 class="footer-col-title">Jelajahi</h5>
                             <div class="footer-col-links">
                                 <Link href="/mountains">Daftar Gunung</Link>
-                                <a href="/">Weather Analytics</a>
+                                <Link href="/">Weather Analytics</Link>
                             </div>
                         </div>
                         <div class="footer-col">
                             <h5 class="footer-col-title">Informasi</h5>
                             <div class="footer-col-links">
-                                <a href="/article">Tata Tertib</a>
-                                <a href="/booking">Booking Simaksi</a>
-                                <a href="/article">Tips Keamanan</a>
+                                <Link href="/article">Tata Tertib</Link>
+                                <Link href="/booking">Booking Simaksi</Link>
+                                <Link href="/article">Tips Keamanan</Link>
                             </div>
                         </div>
                         <div class="footer-col">
                             <h5 class="footer-col-title">Komunitas</h5>
                             <div class="footer-col-links">
-                                <a href="/">Forum Diskusi</a>
+                                <Link href="/">Forum Diskusi</Link>
                                 <!-- <Link href="/about">Tentang Kami</Link> -->
                             </div>
                         </div>
