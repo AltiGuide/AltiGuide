@@ -30,6 +30,15 @@ class AuthViewModel @Inject constructor(
     private val _loginState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
     val loginState: StateFlow<UiState<AuthResponse>> = _loginState.asStateFlow()
 
+    private val _registerState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
+    val registerState: StateFlow<UiState<AuthResponse>> = _registerState.asStateFlow()
+
+    private val _verifyOtpState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
+    val verifyOtpState: StateFlow<UiState<AuthResponse>> = _verifyOtpState.asStateFlow()
+
+    private val _forgotPasswordState = MutableStateFlow<UiState<String>>(UiState.Idle)
+    val forgotPasswordState: StateFlow<UiState<String>> = _forgotPasswordState.asStateFlow()
+
     private val _testState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val testState: StateFlow<UiState<String>> = _testState.asStateFlow()
 
@@ -200,6 +209,110 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun register(request: com.example.altiguide_mobile.data.model.RegisterRequest) {
+        viewModelScope.launch {
+            _registerState.value = UiState.Loading
+            try {
+                val response = authRepository.register(request)
+                _registerState.value = UiState.Success(response)
+            } catch (e: HttpException) {
+                val errorMsg = if (e.code() == 422) "Email sudah terdaftar." else "Server error: ${e.code()}"
+                _registerState.value = UiState.Error(errorMsg)
+            } catch (e: IOException) {
+                _registerState.value = UiState.Error("Tidak ada koneksi internet")
+            } catch (e: Exception) {
+                _registerState.value = UiState.Error("Terjadi kesalahan: ${e.message}")
+            }
+        }
+    }
+
+    fun verifyRegisterOtp(email: String, code: String) {
+        viewModelScope.launch {
+            _verifyOtpState.value = UiState.Loading
+            try {
+                val response = authRepository.verifyRegisterOtp(email, code)
+                _verifyOtpState.value = UiState.Success(response)
+            } catch (e: HttpException) {
+                _verifyOtpState.value = UiState.Error(if (e.code() == 422) "Kode OTP salah atau kedaluwarsa." else "Server error: ${e.code()}")
+            } catch (e: IOException) {
+                _verifyOtpState.value = UiState.Error("Tidak ada koneksi internet")
+            } catch (e: Exception) {
+                _verifyOtpState.value = UiState.Error("Terjadi kesalahan: ${e.message}")
+            }
+        }
+    }
+
+    fun resendRegisterOtp(email: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                val response = authRepository.resendRegisterOtp(email)
+                if (response.isSuccessful) {
+                    onSuccess()
+                }
+            } catch (e: Exception) {
+                Log.e("OTP_RESEND", "Failed to resend OTP: ${e.message}")
+            }
+        }
+    }
+
+    fun sendForgotPasswordCode(email: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _forgotPasswordState.value = UiState.Loading
+            try {
+                val response = authRepository.sendForgotPasswordCode(email)
+                if (response.isSuccessful) {
+                    _forgotPasswordState.value = UiState.Success("OTP Terkirim")
+                    onSuccess()
+                } else {
+                    _forgotPasswordState.value = UiState.Error("Email tidak ditemukan.")
+                }
+            } catch (e: Exception) {
+                _forgotPasswordState.value = UiState.Error("Gagal mengirim kode: ${e.message}")
+            }
+        }
+    }
+
+    fun verifyForgotPasswordCode(email: String, code: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _forgotPasswordState.value = UiState.Loading
+            try {
+                val response = authRepository.verifyForgotPasswordCode(email, code)
+                if (response.isSuccessful) {
+                    _forgotPasswordState.value = UiState.Success("OTP Terverifikasi")
+                    onSuccess()
+                } else {
+                    _forgotPasswordState.value = UiState.Error("Kode OTP salah atau kedaluwarsa.")
+                }
+            } catch (e: Exception) {
+                _forgotPasswordState.value = UiState.Error("Gagal memverifikasi kode: ${e.message}")
+            }
+        }
+    }
+
+    fun resetPassword(email: String, code: String, password: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _forgotPasswordState.value = UiState.Loading
+            try {
+                val response = authRepository.resetPassword(
+                    mapOf(
+                        "email" to email,
+                        "code" to code,
+                        "password" to password,
+                        "password_confirmation" to password
+                    )
+                )
+                if (response.isSuccessful) {
+                    _forgotPasswordState.value = UiState.Success("Password Berhasil Direset")
+                    onSuccess()
+                } else {
+                    _forgotPasswordState.value = UiState.Error("Gagal mereset password. Pastikan OTP valid.")
+                }
+            } catch (e: Exception) {
+                _forgotPasswordState.value = UiState.Error("Gagal mereset password: ${e.message}")
+            }
+        }
+    }
+
     fun testEndpoints() {
         viewModelScope.launch {
             _testState.value = UiState.Loading
@@ -215,4 +328,12 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    fun resetStates() {
+        _loginState.value = UiState.Idle
+        _registerState.value = UiState.Idle
+        _verifyOtpState.value = UiState.Idle
+        _forgotPasswordState.value = UiState.Idle
+    }
 }
+

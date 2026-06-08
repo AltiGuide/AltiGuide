@@ -40,39 +40,41 @@ class GoogleAuthController extends Controller
             ]);
         }
 
-        $user = User::where('email', $email)->first();
-        if ($user) {
-            if ($user->isProfileComplete()) {
-                Auth::login($user);
-                $request->session()->regenerate();
-                return response()->json([
-                    'role' => 'user',
-                    'user_status' => 'old',
-                    'redirect' => '/dashboard'
-                ]);
-            }
+        $user = User::where('email', $email)
+            ->orWhere('google_id', $googleData['sub'] ?? null)
+            ->first();
 
-            return response()->json([
-                'role' => 'user',
-                'user_status' => 'new',
-                'temp_user' => [
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'avatar' => $user->avatar_url,
-                    'google_id' => $googleData['sub'] ?? null
-                ]
+        if (!$user) {
+            $user = User::create([
+                'name' => $googleData['name'] ?? 'Google User',
+                'email' => $email,
+                'google_id' => $googleData['sub'] ?? null,
+                'avatar' => $googleData['picture'] ?? null,
+                'email_verified_at' => now(),
             ]);
+        } else {
+            $updatedData = [];
+            if (empty($user->google_id) && isset($googleData['sub'])) {
+                $updatedData['google_id'] = $googleData['sub'];
+            }
+            if (empty($user->avatar) && isset($googleData['picture'])) {
+                $updatedData['avatar'] = $googleData['picture'];
+            }
+            if (empty($user->email_verified_at)) {
+                $updatedData['email_verified_at'] = now();
+            }
+            if (!empty($updatedData)) {
+                $user->update($updatedData);
+            }
         }
+
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'role' => 'user',
-            'user_status' => 'new',
-            'temp_user' => [
-                'name' => $googleData['name'] ?? null,
-                'email' => $email,
-                'avatar' => $googleData['picture'] ?? null,
-                'google_id' => $googleData['sub'] ?? null
-            ]
+            'user_status' => 'old',
+            'redirect' => '/dashboard'
         ]);
     }
 

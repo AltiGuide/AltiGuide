@@ -25,7 +25,9 @@ use App\Http\Controllers\Api\ChangePasswordController;
 
 // ── Public Routes (tanpa auth) ──────────────────────────────────────────
 
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register',            [AuthController::class, 'register']);
+Route::post('/register/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/register/resend-otp', [AuthController::class, 'resendOtp']);
 Route::post('/login',    [AuthController::class, 'login']);
 
 // Data gunung & rute bisa diakses tanpa login

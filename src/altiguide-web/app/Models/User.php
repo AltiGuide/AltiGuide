@@ -26,6 +26,7 @@ class User extends Authenticatable
         'nik',
         'email_verified_at',
         'avatar',
+        'google_id',
     ];
 
     protected $appends = ['avatar_url'];
@@ -33,6 +34,9 @@ class User extends Authenticatable
     public function getAvatarUrlAttribute(): ?string
     {
         if ($this->avatar) {
+            if (filter_var($this->avatar, FILTER_VALIDATE_URL)) {
+                return $this->avatar;
+            }
             return asset('storage/' . $this->avatar);
         }
         return null;

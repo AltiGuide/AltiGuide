@@ -22,6 +22,12 @@ interface AltiGuideApiService {
 
     @POST("register")
     suspend fun register(@Body request: RegisterRequest): AuthResponse
+
+    @POST("register/verify-otp")
+    suspend fun verifyRegisterOtp(@Body request: Map<String, String>): AuthResponse
+
+    @POST("register/resend-otp")
+    suspend fun resendRegisterOtp(@Body request: Map<String, String>): Response<Any>
     
     @POST("login")
     suspend fun login(@Body request: LoginRequest): AuthResponse
