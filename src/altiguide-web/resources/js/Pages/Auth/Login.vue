@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import axios from 'axios'
 
@@ -19,27 +19,23 @@ const loadGoogleSdk = () => {
     });
 };
 
+onMounted(() => {
+    loadGoogleSdk().catch(err => console.error('Google SDK pre-load failed:', err));
+});
+
 const handleGoogleCallback = async (accessToken) => {
     try {
         const response = await axios.post('/auth/google', { token: accessToken });
-        const { role, user_status, redirect, temp_user } = response.data;
+        const { role, redirect } = response.data;
 
         if (role === 'admin') {
             router.visit(redirect);
             return;
         }
 
-        if (user_status === 'old') {
-            const intendedUrl = localStorage.getItem('intended_url') || '/dashboard';
-            localStorage.removeItem('intended_url');
-            router.visit(intendedUrl);
-            return;
-        }
-
-        if (user_status === 'new') {
-            sessionStorage.setItem('temp_google_user', JSON.stringify(temp_user));
-            router.visit('/complete-profile');
-        }
+        const intendedUrl = localStorage.getItem('intended_url') || '/dashboard';
+        localStorage.removeItem('intended_url');
+        router.visit(intendedUrl);
     } catch (error) {
         console.error(error);
     }
