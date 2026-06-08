@@ -1,6 +1,68 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Head, Link, useForm, router } from '@inertiajs/vue3'
+import axios from 'axios'
+
+const loadGoogleSdk = () => {
+    return new Promise((resolve, reject) => {
+        if (window.google) {
+            resolve();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Google SDK load failed'));
+        document.head.appendChild(script);
+    });
+};
+
+const handleGoogleCallback = async (accessToken) => {
+    try {
+        const response = await axios.post('/auth/google', { token: accessToken });
+        const { role, user_status, redirect, temp_user } = response.data;
+
+        if (role === 'admin') {
+            router.visit(redirect);
+            return;
+        }
+
+        if (user_status === 'old') {
+            const intendedUrl = localStorage.getItem('intended_url') || '/dashboard';
+            localStorage.removeItem('intended_url');
+            router.visit(intendedUrl);
+            return;
+        }
+
+        if (user_status === 'new') {
+            sessionStorage.setItem('temp_google_user', JSON.stringify(temp_user));
+            router.visit('/complete-profile');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+const initGoogleLogin = async () => {
+    try {
+        await loadGoogleSdk();
+        const client = google.accounts.oauth2.initTokenClient({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1096057398188-12cfa0cpltr44g3l3d9hmoe7c4f6990j.apps.googleusercontent.com',
+            scope: 'email profile openid',
+            callback: async (response) => {
+                if (response.access_token) {
+                    await handleGoogleCallback(response.access_token);
+                }
+            }
+        });
+        client.requestAccessToken();
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 
 const props = defineProps({
     defaultTab: {
@@ -88,12 +150,12 @@ const submitForgot = () => {
             </div>
 
             <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
-                <Link href="/" class="hover:text-black transition">Home</Link>
-                <Link href="#" class="hover:text-black transition">Article</Link>
-                <Link href="/booking" class="hover:text-black transition">Booking</Link>
-                <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
+                <a href="/" class="hover:text-black transition">Home</a>
+                <a href="/article" class="hover:text-black transition">Article</a>
+                <a href="/booking" class="hover:text-black transition">Booking</a>
+                <a href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
                     Login
-                </Link>
+                </a>
             </div>
         </nav>
 
@@ -132,9 +194,7 @@ const submitForgot = () => {
                     {{ activeTab === 'login' ? 'Login' : 'Sign up' }}
                 </h2>
 
-                <!-- ── Google button ── -->
-                <button class="google-btn" type="button">
-                    <!-- Google "G" SVG -->
+                <button class="google-btn" type="button" @click="initGoogleLogin">
                     <svg class="w-5 h-5" viewBox="0 0 24 24">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>

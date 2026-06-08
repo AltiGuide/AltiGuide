@@ -373,8 +373,8 @@ const downloadBookingETicket = (booking) => {
             </div>
 
             <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
-                <Link href="/" class="hover:text-black transition">Home</Link>
-                <Link href="/booking" class="hover:text-black transition">Booking</Link>
+                <a href="/" class="hover:text-black transition">Home</a>
+                <a href="/booking" class="hover:text-black transition">Booking</a>
                 <Link
                     href="/logout"
                     method="post"
@@ -547,9 +547,9 @@ const downloadBookingETicket = (booking) => {
 
                         <!-- Actions -->
                         <div class="md:col-span-2 flex justify-end gap-3 mt-2">
-                            <Link href="/" class="h-11 px-6 rounded-full border border-[#D6CCAF] flex items-center text-gray-600 font-semibold hover:bg-gray-50 transition">
+                            <a href="/" class="h-11 px-6 rounded-full border border-[#D6CCAF] flex items-center text-gray-600 font-semibold hover:bg-gray-50 transition">
                                 Kembali
-                            </Link>
+                            </a>
                             <button type="submit" :disabled="profileForm.processing"
                                 class="h-11 px-8 rounded-full bg-[#374426] text-white font-semibold hover:bg-[#2c361e] transition disabled:opacity-60 disabled:cursor-not-allowed">
                                 <span v-if="profileForm.processing">Menyimpan...</span>
@@ -634,7 +634,7 @@ const downloadBookingETicket = (booking) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         <p class="font-medium">Belum ada riwayat pemesanan</p>
-                        <Link href="/booking" class="mt-3 inline-block text-sm text-[#64823E] hover:underline font-medium">Mulai Booking →</Link>
+                        <a href="/booking" class="mt-3 inline-block text-sm text-[#64823E] hover:underline font-medium">Mulai Booking →</a>
                     </div>
 
                     <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -795,7 +795,7 @@ const downloadBookingETicket = (booking) => {
                     <span class="text-2xl font-bold text-[#374426] tracking-tight">AltiGuide</span>
                 </div>
                 <div class="flex items-center gap-4">
-                    <Link href="#" class="bg-[#374426] text-[#F8F3E4] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition">Contact Us</Link>
+                    <Link href="mailto:support@altiguide.com" class="bg-[#374426] text-[#F8F3E4] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition">Contact Us</Link>
                     <Link href="/booking" class="bg-[#F8F3E4] text-[#374426] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition shadow-sm">Start Summit</Link>
                 </div>
             </div>
@@ -803,7 +803,7 @@ const downloadBookingETicket = (booking) => {
             <footer class="w-full bg-white px-8 md:px-16 py-8 flex flex-col">
                 <div class="flex flex-col lg:flex-row justify-between items-start gap-10 mb-8">
                     <div class="flex flex-col gap-16">
-                        <Link href="/" class="text-xl font-medium text-[#374426] underline underline-offset-8">AltiGuide.com</Link>
+                        <a href="/" class="text-xl font-medium text-[#374426] underline underline-offset-8">AltiGuide.com</a>
                         <div class="flex items-center gap-5 text-[#828282]">
                             <a href="#" class="hover:text-[#374426] transition">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
@@ -811,7 +811,7 @@ const downloadBookingETicket = (booking) => {
                             <a href="#" class="hover:text-[#374426] transition">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
                             </a>
-                            <a href="#" class="hover:text-[#374426] transition">
+                            <a href="https://www.instagram.com/altiguide___?igsh=MTRwbW8zbW8wZDVubg==" target="_blank" rel="noopener noreferrer" class="hover:text-[#374426] transition">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
                             </a>
                         </div>
@@ -820,25 +820,23 @@ const downloadBookingETicket = (booking) => {
                         <div class="flex flex-col gap-4">
                             <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
-                                <Link href="#" class="hover:text-[#374426] transition">Daftar Gunung</Link>
-                                <Link href="#" class="hover:text-[#374426] transition">Jalur Pendakian</Link>
-                                <Link href="#" class="hover:text-[#374426] transition">Weather Analytics</Link>
+                                <Link href="/mountains" class="hover:text-[#374426] transition">Daftar Gunung</Link>
+                                <Link href="/" class="hover:text-[#374426] transition">Weather Analytics</Link>
                             </div>
                         </div>
                         <div class="flex flex-col gap-4">
                             <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
-                                <Link href="#" class="hover:text-[#374426] transition">Tata Tertib</Link>
+                                <Link href="/article" class="hover:text-[#374426] transition">Tata Tertib</Link>
                                 <Link href="/booking" class="hover:text-[#374426] transition">Booking Simaksi</Link>
-                                <Link href="#" class="hover:text-[#374426] transition">Tips Keamanan</Link>
+                                <Link href="/article" class="hover:text-[#374426] transition">Tips Keamanan</Link>
                             </div>
                         </div>
                         <div class="flex flex-col gap-4">
                             <h5 class="text-[#374426] font-semibold text-base">Komunitas</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
-                                <Link href="#" class="hover:text-[#374426] transition">Event Mendaki</Link>
-                                <Link href="#" class="hover:text-[#374426] transition">Forum Diskusi</Link>
-                                <Link href="#" class="hover:text-[#374426] transition">Tentang Kami</Link>
+                                <Link href="/" class="hover:text-[#374426] transition">Forum Diskusi</Link>
+                                <!-- <Link href="/about" class="hover:text-[#374426] transition">Tentang Kami</Link> -->
                             </div>
                         </div>
                     </div>
