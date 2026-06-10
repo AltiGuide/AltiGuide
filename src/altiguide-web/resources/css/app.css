@@ -7,10 +7,16 @@
   --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-html, body, #app {
+html, body {
   height: auto !important;
   min-height: 100vh;
+}
+body {
   overflow-x: hidden;
+}
+#app {
+  height: auto !important;
+  min-height: 100vh;
 }
 
 /* Animasi Perpindahan Halaman (Vue Router / Inertia) */

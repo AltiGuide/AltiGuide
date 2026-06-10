@@ -278,15 +278,15 @@ const scrollToTop = () => {
                             <h5 class="footer-col-title">Jelajahi</h5>
                             <div class="footer-col-links">
                                 <Link href="/mountains">Daftar Gunung</Link>
-                                <Link href="/">Weather Analytics</Link>
+                                <Link href="/weather-analytics">Weather Analytics</Link>
                             </div>
                         </div>
                         <div class="footer-col">
                             <h5 class="footer-col-title">Informasi</h5>
                             <div class="footer-col-links">
-                                <Link href="/article">Tata Tertib</Link>
+                                <Link href="/tata-tertib">Tata Tertib</Link>
                                 <Link href="/booking">Booking Simaksi</Link>
-                                <Link href="/article">Tips Keamanan</Link>
+                                <Link href="/tips-keamanan">Tips Keamanan</Link>
                             </div>
                         </div>
                         <div class="footer-col">

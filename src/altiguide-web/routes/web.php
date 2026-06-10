@@ -29,6 +29,16 @@ Route::get('/about', function () {
     return \Inertia\Inertia::render('About');
 })->name('about');
 
+Route::get('/tata-tertib', function () {
+    return \Inertia\Inertia::render('TataTertib');
+})->name('tata-tertib');
+
+Route::get('/tips-keamanan', function () {
+    return \Inertia\Inertia::render('TipsKeamanan');
+})->name('tips-keamanan');
+
+Route::get('/weather-analytics', [\App\Http\Controllers\WeatherAnalyticsController::class, 'index'])->name('weather-analytics');
+
 // ── Guest routes (hanya bisa diakses kalau BELUM login) ─────────────────
 
 Route::middleware('guest')->group(function () {
