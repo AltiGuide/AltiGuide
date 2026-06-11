@@ -37,18 +37,6 @@ const props = defineProps({
 const sidebarActive = ref('dashboard')
 
 // ═══════════════════════════════════════════════════════════
-// WEATHER STATUS BANNER (dashboard panel)
-// ═══════════════════════════════════════════════════════════
-const weatherStatus = ref('cerah')
-const weatherLabels = {
-  cerah:   { label: 'Cerah',        icon: '☀️',  color: 'text-green-700 bg-green-50 border-green-200' },
-  berawan: { label: 'Berawan',       icon: '⛅',  color: 'text-gray-700 bg-gray-50 border-gray-200' },
-  hujan:   { label: 'Hujan',         icon: '🌧️', color: 'text-amber-700 bg-amber-50 border-amber-200' },
-  extreme: { label: 'Cuaca Ekstrem', icon: '⛈️', color: 'text-red-700 bg-red-50 border-red-300' },
-}
-const isWeatherExtreme = computed(() => weatherStatus.value === 'extreme')
-
-// ═══════════════════════════════════════════════════════════
 // BOOKING TABLE
 // ═══════════════════════════════════════════════════════════
 const bookingSearch = ref('')
@@ -140,7 +128,7 @@ const logisticsDeclaration = reactive({
 })
 const wasteDeclaration = reactive({ botolPlastik: 0, bungkusMakanan: 0, kaleng: 0, lainnya: 0 })
 const totalWaste    = computed(() => wasteDeclaration.botolPlastik + wasteDeclaration.bungkusMakanan + wasteDeclaration.kaleng + wasteDeclaration.lainnya)
-const canCheckin    = computed(() => !isWeatherExtreme.value)
+const canCheckin    = computed(() => true)
 
 const openCheckinModalDirect = (session) => {
   selectedCheckinGroup.value = session
@@ -660,32 +648,6 @@ const wHourlyForecast = computed(() => {
              PANEL 1: DASHBOARD (BOOKING)
         ══════════════════════════════════ -->
         <div v-if="sidebarActive === 'dashboard'">
-
-          <!-- Weather Alert Banner -->
-          <Transition name="slide-down">
-            <div v-if="isWeatherExtreme" class="mb-4 flex items-center gap-3 px-5 py-3.5 bg-red-600 text-white rounded-2xl shadow-lg">
-              <span class="text-xl">⛈️</span>
-              <div class="flex-1">
-                <p class="font-bold text-sm">PERINGATAN CUACA EKSTREM</p>
-                <p class="text-xs opacity-90">Seluruh pemberangkatan ditangguhkan. Tombol Scan Check-in dinonaktifkan.</p>
-              </div>
-              <button @click="weatherStatus = 'cerah'" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition cursor-pointer">Ubah Status</button>
-            </div>
-          </Transition>
-
-          <!-- Weather Toggle -->
-          <div class="mb-4 flex items-center gap-2">
-            <span class="text-xs text-[#8B9A7B] font-medium">Status Cuaca:</span>
-            <select v-model="weatherStatus" class="text-xs border border-[#D6CCAF] rounded-lg px-2 py-1 bg-white text-[#374426] focus:outline-none cursor-pointer">
-              <option value="cerah">☀️ Cerah</option>
-              <option value="berawan">⛅ Berawan</option>
-              <option value="hujan">🌧️ Hujan</option>
-              <option value="extreme">⛈️ Cuaca Ekstrem</option>
-            </select>
-            <span :class="weatherLabels[weatherStatus].color" class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border">
-              {{ weatherLabels[weatherStatus].icon }} {{ weatherLabels[weatherStatus].label }}
-            </span>
-          </div>
 
           <!-- Stats Cards -->
           <div class="grid grid-cols-4 gap-4 mb-6">
@@ -1391,9 +1353,6 @@ const wHourlyForecast = computed(() => {
             <button @click="closeCheckinModal" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center cursor-pointer"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
           </div>
           <div class="p-6 space-y-5">
-            <div v-if="isWeatherExtreme" class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
-              ⛈️ <span class="font-semibold">Check-in dinonaktifkan saat cuaca ekstrem.</span>
-            </div>
             <!-- Pencatatan Logistik Bawaan -->
             <div>
               <p class="text-sm font-bold text-[#374426] mb-3">Pencatatan Logistik Bawaan</p>
@@ -1423,10 +1382,9 @@ const wHourlyForecast = computed(() => {
               </div>
               <p class="text-xs text-[#8B9A7B] mt-2">Total: {{ totalWaste }} item sampah</p>
             </div>
-            <button @click="processCheckin" :disabled="!canCheckin"
-              :class="canCheckin ? 'bg-[#374426] hover:bg-[#2c361e] cursor-pointer' : 'bg-gray-300 cursor-not-allowed'"
-              class="w-full py-3 text-sm font-bold text-white rounded-xl transition">
-              {{ isWeatherExtreme ? 'Diblokir (Cuaca Ekstrem)' : 'Konfirmasi Check-in' }}
+            <button @click="processCheckin"
+              class="w-full py-3 text-sm font-bold text-white rounded-xl transition bg-[#374426] hover:bg-[#2c361e] cursor-pointer">
+              Konfirmasi Check-in
             </button>
           </div>
         </div>
