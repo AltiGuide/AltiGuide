@@ -821,15 +821,15 @@ const downloadBookingETicket = (booking) => {
                             <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                                 <Link href="/mountains" class="hover:text-[#374426] transition">Daftar Gunung</Link>
-                                <Link href="/" class="hover:text-[#374426] transition">Weather Analytics</Link>
+                                <Link href="/weather-analytics" class="hover:text-[#374426] transition">Weather Analytics</Link>
                             </div>
                         </div>
                         <div class="flex flex-col gap-4">
                             <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
                             <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
-                                <Link href="/article" class="hover:text-[#374426] transition">Tata Tertib</Link>
+                                <Link href="/tata-tertib" class="hover:text-[#374426] transition">Tata Tertib</Link>
                                 <Link href="/booking" class="hover:text-[#374426] transition">Booking Simaksi</Link>
-                                <Link href="/article" class="hover:text-[#374426] transition">Tips Keamanan</Link>
+                                <Link href="/tips-keamanan" class="hover:text-[#374426] transition">Tips Keamanan</Link>
                             </div>
                         </div>
                         <div class="flex flex-col gap-4">

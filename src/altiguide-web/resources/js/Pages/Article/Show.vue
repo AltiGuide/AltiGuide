@@ -124,7 +124,7 @@ const hourlyForecast = computed(() => {
   const now = new Date()
   const idx = weather.value.hourly.time.findIndex(t => new Date(t) >= now)
   const startIndex = idx !== -1 ? idx : 0
-
+  
   return weather.value.hourly.time.slice(startIndex, startIndex + 8).map((timeStr, i) => {
     const actualIndex = startIndex + i
     const d = new Date(timeStr)
@@ -187,11 +187,11 @@ const waterSourceWaypoints = computed(() => {
       </div>
 
       <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base font-semibold text-[#374426]">
-        <a href="/" class="hover:text-black transition">Home</a>
-        <a href="/article" class="hover:text-black transition">Article</a>
-        <a href="/booking" class="hover:text-black transition">Booking</a>
-                <template v-if="authUser">
-          <a
+        <Link href="/" class="hover:text-black transition">Home</Link>
+        <Link href="/article" class="hover:text-black transition">Article</Link>
+        <Link href="/booking" class="hover:text-black transition">Booking</Link>
+        <template v-if="authUser">
+          <Link
             href="/dashboard"
             class="flex items-center gap-2 border border-[#374426] px-4 md:px-5 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap"
           >
@@ -205,12 +205,12 @@ const waterSourceWaypoints = computed(() => {
               {{ authUser.name?.charAt(0)?.toUpperCase() }}
             </span>
             <span>My Dashboard</span>
-          </a>
+          </Link>
         </template>
         <template v-else>
-          <a href="/login" class="border border-[#374426] px-4 md:px-6 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap">
+          <Link href="/login" class="border border-[#374426] px-4 md:px-6 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap">
             Login
-          </a>
+          </Link>
         </template>
       </div>
     </nav>
@@ -256,8 +256,8 @@ const waterSourceWaypoints = computed(() => {
       </div>
     </div>
 
-        <template v-else-if="currentMountain">
-            <div v-if="!selectedRoute" class="w-full flex justify-center py-10">
+    <template v-else-if="currentMountain">
+      <div v-if="!selectedRoute" class="w-full flex justify-center py-10">
         <div
           class="relative rounded-[40px] shadow-2xl p-10 flex flex-col items-center"
           style="max-width: 1340px; width: 100%; min-height: 1000px; background: linear-gradient(180deg, rgba(126,98,63,0.8) 26%, rgba(60,38,12,0.8) 87%);"
@@ -267,7 +267,7 @@ const waterSourceWaypoints = computed(() => {
           </h1>
 
           <div class="w-full flow-root text-[#F8F3E4] leading-relaxed pr-4" style="font-family: 'Poppins', sans-serif;">
-                        <div class="float-left w-[504px] mr-10 mb-6 flex flex-col gap-6">
+            <div class="float-left w-[504px] mr-10 mb-6 flex flex-col gap-6">
               <div class="w-full h-[600px] rounded-[30px] overflow-hidden shadow-lg border-2 border-white/10">
                 <img :src="currentMountain.image" :alt="currentMountain.name" class="w-full h-full object-cover" @error="e => e.target.style.opacity='0'" />
               </div>
@@ -290,8 +290,7 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
             </div>
-
-                        <template v-for="(section, idx) in currentMountain.content" :key="idx">
+            <template v-for="(section, idx) in currentMountain.content" :key="idx">
               <p v-if="!section.title" class="text-justify text-[18px] mb-8">
                 <span class="font-semibold">{{ currentMountain.name }}</span> {{ section.text.substring(section.text.indexOf(' ') + 1) }}
               </p>
@@ -305,9 +304,9 @@ const waterSourceWaypoints = computed(() => {
         </div>
       </div>
 
-            <template v-else>
+      <template v-else>
 
-                <section class="route-hero">
+        <section class="route-hero">
           <div class="route-hero__inner">
             <svg class="route-hero__svg" :viewBox="`0 0 900 220`" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -326,10 +325,10 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-                <section class="route-section route-map-section">
+        <section class="route-section route-map-section">
           <div class="route-container">
             <div class="route-map-frame">
-                            <template v-if="selectedRoute.map_image">
+              <template v-if="selectedRoute.map_image">
                 <div class="route-map-img-wrapper">
                   <img
                     :src="selectedRoute.map_image"
@@ -337,7 +336,7 @@ const waterSourceWaypoints = computed(() => {
                     class="route-map-img"
                     @error="e => e.target.closest('.route-map-img-wrapper').innerHTML = '<div class=\'route-map-empty\'><span class=\'route-map-empty__title\'>Peta tidak dapat dimuat</span></div>'"
                   />
-                                    <button
+                  <button
                     @click="mapLightbox = true"
                     class="route-map-zoom-btn"
                     title="Perbesar peta"
@@ -350,7 +349,7 @@ const waterSourceWaypoints = computed(() => {
                   </button>
                 </div>
 
-                                <Teleport to="body">
+                <Teleport to="body">
                   <Transition name="lightbox">
                     <div
                       v-if="mapLightbox"
@@ -379,7 +378,7 @@ const waterSourceWaypoints = computed(() => {
                 </Teleport>
               </template>
 
-                            <div v-else class="route-map-empty">
+              <div v-else class="route-map-empty">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 text-[#A2825B]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
                 </svg>
@@ -390,12 +389,12 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-                <section class="route-section route-deskripsi-section">
+        <section class="route-section route-deskripsi-section">
           <div class="route-container">
             <div class="route-card">
               <h2 class="route-card__title mb-6">Informasi Basecamp</h2>
 
-                            <div class="route-info-grid">
+              <div class="route-info-grid">
                 <div class="route-info-item">
                   <span class="route-info-item__label">📍 Alamat Basecamp</span>
                   <span class="route-info-item__value">{{ selectedRoute.route_info?.basecamp_address ?? '-' }}</span>
@@ -414,7 +413,7 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
 
-                            <div v-if="selectedRoute.route_info?.logistics_description" class="mt-8">
+              <div v-if="selectedRoute.route_info?.logistics_description" class="mt-8">
                 <h3 class="route-card__subtitle">Karakteristik Jalur</h3>
                 <p class="route-card__text mt-3">{{ selectedRoute.route_info.logistics_description }}</p>
               </div>
@@ -422,7 +421,7 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-                <section class="route-section route-estimasi-section">
+        <section class="route-section route-estimasi-section">
           <div class="route-container">
             <div class="route-card">
               <h2 class="route-card__title text-center mb-8">Estimasi Waktu per Pos</h2>
@@ -430,10 +429,10 @@ const waterSourceWaypoints = computed(() => {
               <div v-if="selectedRoute.waypoints?.length" class="route-estimasi-grid">
                 <div v-for="wp in selectedRoute.waypoints" :key="wp.order_index" class="route-pos-item">
                   <div class="route-pos-item__icon mt-1">
-                                        <svg v-if="wp.has_water_source" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#4A90D9]" viewBox="0 0 24 24" fill="currentColor">
+                    <svg v-if="wp.has_water_source" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#4A90D9]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9V8h2v9zm4 0h-2V8h2v9z"/>
                     </svg>
-                                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#374426]" viewBox="0 0 24 24" fill="currentColor">
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#374426]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                     </svg>
                   </div>
@@ -459,7 +458,7 @@ const waterSourceWaypoints = computed(() => {
                 Data waypoint untuk jalur ini belum tersedia.
               </div>
 
-                            <div class="route-estimasi-legends mt-10 flex flex-col gap-1">
+              <div class="route-estimasi-legends mt-10 flex flex-col gap-1">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-[#4A90D9]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9V8h2v9zm4 0h-2V8h2v9z"/></svg>
                   <span class="text-[#4A90D9] font-medium text-[18px]" style="font-family: 'Montserrat', sans-serif;">Sumber Air</span>
@@ -473,12 +472,12 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-                <section class="route-section route-stats-section">
+        <section class="route-section route-stats-section">
           <div class="route-container">
             <div class="route-stats-wrapper">
 
-                            <div class="route-stats-gallery">
-                                <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
+              <div class="route-stats-gallery">
+                <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
                   <img
                     v-if="selectedRoute.image"
                     :src="selectedRoute.image"
@@ -496,7 +495,7 @@ const waterSourceWaypoints = computed(() => {
                   </div>
                 </div>
 
-                                <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
+                <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
                   <img
                     v-if="currentMountain.image"
                     :src="currentMountain.image"
@@ -515,8 +514,8 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
 
-                            <div class="route-stats-info route-card">
-                                <div class="route-stats-block">
+              <div class="route-stats-info route-card">
+                <div class="route-stats-block">
                   <h3 class="route-stats-block__title">Statistik Jalur</h3>
                   <ul class="route-stats-list">
                     <li v-if="selectedRoute.distance">
@@ -544,7 +543,7 @@ const waterSourceWaypoints = computed(() => {
                   </ul>
                 </div>
 
-                                <div class="route-stats-block">
+                <div class="route-stats-block">
                   <h3 class="route-stats-block__title">Tips Khusus</h3>
                   <div v-if="selectedRoute.route_info?.logistics_description" class="route-stats-tip">
                     <span class="route-stats-tip__label">🏔️ Karakteristik:</span>
@@ -567,10 +566,9 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-                <section class="route-section route-weather-section">
+        <section class="route-section route-weather-section">
           <div class="route-container">
-
-                        <div v-if="weatherLoading" class="route-weather-card flex items-center justify-center" style="min-height: 220px;">
+            <div v-if="weatherLoading" class="route-weather-card flex items-center justify-center" style="min-height: 220px;">
               <div class="flex flex-col items-center gap-4 text-white/70">
                 <svg class="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -580,7 +578,7 @@ const waterSourceWaypoints = computed(() => {
               </div>
             </div>
 
-                        <div v-else-if="weatherError" class="w-full flex justify-center py-20">
+            <div v-else-if="weatherError" class="w-full flex justify-center py-20">
               <div class="text-center text-[#E6E6E6]/70 px-8" style="font-family: 'Montserrat', sans-serif;">
                 <p class="text-lg mb-2">⚠️ Gagal memuat data cuaca</p>
                 <p class="text-sm">{{ weatherError }}</p>
@@ -588,11 +586,10 @@ const waterSourceWaypoints = computed(() => {
             </div>
 
             <div v-else-if="weather" class="w-full mt-8 mb-12 rounded-[40px] p-8 md:p-12 text-[#E6E6E6] relative overflow-hidden shadow-[0_20px_50px_rgba(20,30,80,0.5)]" style="background: linear-gradient(to top left, #4021CB 0%, #7176C9 25%, #122E80 100%); font-family: 'Montserrat', sans-serif;">
-                            <h2 class="text-center font-bold text-2xl mb-8 tracking-wide">Cuaca</h2>
-
-                            <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-8">
-                                <div class="flex flex-1 flex-col sm:flex-row items-center sm:items-center justify-start gap-4 sm:gap-12 w-full">
-                                    <div class="flex flex-col justify-center">
+              <h2 class="text-center font-bold text-2xl mb-8 tracking-wide">Cuaca</h2>
+              <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-8">
+                <div class="flex flex-1 flex-col sm:flex-row items-center sm:items-center justify-start gap-4 sm:gap-12 w-full">
+                  <div class="flex flex-col justify-center">
                     <h3 class="text-[32px] md:text-[40px] font-bold leading-[1.1] text-center sm:text-left">Gunung<br/>{{ currentMountain.name.replace('Gunung ', '') }}</h3>
                     <div class="mt-1 text-center sm:text-left">
                       <span class="text-[56px] md:text-[72px] font-bold leading-none">{{ Math.round(weather.current?.temperature_2m ?? 0) }}°C</span>
@@ -600,12 +597,12 @@ const waterSourceWaypoints = computed(() => {
                     <div class="text-[#E6E6E6]/80 text-lg font-medium -mt-2 text-center sm:text-left">Real feel {{ Math.round(weather.current?.apparent_temperature ?? 0) }}°C</div>
                   </div>
 
-                                    <div class="flex justify-center items-center relative">
+                  <div class="flex justify-center items-center relative">
                     <img :src="getWmoIcon(weather.current?.weathercode)" alt="Current Weather" class="w-48 h-48 md:w-56 md:h-56 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)] z-10" />
                   </div>
                 </div>
 
-                                <div class="w-full lg:w-[400px] xl:w-[450px] bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shrink-0">
+                <div class="w-full lg:w-[400px] xl:w-[450px] bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shrink-0">
                   <h4 class="text-sm font-semibold mb-4 text-[#E6E6E6]/90">3 Days Forecast</h4>
                   <div class="flex flex-col gap-4">
                     <div v-for="(date, i) in weather.daily?.time?.slice(0, 3)" :key="date" class="flex items-center justify-between border-b border-white/10 pb-3 last:border-0 last:pb-0">
@@ -618,7 +615,7 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
 
-                            <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 mb-6">
+              <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 mb-6">
                 <div class="flex justify-between items-center mb-4 text-sm font-medium">
                   <span class="text-[#E6E6E6]/90">Hourly Forecast</span>
                   <div class="flex items-center gap-2 text-[#E6E6E6]/80">
@@ -635,7 +632,7 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
 
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
                   <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -643,7 +640,7 @@ const waterSourceWaypoints = computed(() => {
                   </div>
                   <span class="text-lg font-semibold">{{ Math.round(weather.current?.windspeed_10m ?? 0) }} km/h</span>
                 </div>
-
+                
                 <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
                   <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a5 5 0 106 0v-9a3 3 0 00-6 0v9z" /></svg>
@@ -673,7 +670,8 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-                <div class="w-full max-w-[1340px] mx-auto px-6 pb-16 flex justify-center mt-8">
+        <!-- Back button -->
+        <div class="w-full max-w-[1340px] mx-auto px-6 pb-16 flex justify-center mt-8">
           <button
             @click="selectedRoute = null"
             class="flex items-center gap-2 bg-[#374426] text-[#F8F3E4] font-medium text-[14px] px-5 py-2.5 rounded-lg hover:opacity-90 transition-all shadow-sm hover:scale-[1.02]"
@@ -688,7 +686,8 @@ const waterSourceWaypoints = computed(() => {
 
       </template>
 
-            <div v-if="!selectedRoute" class="w-full flex flex-col items-center mt-[40px] pb-24 px-4">
+      <!-- Other destinations -->
+      <div v-if="!selectedRoute" class="w-full flex flex-col items-center mt-[40px] pb-24 px-4">
         <div class="w-full max-w-[1340px] flex flex-col">
           <h2 class="text-[#64823E] font-bold text-[48px] mb-[32px]" style="font-family: 'Montserrat', sans-serif;">Other Destinations</h2>
 
@@ -721,7 +720,8 @@ const waterSourceWaypoints = computed(() => {
       </div>
     </template>
 
-        <div class="w-full flex flex-col mt-auto">
+    <!-- Footer -->
+    <div class="w-full flex flex-col mt-auto">
       <div class="w-full bg-[#E0DBBE] py-10 px-8 md:px-16 xl:px-24 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
           <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" />
@@ -732,18 +732,18 @@ const waterSourceWaypoints = computed(() => {
           <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <a href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
-          </a>
+          </Link>
         </div>
       </div>
 
       <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
         <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
           <div class="flex flex-col gap-[96px]">
-            <a href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
               AltiGuide.com
-            </a>
+            </Link>
             <div class="flex items-center gap-6 text-[#828282]">
               <a href="#" class="hover:text-[#374426] transition-colors">
                 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
@@ -762,16 +762,16 @@ const waterSourceWaypoints = computed(() => {
               <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <Link href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+                <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
 
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+                <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+                <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
 
@@ -815,6 +815,7 @@ h1 {
   padding: 40px 0;
 }
 
+/* ── Hero ─────────────────────────────────────────────────────────── */
 .route-hero {
   width: 100%;
   background: #F8F3E4;
@@ -861,6 +862,7 @@ h1 {
   fill: #FFFEF0;
 }
 
+/* ── Map ──────────────────────────────────────────────────────────── */
 .route-map-section {
   background: #F8F3E4;
   padding-top: 0;
@@ -875,6 +877,7 @@ h1 {
   position: relative;
 }
 
+/* Map image: constrained height, full map visible */
 .route-map-img-wrapper {
   position: relative;
   width: 100%;
@@ -896,6 +899,7 @@ h1 {
   box-shadow: 0 4px 24px rgba(0,0,0,0.12);
 }
 
+/* Zoom button overlay */
 .route-map-zoom-btn {
   position: absolute;
   bottom: 16px;
@@ -922,6 +926,7 @@ h1 {
   transform: scale(1.04);
 }
 
+/* Lightbox */
 .route-lightbox {
   position: fixed;
   inset: 0;
@@ -980,6 +985,7 @@ h1 {
   background: rgba(255,255,255,0.3);
 }
 
+/* Lightbox transition */
 .lightbox-enter-active,
 .lightbox-leave-active {
   transition: opacity 0.25s ease;
@@ -1019,6 +1025,7 @@ h1 {
   line-height: 1.6;
 }
 
+/* ── Card base ─────────────────────────────────────────────────────── */
 .route-card {
   background: linear-gradient(135deg, #E5E6D5 0%, #C3CE8F 100%);
   border-radius: 40px;
@@ -1053,6 +1060,7 @@ h1 {
   text-align: justify;
 }
 
+/* ── Info grid (basecamp info) ──────────────────────────────────── */
 .route-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1084,6 +1092,7 @@ h1 {
   line-height: 1.5;
 }
 
+/* ── Deskripsi section ─────────────────────────────────────────────── */
 .route-deskripsi-section {
   background: #F8F3E4;
   padding-top: 45px;
@@ -1093,6 +1102,7 @@ h1 {
   gap: 12px;
 }
 
+/* ── Estimasi section ──────────────────────────────────────────────── */
 .route-estimasi-section {
   background: #F8F3E4;
   padding-top: 45px;
@@ -1166,6 +1176,7 @@ h1 {
   padding-top: 16px;
 }
 
+/* ── Stats section ─────────────────────────────────────────────────── */
 .route-stats-section {
   background: #F8F3E4;
 }
@@ -1242,6 +1253,7 @@ h1 {
   text-align: justify;
 }
 
+/* ── Weather section ───────────────────────────────────────────────── */
 .route-weather-section {
   background: #F8F3E4;
   padding-bottom: 60px;

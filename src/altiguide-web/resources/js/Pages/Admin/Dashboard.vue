@@ -679,15 +679,15 @@ const docStatusIcon = (status) => {
               <h5 class="text-[#374426] font-semibold text-sm">Jelajahi</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <Link href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+                <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
             <div class="flex flex-col gap-4">
               <h5 class="text-[#374426] font-semibold text-sm">Informasi</h5>
               <div class="flex flex-col gap-3 text-[#5A684C] text-xs">
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+                <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+                <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
             <div class="flex flex-col gap-4">

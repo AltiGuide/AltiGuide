@@ -151,16 +151,16 @@ const authUser = computed(() => page.props.auth?.user)
               <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <Link href="/" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+                <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
 
             <div class="flex flex-col gap-5">
               <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
               <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+                <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
-                <Link href="/article" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+                <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
 
