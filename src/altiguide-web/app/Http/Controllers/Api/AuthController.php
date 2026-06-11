@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -219,6 +220,68 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Profil berhasil diperbarui.',
             'user'    => $request->user()->fresh(),
+        ]);
+    }
+
+    /**
+     * Login via Google ID token.
+     */
+    public function loginWithGoogle(Request $request)
+    {
+        $request->validate([
+            'id_token' => ['required', 'string']
+        ]);
+
+        $googleResponse = Http::get('https://oauth2.googleapis.com/tokeninfo', [
+            'id_token' => $request->id_token
+        ]);
+
+        if (!$googleResponse->successful()) {
+            return response()->json(['message' => 'Google ID Token tidak valid.'], 401);
+        }
+
+        $googleData = $googleResponse->json();
+        $email = $googleData['email'] ?? null;
+        $googleId = $googleData['sub'] ?? null;
+
+        if (!$email || !$googleId) {
+            return response()->json(['message' => 'Gagal mendapatkan data email atau sub dari Google.'], 400);
+        }
+
+        $user = User::where('email', $email)
+            ->orWhere('google_id', $googleId)
+            ->first();
+
+        if (!$user) {
+            $user = User::create([
+                'name'              => $googleData['name'] ?? 'Google User',
+                'email'             => $email,
+                'google_id'         => $googleId,
+                'avatar'            => $googleData['picture'] ?? null,
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            $updatedData = [];
+            if (empty($user->google_id)) {
+                $updatedData['google_id'] = $googleId;
+            }
+            if (empty($user->avatar) && isset($googleData['picture'])) {
+                $updatedData['avatar'] = $googleData['picture'];
+            }
+            if (empty($user->email_verified_at)) {
+                $updatedData['email_verified_at'] = now();
+            }
+            if (!empty($updatedData)) {
+                $user->update($updatedData);
+            }
+        }
+
+        $token = $user->createToken('mobile-app')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login berhasil!',
+            'user'    => $user,
+            'token'   => $token,
         ]);
     }
 }

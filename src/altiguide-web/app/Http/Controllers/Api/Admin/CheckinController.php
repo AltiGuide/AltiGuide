@@ -15,6 +15,9 @@ class CheckinController extends Controller
      */
     public function scan(Request $request, $orderId)
     {
+        // Bersihkan orderId dari awalan '#' jika ada
+        $orderId = ltrim($orderId, '#');
+
         // Ambil data admin yang sedang request/scan (bisa dari Sanctum atau session admin)
         $admin = $request->user('admin') ?? $request->user();
 
@@ -52,6 +55,14 @@ class CheckinController extends Controller
             ], 400); // 400 Bad Request karena tiketnya bermasalah
         }
 
+        // Tiket wajib sudah terverifikasi dokumennya oleh admin
+        if ($transaction->hikingSession && $transaction->hikingSession->verification_status !== 'terverifikasi') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Booking belum diverifikasi.'
+            ], 400);
+        }
+
         return response()->json([
             'status'  => 'success',
             'message' => 'Data tiket Valid dan Lunas. Tersertifikasi dari Pos Anda.',
@@ -65,6 +76,9 @@ class CheckinController extends Controller
      */
     public function updateStatus(Request $request, $orderId)
     {
+        // Bersihkan orderId dari awalan '#' jika ada
+        $orderId = ltrim($orderId, '#');
+
         $request->validate([
             'status' => 'required|in:prepared,on_track,finished'
         ]);
@@ -100,17 +114,6 @@ class CheckinController extends Controller
 
         $currentStatus = $hikingSession->status;
         $newStatus = $request->status;
-
-        // Validasi Alur Logika
-        if ($currentStatus === 'finished' && $newStatus !== 'finished') {
-            // Superadmin mungkin boleh mengubah (Misal jika salah pencet), tapi basecamp_staff tidak boleh gampang mengubah balik data yang udah 'selesai'.
-            if ($admin && $admin->role === 'basecamp_staff') {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => 'Rombongan ini sudah ditandai turun (finished). Anda tidak bisa mengulangi status pendakian.'
-                ], 422);
-            }
-        }
 
         $hikingSession->status = $newStatus;
         $hikingSession->save();
