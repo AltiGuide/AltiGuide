@@ -83,26 +83,26 @@ const authUser = computed(() => page.props.auth?.user)
     </main>
 
     <div class="w-full flex flex-col mt-auto">
-      <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
-        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
-          <div class="flex flex-col gap-[96px]">
-            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+      <footer class="w-full bg-[#FFFFFF] px-6 md:px-12 xl:px-20 py-8 flex flex-col">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-6">
+          <div class="flex flex-col gap-[48px]">
+            <Link href="/" class="text-[20px] font-medium text-[#374426] underline underline-offset-4">
               AltiGuide.com
             </Link>
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+          <div class="flex flex-col sm:flex-row gap-8 md:gap-16 xl:gap-24">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
                 <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                 <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
                 <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
@@ -111,7 +111,7 @@ const authUser = computed(() => page.props.auth?.user)
           </div>
         </div>
 
-        <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
+        <div class="w-full border-t border-[#D7DDC2] pt-4 flex justify-end">
           <p class="text-[#5A684C] font-medium text-[14px]">
             © 2026 AltiGuide Team. All rights reserved.
           </p>

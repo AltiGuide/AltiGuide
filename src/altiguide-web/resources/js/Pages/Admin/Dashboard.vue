@@ -352,7 +352,7 @@ const docStatusIcon = (status) => {
       <!-- ═══ Sidebar ═══ -->
       <aside class="w-56 bg-[#F4F1E6] border-r border-[#D6CCAF] flex flex-col py-6 px-4 shrink-0">
         <!-- Admin Profile -->
-        <div class="flex items-center gap-3 mb-8 px-2">
+        <div class="flex items-center gap-3 mb-6 px-2">
           <div class="w-10 h-10 rounded-full bg-[#374426] flex items-center justify-center text-white font-bold text-sm">
             {{ adminName.split(' ').map(n => n[0]).join('').slice(0, 2) }}
           </div>
@@ -646,19 +646,19 @@ const docStatusIcon = (status) => {
     <!-- ══════════════ Footer ══════════════ -->
     <footer class="w-full border-t border-[#D6CCAF]">
       <!-- CTA Banner -->
-      <div class="w-full bg-[#E0DBBE] py-8 px-8 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="w-full bg-[#E0DBBE] py-5 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
           <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 object-contain" />
           <span class="text-2xl font-bold text-[#374426] tracking-tight">AltiGuide</span>
         </div>
         <div class="flex items-center gap-4">
-          <button class="bg-[#374426] text-[#F8F3E4] font-medium rounded-xl px-6 py-3 hover:opacity-90 transition-opacity cursor-pointer">Contact Us</button>
-          <button class="bg-[#F8F3E4] text-[#374426] font-medium rounded-xl px-6 py-3 hover:opacity-90 transition-opacity shadow-sm cursor-pointer">Start Summit</button>
+          <button class="bg-[#374426] text-[#F8F3E4] font-medium rounded-lg px-5 py-2 hover:opacity-90 transition-opacity cursor-pointer">Contact Us</button>
+          <button class="bg-[#F8F3E4] text-[#374426] font-medium rounded-lg px-5 py-2 hover:opacity-90 transition-opacity shadow-sm cursor-pointer">Start Summit</button>
         </div>
       </div>
 
       <!-- Footer Links -->
-      <div class="w-full bg-white px-8 md:px-16 py-8">
+      <div class="w-full bg-white px-6 md:px-12 py-6">
         <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-6">
           <div class="flex flex-col gap-16">
             <span class="text-lg font-medium text-[#374426] underline underline-offset-8">AltiGuide.com</span>
