@@ -30,3 +30,7 @@ data class UserModel(
     val nik: String?
 )
 
+data class GoogleAuthRequest(
+    val id_token: String
+)
+

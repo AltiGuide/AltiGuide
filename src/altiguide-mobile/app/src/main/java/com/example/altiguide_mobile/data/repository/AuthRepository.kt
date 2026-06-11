@@ -4,6 +4,7 @@ import com.example.altiguide_mobile.data.model.AuthResponse
 import com.example.altiguide_mobile.data.model.LoginRequest
 import com.example.altiguide_mobile.data.model.RegisterRequest
 import com.example.altiguide_mobile.data.model.UserModel
+import com.example.altiguide_mobile.data.model.GoogleAuthRequest
 import com.example.altiguide_mobile.data.network.AltiGuideApiService
 import com.example.altiguide_mobile.util.AuthDataStore
 import retrofit2.Response
@@ -17,6 +18,14 @@ class AuthRepository @Inject constructor(
 ) {
     suspend fun login(request: LoginRequest): AuthResponse {
         val response = apiService.login(request)
+        response.token?.let {
+            authDataStore.saveToken(it)
+        }
+        return response
+    }
+
+    suspend fun loginWithGoogle(idToken: String): AuthResponse {
+        val response = apiService.loginWithGoogle(GoogleAuthRequest(idToken))
         response.token?.let {
             authDataStore.saveToken(it)
         }
