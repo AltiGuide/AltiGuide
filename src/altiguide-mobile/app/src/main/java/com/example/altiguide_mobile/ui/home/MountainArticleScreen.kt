@@ -3,8 +3,6 @@ package com.example.altiguide_mobile.ui.home
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,6 +14,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -344,7 +347,7 @@ fun MountainArticleScreen(
                         .height(180.dp)
                         .clip(RoundedCornerShape(16.dp))
                 ) {
-                    MapPreviewWebView(
+                    OsmMapView(
                         latitude = mountain.latitude ?: -7.4497,
                         longitude = mountain.longitude ?: 110.4381,
                         modifier = Modifier.fillMaxSize()
@@ -457,44 +460,104 @@ private fun InfoItem(
 }
 
 @Composable
-private fun MapPreviewWebView(
+private fun OsmMapView(
     latitude: Double,
     longitude: Double,
     modifier: Modifier = Modifier
 ) {
-    AndroidView(
-        factory = { ctx ->
-            WebView(ctx).apply {
-                webViewClient = WebViewClient()
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                
-                val bboxMinLon = longitude - 0.015
-                val bboxMinLat = latitude - 0.015
-                val bboxMaxLon = longitude + 0.015
-                val bboxMaxLat = latitude + 0.015
-                
-                val url = "https://www.openstreetmap.org/export/embed.html?bbox=$bboxMinLon%2C$bboxMinLat%2C$bboxMaxLon%2C$bboxMaxLat&layer=mapnik&marker=$latitude%2C$longitude"
-                loadUrl(url)
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val mapView = remember {
+        org.osmdroid.views.MapView(context).apply {
+            org.osmdroid.config.Configuration.getInstance().apply {
+                userAgentValue = context.packageName
+                load(context, context.getSharedPreferences("osmdroid", android.content.Context.MODE_PRIVATE))
             }
-        },
+            setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK)
+            setMultiTouchControls(false)
+            isClickable = false
+            isFocusable = false
+            controller.setZoom(13.0)
+            controller.setCenter(org.osmdroid.util.GeoPoint(latitude, longitude))
+
+            // Add a marker at the mountain location
+            val marker = org.osmdroid.views.overlay.Marker(this)
+            marker.position = org.osmdroid.util.GeoPoint(latitude, longitude)
+            marker.setAnchor(
+                org.osmdroid.views.overlay.Marker.ANCHOR_CENTER,
+                org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM
+            )
+            overlays.add(marker)
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                Lifecycle.Event.ON_PAUSE  -> mapView.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            mapView.onDetach()
+        }
+    }
+
+    AndroidView(
+        factory = { mapView },
         modifier = modifier
     )
 }
 
+
 private fun launchGoogleMaps(context: Context, mountain: MountainModel) {
     val lat = mountain.latitude ?: -7.4497
     val lon = mountain.longitude ?: 110.4381
-    val gmmIntentUri = Uri.parse("geo:$lat,$lon?q=${Uri.encode(mountain.name)}")
-    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-        setPackage("com.google.android.apps.maps")
+    val encodedName = Uri.encode(mountain.name)
+
+    // Strategy 1: Try Google Maps app via geo: URI (checks if app is available first)
+    val geoUri = Uri.parse("geo:$lat,$lon?q=$encodedName")
+    val geoIntent = Intent(Intent.ACTION_VIEW, geoUri).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    val mapsAppInstalled = context.packageManager
+        .queryIntentActivities(geoIntent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+        .any { it.activityInfo.packageName == "com.google.android.apps.maps" }
+
+    if (mapsAppInstalled) {
+        geoIntent.setPackage("com.google.android.apps.maps")
+        try {
+            context.startActivity(geoIntent)
+            return
+        } catch (_: Exception) {}
+    }
+
+    // Strategy 2: Universal Google Maps URL — opens Maps app if installed, otherwise browser
+    val mapsUrl = "https://www.google.com/maps/search/?api=1&query=$lat,$lon&query_place_id=$encodedName"
+    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     try {
-        context.startActivity(mapIntent)
-    } catch (e: Exception) {
-        // Fallback to web browser search if maps app is missing
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$lon"))
         context.startActivity(browserIntent)
+    } catch (_: Exception) {
+        // Strategy 3: Simple maps.google.com fallback
+        try {
+            val fallbackIntent = Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://maps.google.com/maps?q=$lat,$lon")).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(fallbackIntent)
+        } catch (_: Exception) {
+            android.widget.Toast.makeText(
+                context,
+                "Tidak dapat membuka peta. Pastikan browser atau Google Maps terinstall.",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
     }
 }
 
