@@ -18,6 +18,12 @@ class HikingSession extends Model
         'end_date',
         'hike_type',
         'status',
+        'verification_status',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
     ];
 
     public function leader()

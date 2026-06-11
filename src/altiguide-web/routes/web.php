@@ -148,6 +148,7 @@ Route::middleware('auth')->group(function () {
                 'end_date'     => $session?->end_date,
                 'member_count' => $session?->members?->count() ?? 0,
                 'group_name'   => $session?->group_name,
+                'verification_status' => $session?->verification_status ?? 'pending_review',
                 'hike_type'    => $session?->hike_type,
                 'leader'       => $session?->leader ? [
                     'name'  => $session->leader->name,
@@ -200,9 +201,18 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['auth:admin', 'is_admin'])->group(function () {
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 
-        Route::get('/dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
-        })->name('admin.dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+
+        // Booking verification update
+        Route::put('/bookings/{id}/verify', [\App\Http\Controllers\Admin\DashboardController::class, 'updateVerification'])->name('admin.bookings.verify');
+
+        // Mountain content management (artikel gunung & info jalur)
+        Route::put('/content/mountains/{mountain}', [\App\Http\Controllers\Admin\ContentController::class, 'updateMountainContent'])->name('admin.content.mountain.update');
+        Route::put('/content/routes/{route}/info', [\App\Http\Controllers\Admin\ContentController::class, 'updateRouteInfo'])->name('admin.content.route.info.update');
+
+        // QR Code Check-in scan & update status (Web Session)
+        Route::get('/checkin/scan/{order_id}', [\App\Http\Controllers\Api\Admin\CheckinController::class, 'scan'])->name('admin.checkin.scan');
+        Route::put('/checkin/status/{order_id}', [\App\Http\Controllers\Api\Admin\CheckinController::class, 'updateStatus'])->name('admin.checkin.status');
 
         // CMS Manajemen Gunung (Mountain CRUD)
         Route::resource('mountains', \App\Http\Controllers\Admin\MountainController::class)->names([
