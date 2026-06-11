@@ -291,11 +291,11 @@ const waterSourceWaypoints = computed(() => {
               </div>
             </div>
             <template v-for="(section, idx) in currentMountain.content" :key="idx">
-              <p v-if="!section.title" class="text-justify text-[18px] mb-8">
+              <p v-if="!section.title" class="text-justify text-[18px] mb-6">
                 <span class="font-semibold">{{ currentMountain.name }}</span> {{ section.text.substring(section.text.indexOf(' ') + 1) }}
               </p>
 
-              <div v-else class="flex flex-col gap-2 mb-8">
+              <div v-else class="flex flex-col gap-2 mb-6">
                 <h3 class="font-semibold text-xl text-[#F8F3E4]">{{ section.title }}</h3>
                 <p class="text-justify text-[18px]">{{ section.text }}</p>
               </div>
@@ -424,7 +424,7 @@ const waterSourceWaypoints = computed(() => {
         <section class="route-section route-estimasi-section">
           <div class="route-container">
             <div class="route-card">
-              <h2 class="route-card__title text-center mb-8">Estimasi Waktu per Pos</h2>
+              <h2 class="route-card__title text-center mb-6">Estimasi Waktu per Pos</h2>
 
               <div v-if="selectedRoute.waypoints?.length" class="route-estimasi-grid">
                 <div v-for="wp in selectedRoute.waypoints" :key="wp.order_index" class="route-pos-item">
@@ -586,8 +586,8 @@ const waterSourceWaypoints = computed(() => {
             </div>
 
             <div v-else-if="weather" class="w-full mt-8 mb-12 rounded-[40px] p-8 md:p-12 text-[#E6E6E6] relative overflow-hidden shadow-[0_20px_50px_rgba(20,30,80,0.5)]" style="background: linear-gradient(to top left, #4021CB 0%, #7176C9 25%, #122E80 100%); font-family: 'Montserrat', sans-serif;">
-              <h2 class="text-center font-bold text-2xl mb-8 tracking-wide">Cuaca</h2>
-              <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-8">
+              <h2 class="text-center font-bold text-2xl mb-6 tracking-wide">Cuaca</h2>
+              <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-6">
                 <div class="flex flex-1 flex-col sm:flex-row items-center sm:items-center justify-start gap-4 sm:gap-12 w-full">
                   <div class="flex flex-col justify-center">
                     <h3 class="text-[32px] md:text-[40px] font-bold leading-[1.1] text-center sm:text-left">Gunung<br/>{{ currentMountain.name.replace('Gunung ', '') }}</h3>
@@ -722,62 +722,62 @@ const waterSourceWaypoints = computed(() => {
 
     <!-- Footer -->
     <div class="w-full flex flex-col mt-auto">
-      <div class="w-full bg-[#E0DBBE] py-10 px-8 md:px-16 xl:px-24 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="w-full bg-[#E0DBBE] py-6 px-6 md:px-12 xl:px-20 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
-          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" />
-          <span class="text-2xl md:text-3xl xl:text-[32px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
+          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
+          <span class="text-xl md:text-2xl xl:text-[28px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
         </div>
 
         <div class="flex items-center gap-4">
-          <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[18px] md:text-[20px] font-medium rounded-lg px-6 py-2.5 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[18px] md:text-[20px] font-medium rounded-lg px-6 py-2.5 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
           </Link>
         </div>
       </div>
 
-      <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
-        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
-          <div class="flex flex-col gap-[96px]">
-            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+      <footer class="w-full bg-[#FFFFFF] px-6 md:px-12 xl:px-20 py-8 flex flex-col">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-6">
+          <div class="flex flex-col gap-[48px]">
+            <Link href="/" class="text-[20px] font-medium text-[#374426] underline underline-offset-4">
               AltiGuide.com
             </Link>
             <div class="flex items-center gap-6 text-[#828282]">
               <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
               </a>
               <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
               </a>
               <a href="https://www.instagram.com/altiguide___?igsh=MTRwbW8zbW8wZDVubg==" target="_blank" rel="noopener noreferrer" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
               </a>
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+          <div class="flex flex-col sm:flex-row gap-8 md:gap-16 xl:gap-24">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
                 <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                 <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
                 <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Komunitas</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Komunitas</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                 <Link href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
                 <!-- <Link href="/about" class="hover:text-[#374426] transition-colors">Tentang Kami</Link> -->
               </div>
@@ -785,7 +785,7 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </div>
 
-        <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
+        <div class="w-full border-t border-[#D7DDC2] pt-4 flex justify-end">
           <p class="text-[#5A684C] font-medium text-[14px]">
             © 2026 AltiGuide Team. All rights reserved.
           </p>

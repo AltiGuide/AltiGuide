@@ -888,7 +888,7 @@ const downloadBookingETicket = (booking) => {
 
                 <!-- ── Change Password Form ── -->
                 <div v-if="activeSection === 'password'" class="p-5 md:p-6">
-                    <form @submit.prevent="submitPassword" class="flex flex-col gap-5 max-w-lg">
+                    <form @submit.prevent="submitPassword" class="flex flex-col gap-4 max-w-lg">
 
                         <!-- Current Password -->
                         <div class="flex flex-col gap-1.5">
@@ -1116,19 +1116,19 @@ const downloadBookingETicket = (booking) => {
 
         <!-- ══════════════ Footer ══════════════ -->
         <div class="w-full flex flex-col">
-            <div class="w-full bg-[#E0DBBE] py-8 px-8 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="w-full bg-[#E0DBBE] py-5 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-3">
                     <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 object-contain" />
                     <span class="text-2xl font-bold text-[#374426] tracking-tight">AltiGuide</span>
                 </div>
                 <div class="flex items-center gap-4">
-                    <Link href="mailto:support@altiguide.com" class="bg-[#374426] text-[#F8F3E4] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition">Contact Us</Link>
-                    <Link href="/booking" class="bg-[#F8F3E4] text-[#374426] text-base font-medium rounded-xl px-8 py-3 hover:opacity-90 transition shadow-sm">Start Summit</Link>
+                    <Link href="mailto:support@altiguide.com" class="bg-[#374426] text-[#F8F3E4] text-sm md:text-base font-medium rounded-lg px-5 py-2.5 hover:opacity-90 transition">Contact Us</Link>
+                    <Link href="/booking" class="bg-[#F8F3E4] text-[#374426] text-sm md:text-base font-medium rounded-lg px-5 py-2.5 hover:opacity-90 transition shadow-sm">Start Summit</Link>
                 </div>
             </div>
 
-            <footer class="w-full bg-white px-8 md:px-16 py-8 flex flex-col">
-                <div class="flex flex-col lg:flex-row justify-between items-start gap-10 mb-8">
+            <footer class="w-full bg-white px-6 md:px-12 py-6 flex flex-col">
+                <div class="flex flex-col lg:flex-row justify-between items-start gap-10 mb-6">
                     <div class="flex flex-col gap-16">
                         <a href="/" class="text-xl font-medium text-[#374426] underline underline-offset-8">AltiGuide.com</a>
                         <div class="flex items-center gap-5 text-[#828282]">
