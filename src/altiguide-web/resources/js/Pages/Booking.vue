@@ -456,7 +456,7 @@ const scrollToTop = () => {
 
 .footer-cta {
     background: #E0DBBE;
-    padding: 32px 48px;
+    padding: 24px 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -468,16 +468,16 @@ const scrollToTop = () => {
     gap: 12px;
 }
 
-.cta-logo { width: 40px; height: 40px; object-fit: contain; }
-.cta-brand-name { font-weight: 700; font-size: 28px; color: #374426; }
+.cta-logo { width: 32px; height: 32px; object-fit: contain; }
+.cta-brand-name { font-weight: 700; font-size: 24px; color: #374426; }
 
 .cta-buttons { display: flex; gap: 12px; }
 
 .cta-btn {
     display: inline-block;
     font-weight: 600;
-    font-size: 18px;
-    padding: 14px 28px;
+    font-size: 16px;
+    padding: 10px 20px;
     border-radius: 12px;
     text-decoration: none;
     transition: opacity 0.2s ease;
@@ -489,26 +489,26 @@ const scrollToTop = () => {
 
 .footer-links {
     background: #fff;
-    padding: 36px 48px;
+    padding: 24px 32px;
 }
 
 .footer-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 48px;
-    margin-bottom: 28px;
+    gap: 32px;
+    margin-bottom: 20px;
 }
 
 .footer-left {
     display: flex;
     flex-direction: column;
-    gap: 80px;
+    gap: 32px;
 }
 
 .footer-site-link {
     font-weight: 500;
-    font-size: 20px;
+    font-size: 18px;
     color: #374426;
     text-decoration: underline;
     text-underline-offset: 6px;
@@ -517,9 +517,9 @@ const scrollToTop = () => {
 .footer-socials { display: flex; gap: 20px; }
 .social-icon { color: #828282; transition: color 0.2s ease; }
 .social-icon:hover { color: #374426; }
-.social-icon svg { width: 24px; height: 24px; }
+.social-icon svg { width: 20px; height: 20px; }
 
-.footer-columns { display: flex; gap: 64px; }
+.footer-columns { display: flex; gap: 40px; }
 .footer-col { display: flex; flex-direction: column; gap: 16px; }
 .footer-col-title { font-weight: 600; font-size: 16px; color: #374426; }
 .footer-col-links { display: flex; flex-direction: column; gap: 12px; }
@@ -528,7 +528,7 @@ const scrollToTop = () => {
 
 .footer-bottom {
     border-top: 1px solid #D7DDC2;
-    padding-top: 20px;
+    padding-top: 16px;
     display: flex;
     justify-content: flex-end;
 }
@@ -539,8 +539,8 @@ const scrollToTop = () => {
 @media (max-width: 768px) {
     .booking-navbar { padding: 12px 16px; }
     .nav-right { gap: 14px; font-size: 13px; }
-    .nav-logo-text { font-size: 20px; }
-    .page-title { font-size: 28px; }
+    .nav-logo-text { font-size: 18px; }
+    .page-title { font-size: 24px; }
     .step-content { padding: 0 16px 32px; }
     .footer-cta { flex-direction: column; gap: 16px; padding: 24px; text-align: center; }
     .footer-top { flex-direction: column; }

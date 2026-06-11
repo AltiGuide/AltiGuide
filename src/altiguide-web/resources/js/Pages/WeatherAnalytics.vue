@@ -216,9 +216,9 @@ const selectedMountainObj = computed(() => props.mountains.find(m => m.id === se
         <div v-else-if="weather" class="w-full mt-8 mb-12 rounded-[40px] p-8 md:p-12 text-[#E6E6E6] relative overflow-hidden shadow-[0_20px_50px_rgba(20,30,80,0.5)]" style="background: linear-gradient(to top left, #4021CB 0%, #7176C9 25%, #122E80 100%); font-family: 'Montserrat', sans-serif;">
           
           <div class="relative z-10">
-            <h2 class="text-center font-bold text-2xl mb-8 tracking-wide">Cuaca</h2>
+            <h2 class="text-center font-bold text-2xl mb-6 tracking-wide">Cuaca</h2>
             
-            <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-8">
+            <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-6">
               <div class="flex flex-1 flex-col sm:flex-row items-center sm:items-center justify-start gap-4 sm:gap-12 w-full">
                 <div class="flex flex-col justify-center">
                   <h3 class="text-[32px] md:text-[40px] font-bold leading-[1.1] text-center sm:text-left">Gunung<br/>{{ selectedMountainObj?.name.replace('Gunung ', '') }}</h3>
@@ -302,26 +302,26 @@ const selectedMountainObj = computed(() => props.mountains.find(m => m.id === se
     </main>
 
     <div class="w-full flex flex-col mt-auto">
-      <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
-        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
-          <div class="flex flex-col gap-[96px]">
-            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+      <footer class="w-full bg-[#FFFFFF] px-6 md:px-12 xl:px-20 py-8 flex flex-col">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-6">
+          <div class="flex flex-col gap-[48px]">
+            <Link href="/" class="text-[20px] font-medium text-[#374426] underline underline-offset-4">
               AltiGuide.com
             </Link>
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+          <div class="flex flex-col sm:flex-row gap-8 md:gap-16 xl:gap-24">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                 <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
                 <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
                 <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
                 <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
@@ -330,7 +330,7 @@ const selectedMountainObj = computed(() => props.mountains.find(m => m.id === se
           </div>
         </div>
 
-        <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
+        <div class="w-full border-t border-[#D7DDC2] pt-4 flex justify-end">
           <p class="text-[#5A684C] font-medium text-[14px]">
             © 2026 AltiGuide Team. All rights reserved.
           </p>
