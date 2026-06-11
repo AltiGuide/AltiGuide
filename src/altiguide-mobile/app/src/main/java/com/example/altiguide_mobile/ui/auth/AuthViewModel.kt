@@ -30,6 +30,9 @@ class AuthViewModel @Inject constructor(
     private val _loginState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
     val loginState: StateFlow<UiState<AuthResponse>> = _loginState.asStateFlow()
 
+    private val _googleLoginState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
+    val googleLoginState: StateFlow<UiState<AuthResponse>> = _googleLoginState.asStateFlow()
+
     private val _registerState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
     val registerState: StateFlow<UiState<AuthResponse>> = _registerState.asStateFlow()
 
@@ -209,6 +212,28 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _googleLoginState.value = UiState.Loading
+            Log.d("GOOGLE_AUTH", "Sending Google ID token to backend: $idToken")
+            try {
+                val response = authRepository.loginWithGoogle(idToken)
+                Log.d("GOOGLE_AUTH", "Backend Google login successful: $response")
+                _googleLoginState.value = UiState.Success(response)
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                Log.e("GOOGLE_AUTH", "HttpException from backend (code=${e.code()}): $errorBody", e)
+                _googleLoginState.value = UiState.Error("Server error: ${e.code()}")
+            } catch (e: IOException) {
+                Log.e("GOOGLE_AUTH", "IOException connecting to backend", e)
+                _googleLoginState.value = UiState.Error("Tidak ada koneksi internet")
+            } catch (e: Exception) {
+                Log.e("GOOGLE_AUTH", "Generic Exception during Google Login", e)
+                _googleLoginState.value = UiState.Error("Terjadi kesalahan: ${e.message}")
+            }
+        }
+    }
+
     fun register(request: com.example.altiguide_mobile.data.model.RegisterRequest) {
         viewModelScope.launch {
             _registerState.value = UiState.Loading
@@ -331,6 +356,7 @@ class AuthViewModel @Inject constructor(
 
     fun resetStates() {
         _loginState.value = UiState.Idle
+        _googleLoginState.value = UiState.Idle
         _registerState.value = UiState.Idle
         _verifyOtpState.value = UiState.Idle
         _forgotPasswordState.value = UiState.Idle

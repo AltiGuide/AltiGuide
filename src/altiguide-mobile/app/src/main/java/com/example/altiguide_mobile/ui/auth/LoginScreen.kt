@@ -41,6 +41,11 @@ import com.example.altiguide_mobile.data.model.LoginRequest
 import com.example.altiguide_mobile.data.model.RegisterRequest
 import com.example.altiguide_mobile.util.UiState
 import kotlinx.coroutines.delay
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 // Define Montserrat FontFamily locally for complete styling consistency
 private val Montserrat = FontFamily(
@@ -190,9 +195,47 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val loginState by viewModel.loginState.collectAsState()
+    val googleLoginState by viewModel.googleLoginState.collectAsState()
     val registerState by viewModel.registerState.collectAsState()
     val verifyOtpState by viewModel.verifyOtpState.collectAsState()
     val forgotPasswordState by viewModel.forgotPasswordState.collectAsState()
+
+    val gso = remember {
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+    }
+    val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        android.util.Log.d("GOOGLE_AUTH", "Result received: resultCode = ${result.resultCode}")
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val idToken = account.idToken
+            android.util.Log.d("GOOGLE_AUTH", "Google Sign-In succeeded, token length = ${idToken?.length}")
+            if (idToken != null) {
+                viewModel.loginWithGoogle(idToken)
+            } else {
+                android.util.Log.e("GOOGLE_AUTH", "ID Token is null")
+                Toast.makeText(context, "Google Sign-In failed: ID Token is null", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: ApiException) {
+            android.util.Log.e("GOOGLE_AUTH", "Google Sign-In failed: statusCode = ${e.statusCode}", e)
+            Toast.makeText(context, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(googleLoginState) {
+        android.util.Log.d("GOOGLE_AUTH", "googleLoginState changed: $googleLoginState")
+        if (googleLoginState is UiState.Error) {
+            Toast.makeText(context, (googleLoginState as UiState.Error).message, Toast.LENGTH_LONG).show()
+            viewModel.resetStates()
+        }
+    }
 
     var currentScreen by remember { mutableStateOf(AuthScreen.LOGIN_SIGNUP) }
     var isSignUpMode by remember { mutableStateOf(false) }
@@ -559,36 +602,41 @@ fun LoginScreen(
                     }
 
                     // Continue with Google Button
-                    Button(
-                        onClick = {
-                            Toast.makeText(context, "Google Sign-In Clicked", Toast.LENGTH_SHORT).show()
-                        },
-                        shape = RoundedCornerShape(28.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE3E9CD),
-                            contentColor = Color(0xFF374426)
-                        ),
-                        modifier = Modifier
-                            .width(342.dp)
-                            .height(56.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                    if (googleLoginState is UiState.Loading) {
+                        CircularProgressIndicator(color = Color(0xFFE3E9CD), modifier = Modifier.size(24.dp))
+                    } else {
+                        Button(
+                            onClick = {
+                                val signInIntent = googleSignInClient.signInIntent
+                                googleSignInLauncher.launch(signInIntent)
+                            },
+                            shape = RoundedCornerShape(28.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE3E9CD),
+                                contentColor = Color(0xFF374426)
+                            ),
+                            modifier = Modifier
+                                .width(342.dp)
+                                .height(56.dp)
                         ) {
-                            Icon(
-                                imageVector = GoogleIcon,
-                                contentDescription = "Google Logo",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Continue with Google",
-                                fontSize = 13.sp,
-                                fontFamily = Montserrat,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = GoogleIcon,
+                                    contentDescription = "Google Logo",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Continue with Google",
+                                    fontSize = 13.sp,
+                                    fontFamily = Montserrat,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }

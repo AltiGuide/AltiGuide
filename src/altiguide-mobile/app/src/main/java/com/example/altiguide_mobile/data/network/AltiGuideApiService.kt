@@ -3,6 +3,7 @@ package com.example.altiguide_mobile.data.network
 import com.example.altiguide_mobile.data.model.AuthResponse
 import com.example.altiguide_mobile.data.model.LoginRequest
 import com.example.altiguide_mobile.data.model.RegisterRequest
+import com.example.altiguide_mobile.data.model.GoogleAuthRequest
 import com.example.altiguide_mobile.data.model.UserModel
 import com.example.altiguide_mobile.data.model.MountainModel
 import com.example.altiguide_mobile.data.model.RouteModel
@@ -31,6 +32,9 @@ interface AltiGuideApiService {
     
     @POST("login")
     suspend fun login(@Body request: LoginRequest): AuthResponse
+
+    @POST("auth/google")
+    suspend fun loginWithGoogle(@Body request: GoogleAuthRequest): AuthResponse
 
     @POST("logout")
     suspend fun logout() // response structure depends on use cases but usually just 200 OK

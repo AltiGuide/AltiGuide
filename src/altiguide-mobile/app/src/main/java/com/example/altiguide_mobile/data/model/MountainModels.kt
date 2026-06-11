@@ -11,8 +11,13 @@ data class MountainModel(
     val latitude: Double?,
     val longitude: Double?,
     val province: String?,
+    @SerializedName("image")
     val image_url: String?,
-    val routes: List<RouteModel>?
+    val routes: List<RouteModel>?,
+    val location: String? = null,
+    val content: com.google.gson.JsonElement? = null,
+    @SerializedName("content_json")
+    val contentJson: com.google.gson.JsonElement? = null
 )
 
 data class RouteModel(
@@ -20,7 +25,9 @@ data class RouteModel(
     val mountain_id: Int,
     val name: String,
     val difficulty: String?,
+    @SerializedName("distance")
     val distance_km: Double?,
+    @SerializedName("estimated_time")
     val duration_hours: Double?,
     val daily_quota: Int?,
     val latitude: Double?,
@@ -68,7 +75,8 @@ data class WeatherResponse(
 
 data class WeatherData(
     val current_weather: CurrentWeather,
-    val daily: DailyWeather
+    val daily: DailyWeather,
+    val hourly: HourlyWeather? = null
 )
 
 data class CurrentWeather(
@@ -80,5 +88,11 @@ data class CurrentWeather(
 data class DailyWeather(
     val temperature_2m_max: List<Double>,
     val temperature_2m_min: List<Double>,
+    val weathercode: List<Int>
+)
+
+data class HourlyWeather(
+    val time: List<String>,
+    val temperature_2m: List<Double>,
     val weathercode: List<Int>
 )
