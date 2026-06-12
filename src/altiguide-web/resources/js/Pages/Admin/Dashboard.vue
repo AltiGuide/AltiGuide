@@ -110,8 +110,12 @@ const todayStr = new Date().toLocaleDateString('sv-SE')
 
 const todayHikingSessions = computed(() => {
   return props.bookings.filter(b => {
-    const isFinishedToday = b.status === 'finished' && (b.updated_at === todayStr || b.end_date === todayStr)
-    return b.payment_status === 'settlement' && (b.start_date === todayStr || b.end_date === todayStr || b.status === 'on_track' || isFinishedToday)
+    if (b.payment_status !== 'settlement') return false
+
+    if (b.status === 'on_track') {
+      return b.end_date === todayStr
+    }
+    return false
   })
 })
 
@@ -473,100 +477,12 @@ const openFromScan = (txRef) => {
 }
 
 
-// ═══════════════════════════════════════════════════════════
-// WEATHER ANALYTICS PANEL
-// ═══════════════════════════════════════════════════════════
-const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 
-const wmoLabels = {
-  0: 'Cerah', 1: 'Cerah Berawan', 2: 'Cerah Berawan', 3: 'Berawan',
-  45: 'Kabut', 48: 'Kabut',
-  51: 'Gerimis Ringan', 53: 'Gerimis', 55: 'Gerimis Lebat',
-  61: 'Hujan Ringan', 63: 'Hujan', 65: 'Hujan Lebat',
-  80: 'Hujan Ringan', 81: 'Hujan', 82: 'Hujan Lebat',
-  95: 'Badai Petir', 96: 'Badai Petir', 99: 'Badai Petir Lebat',
-}
-const getWmoLabel = (code) => wmoLabels[code] ?? 'Tidak Diketahui'
-const getWmoIcon  = (code) => {
-  if (code == null) return '/images/weather-icon/sun.png'
-  if (code === 0)   return '/images/weather-icon/sun.png'
-  if ([1, 2].includes(code)) return '/images/weather-icon/cloudysunny.png'
-  if ([3, 45, 48].includes(code)) return '/images/weather-icon/clouds.png'
-  if (code >= 51 && code <= 82) return '/images/weather-icon/sun-clouds-rain.png'
-  if ([95, 96, 99].includes(code)) return '/images/weather-icon/lightning.png'
-  return '/images/weather-icon/sun.png'
-}
-
-// Safety recommendation based on weathercode
-const getSafetyRec = (code) => {
-  if (code == null) return { level: 'unknown', label: '—', color: 'text-gray-500' }
-  if (code === 0 || code <= 2)  return { level: 'aman',    label: '✅ Aman untuk Pendakian',   color: 'text-green-700' }
-  if (code <= 48)               return { level: 'waspada', label: '⚠️ Waspadai Kabut',         color: 'text-amber-700' }
-  if (code <= 67)               return { level: 'hati',    label: '⚠️ Hati-hati, Ada Hujan',  color: 'text-orange-700' }
-  return { level: 'berbahaya', label: '🚫 Berbahaya, Tunda Pendakian', color: 'text-red-700' }
-}
-
-const wMountainId    = ref(null)
-const wWeather       = ref(null)
-const wLoading       = ref(false)
-const wError         = ref(null)
-const wDropdownOpen  = ref(false)
-const wSelectedMtn   = computed(() => props.mountains.find(m => m.id === wMountainId.value))
-
-const fetchWeather = async (lat, lon) => {
-  wLoading.value = true
-  wError.value   = null
-  try {
-    const url = new URL('https://api.open-meteo.com/v1/forecast')
-    url.searchParams.set('latitude',  lat)
-    url.searchParams.set('longitude', lon)
-    url.searchParams.set('current', [
-      'temperature_2m','apparent_temperature','cloudcover','weathercode',
-      'windspeed_10m','relativehumidity_2m','precipitation',
-    ].join(','))
-    url.searchParams.set('hourly', 'temperature_2m,weathercode')
-    url.searchParams.set('daily',  [
-      'weathercode','temperature_2m_max','temperature_2m_min',
-      'windspeed_10m_max','sunrise','sunset','precipitation_sum',
-    ].join(','))
-    url.searchParams.set('timezone', 'Asia/Jakarta')
-    url.searchParams.set('forecast_days', '6')
-    const res = await fetch(url.toString())
-    if (!res.ok) throw new Error('Gagal mengambil data cuaca')
-    wWeather.value = await res.json()
-  } catch (err) {
-    wError.value = err.message || 'Terjadi kesalahan'
-  } finally {
-    wLoading.value = false
-  }
-}
-
-watch(wMountainId, (id) => {
-  if (!id) { wWeather.value = null; return }
-  const mtn = props.mountains.find(m => m.id === id)
-  if (mtn?.latitude && mtn?.longitude) fetchWeather(mtn.latitude, mtn.longitude)
-})
-
-const wHourlyForecast = computed(() => {
-  if (!wWeather.value?.hourly?.time) return []
-  const now = new Date()
-  const idx = wWeather.value.hourly.time.findIndex(t => new Date(t) >= now)
-  const start = idx !== -1 ? idx : 0
-  return wWeather.value.hourly.time.slice(start, start + 8).map((t, i) => {
-    const ai = start + i
-    const d  = new Date(t)
-    return {
-      time: d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      temp: Math.round(wWeather.value.hourly.temperature_2m[ai]),
-      code: wWeather.value.hourly.weathercode[ai],
-    }
-  })
-})
 </script>
 
 <template>
   <div class="min-h-screen bg-[#F4F1E6] flex flex-col font-sans">
-    <Head title="Admin Dashboard — AltiGuide" />
+    <Head title="Admin Dashboard" />
 
     <!-- ══ Navbar ══ -->
     <nav class="w-full flex justify-between items-center px-6 py-3 bg-[#F4F1E6] border-b border-[#D6CCAF] relative z-50">
@@ -623,12 +539,7 @@ const wHourlyForecast = computed(() => {
             <span v-if="props.mountainsWithContent.length" class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="sidebarActive==='articles'?'bg-white/20 text-white':'bg-[#374426]/10 text-[#374426]'">{{ props.mountainsWithContent.length }}</span>
           </button>
 
-          <button @click="sidebarActive = 'weather'"
-            :class="sidebarActive === 'weather' ? 'bg-[#374426] text-white shadow-md' : 'text-[#5A684C] hover:bg-[#E8E3D3]'"
-            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer mb-1">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
-            Weather
-          </button>
+
         </div>
 
         <div class="mt-auto">
@@ -961,158 +872,7 @@ const wHourlyForecast = computed(() => {
           </div>
         </div>
 
-    <!-- ══════════════ Footer ══════════════ -->
-    <footer class="w-full border-t border-[#D6CCAF]">
-      <!-- CTA Banner -->
-      <div class="w-full bg-[#E0DBBE] py-5 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="flex items-center gap-3">
-          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 object-contain" />
-          <span class="text-2xl font-bold text-[#374426] tracking-tight">AltiGuide</span>
-        </div>
-        <div class="flex items-center gap-4">
-          <button class="bg-[#374426] text-[#F8F3E4] font-medium rounded-lg px-5 py-2 hover:opacity-90 transition-opacity cursor-pointer">Contact Us</button>
-          <button class="bg-[#F8F3E4] text-[#374426] font-medium rounded-lg px-5 py-2 hover:opacity-90 transition-opacity shadow-sm cursor-pointer">Start Summit</button>
-        </div>
-      </div>
 
-      <!-- Footer Links -->
-      <div class="w-full bg-white px-6 md:px-12 py-6">
-        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-6">
-          <div class="flex flex-col gap-16">
-            <span class="text-lg font-medium text-[#374426] underline underline-offset-8">AltiGuide.com</span>
-            <div class="flex items-center gap-5 text-[#828282]">
-              <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
-              </a>
-              <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
-              </a>
-              <a href="https://www.instagram.com/altiguide___?igsh=MTRwbW8zbW8wZDVubg==" target="_blank" rel="noopener noreferrer" class="hover:text-[#374426] transition-colors">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-              </a>
-            </div>
-          </div>
-
-          <!-- Mountain Selector -->
-          <div class="max-w-sm mb-6 relative">
-            <label class="block text-sm font-semibold text-[#374426] mb-2">Pilih Gunung</label>
-            <div @click="wDropdownOpen = !wDropdownOpen"
-              class="w-full bg-white border border-[#D6CCAF] text-[#374426] py-3 px-4 rounded-xl flex justify-between items-center cursor-pointer hover:border-[#64823E] transition shadow-sm font-medium relative z-10">
-              <span>{{ wSelectedMtn ? wSelectedMtn.name : 'Pilih Gunung' }}</span>
-              <svg class="fill-current h-4 w-4 transition-transform duration-200" :class="wDropdownOpen ? 'rotate-180' : ''" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-            </div>
-            <div v-if="wDropdownOpen" class="absolute z-50 w-full mt-2 bg-white border border-[#D6CCAF] rounded-xl shadow-lg max-h-60 overflow-auto">
-              <div @click="wMountainId = null; wDropdownOpen = false" class="px-4 py-3 cursor-pointer text-[#374426] hover:bg-[#F4F1E6] transition font-medium text-sm" :class="{ 'bg-[#F4F1E6]': !wMountainId }">Pilih Gunung</div>
-              <div v-for="mtn in mountains" :key="mtn.id" @click="wMountainId = mtn.id; wDropdownOpen = false"
-                class="px-4 py-3 cursor-pointer text-[#374426] hover:bg-[#F4F1E6] hover:text-[#64823E] transition font-medium border-t border-gray-50 text-sm"
-                :class="{ 'bg-[#F4F1E6] text-[#64823E]': wMountainId === mtn.id }">{{ mtn.name }}</div>
-            </div>
-            <div v-if="wDropdownOpen" @click="wDropdownOpen = false" class="fixed inset-0 z-40"></div>
-          </div>
-
-          <!-- Loading -->
-          <div v-if="wLoading" class="flex justify-center py-16">
-            <svg class="animate-spin h-10 w-10 text-[#64823E]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-            </svg>
-          </div>
-
-          <!-- Error -->
-          <div v-else-if="wError" class="text-center text-red-500 py-12 font-medium">{{ wError }}</div>
-
-          <!-- No mountain selected -->
-          <div v-else-if="!wWeather" class="flex flex-col items-center justify-center py-20 text-[#8B9A7B]">
-            <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
-            <p class="font-medium">Pilih gunung untuk melihat data cuaca</p>
-          </div>
-
-          <!-- Weather Data -->
-          <div v-else class="space-y-4">
-            <!-- Safety Recommendation Banner -->
-            <div class="flex items-center gap-3 px-5 py-3.5 rounded-2xl border"
-              :class="{
-                'bg-green-50 border-green-200': getSafetyRec(wWeather.current?.weathercode).level === 'aman',
-                'bg-amber-50 border-amber-200': getSafetyRec(wWeather.current?.weathercode).level === 'waspada',
-                'bg-orange-50 border-orange-200': getSafetyRec(wWeather.current?.weathercode).level === 'hati',
-                'bg-red-50 border-red-200': getSafetyRec(wWeather.current?.weathercode).level === 'berbahaya',
-              }">
-              <span class="text-xl">
-                {{ getSafetyRec(wWeather.current?.weathercode).level === 'aman' ? '🏔️' : getSafetyRec(wWeather.current?.weathercode).level === 'berbahaya' ? '⛔' : '⚠️' }}
-              </span>
-              <div>
-                <p class="font-bold text-sm" :class="getSafetyRec(wWeather.current?.weathercode).color">Rekomendasi Keamanan</p>
-                <p class="text-sm font-medium" :class="getSafetyRec(wWeather.current?.weathercode).color">
-                  {{ getSafetyRec(wWeather.current?.weathercode).label }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Main Weather Card -->
-            <div class="rounded-[32px] p-8 text-[#E6E6E6] relative overflow-hidden shadow-[0_20px_50px_rgba(20,30,80,0.4)]" style="background: linear-gradient(to top left, #4021CB 0%, #7176C9 25%, #122E80 100%); font-family: 'Montserrat', sans-serif;">
-              <div class="relative z-10">
-                <h2 class="text-center font-bold text-xl mb-6 tracking-wide">Cuaca {{ wSelectedMtn?.name }}</h2>
-
-                <div class="flex flex-col lg:flex-row justify-between items-center gap-8 mb-8">
-                  <!-- Temp & condition -->
-                  <div class="flex flex-col sm:flex-row items-center gap-8">
-                    <div class="flex flex-col items-center sm:items-start">
-                      <span class="text-[64px] font-bold leading-none">{{ Math.round(wWeather.current?.temperature_2m ?? 0) }}°C</span>
-                      <span class="text-[#E6E6E6]/80 text-lg font-medium">Real feel {{ Math.round(wWeather.current?.apparent_temperature ?? 0) }}°C</span>
-                      <span class="mt-2 text-sm font-medium text-[#E6E6E6]/90">{{ getWmoLabel(wWeather.current?.weathercode) }}</span>
-                    </div>
-                    <img :src="getWmoIcon(wWeather.current?.weathercode)" alt="Weather" class="w-36 h-36 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]" />
-                  </div>
-
-                  <!-- 3-day forecast -->
-                  <div class="w-full lg:w-[360px] bg-[#123767]/20 backdrop-blur-md rounded-2xl p-5 border border-white/20">
-                    <h4 class="text-sm font-semibold mb-4 text-[#E6E6E6]/90">3 Hari ke Depan</h4>
-                    <div class="flex flex-col gap-3">
-                      <div v-for="(date, i) in wWeather.daily?.time?.slice(0, 3)" :key="date" class="flex items-center justify-between border-b border-white/10 pb-3 last:border-0 last:pb-0">
-                        <span class="w-16 text-sm font-medium">{{ i === 0 ? 'Hari ini' : HARI[new Date(date).getDay()].substring(0, 3) }}</span>
-                        <img :src="getWmoIcon(wWeather.daily.weathercode[i])" class="w-7 h-7 object-contain" />
-                        <span class="flex-1 text-center text-xs">{{ getWmoLabel(wWeather.daily.weathercode[i]) }}</span>
-                        <span class="text-sm font-semibold">{{ Math.round(wWeather.daily.temperature_2m_max[i]) }}° / {{ Math.round(wWeather.daily.temperature_2m_min[i]) }}°</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Hourly -->
-                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 mb-5">
-                  <p class="text-sm font-semibold mb-4 text-[#E6E6E6]/90">Prakiraan Per Jam</p>
-                  <div class="flex gap-4 overflow-x-auto pb-2">
-                    <div v-for="hour in wHourlyForecast" :key="hour.time" class="flex-1 min-w-[72px] flex flex-col items-center gap-2 border-r border-white/10 last:border-0">
-                      <span class="text-xs text-[#E6E6E6]/80 whitespace-nowrap">{{ hour.time }}</span>
-                      <img :src="getWmoIcon(hour.code)" class="w-8 h-8 object-contain" />
-                      <span class="text-sm font-bold">{{ hour.temp }}°</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Stats grid -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div class="bg-[#123767]/10 backdrop-blur-md rounded-xl p-4 border border-white/20 text-center">
-                    <p class="text-xs text-[#E6E6E6]/70 mb-1">Angin</p>
-                    <p class="text-lg font-bold">{{ Math.round(wWeather.current?.windspeed_10m ?? 0) }} km/h</p>
-                  </div>
-                  <div class="bg-[#123767]/10 backdrop-blur-md rounded-xl p-4 border border-white/20 text-center">
-                    <p class="text-xs text-[#E6E6E6]/70 mb-1">Kelembapan</p>
-                    <p class="text-lg font-bold">{{ wWeather.current?.relativehumidity_2m ?? 0 }}%</p>
-                  </div>
-                  <div class="bg-[#123767]/10 backdrop-blur-md rounded-xl p-4 border border-white/20 text-center">
-                    <p class="text-xs text-[#E6E6E6]/70 mb-1">Awan</p>
-                    <p class="text-lg font-bold">{{ wWeather.current?.cloudcover ?? 0 }}%</p>
-                  </div>
-                  <div class="bg-[#123767]/10 backdrop-blur-md rounded-xl p-4 border border-white/20 text-center">
-                    <p class="text-xs text-[#E6E6E6]/70 mb-1">Curah Hujan</p>
-                    <p class="text-lg font-bold">{{ wWeather.current?.precipitation ?? 0 }} mm</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
       </main>
     </div>

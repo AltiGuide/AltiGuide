@@ -21,23 +21,23 @@ class DashboardController extends Controller
             $q->whereIn('status', ['settlement', 'pending'])
         )->count();
 
-        // Pendaki yang sedang di gunung (seluruh rombongan pada hari ini dengan status settlement/Lunas dan belum check-out)
-        $pendakiDiGunung = HikingSession::whereDate('start_date', '<=', $today)
-            ->whereDate('end_date', '>=', $today)
-            ->where('status', '!=', 'finished')
+        // Pendaki yang sedang di gunung (sudah check-in/on_track dan belum check-out)
+        $pendakiDiGunung = HikingSession::where('status', 'on_track')
             ->whereHas('transaction', fn ($q) => $q->where('status', 'settlement'))
             ->withCount('members')
             ->get()
             ->sum('members_count');
 
-        // Check-in hari ini (start_date = hari ini, sudah bayar)
+        // Check-in hari ini (sudah check-in/on_track atau selesai/finished hari ini)
         $checkInHariIni = HikingSession::whereDate('start_date', $today)
+            ->whereIn('status', ['on_track', 'finished'])
             ->whereHas('transaction', fn ($q) => $q->where('status', 'settlement'))
             ->count();
 
-        // Check-out hari ini (status finished, updated_at = hari ini)
-        $checkOutHariIni = HikingSession::whereDate('updated_at', $today)
+        // Check-out hari ini (status finished, end_date = hari ini)
+        $checkOutHariIni = HikingSession::whereDate('end_date', $today)
             ->where('status', 'finished')
+            ->whereHas('transaction', fn ($q) => $q->where('status', 'settlement'))
             ->count();
 
         $stats = [
