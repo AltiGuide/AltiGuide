@@ -69,6 +69,13 @@ class CheckinController extends Controller
         if ($hikingSession) {
             $today = Carbon::today();
 
+            if ($hikingSession->status === 'finished') {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Tiket ini sudah selesai digunakan (sudah check-out).'
+                ], 400);
+            }
+
             if ($hikingSession->status === 'prepared') {
                 $startDate = Carbon::parse($hikingSession->start_date);
                 if (!$today->equalTo($startDate)) {
@@ -129,6 +136,14 @@ class CheckinController extends Controller
             ], 404);
         }
 
+        // Tiket wajib sudah terverifikasi dokumennya oleh admin
+        if ($hikingSession->verification_status !== 'terverifikasi') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Booking belum diverifikasi.'
+            ], 400);
+        }
+
         // --- VALIDASI WEWENANG POS PENJAGAAN ADMIN ---
         if ($admin && $admin->role === 'basecamp_staff' && $admin->route_id) {
             if ($admin->route_id !== $hikingSession->route_id) {
@@ -141,6 +156,28 @@ class CheckinController extends Controller
 
         $currentStatus = $hikingSession->status;
         $newStatus = $request->status;
+
+        // --- VALIDASI STATE TRANSITION ---
+        if ($currentStatus === 'finished') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Rombongan ini sudah selesai mendaki (sudah check-out).'
+            ], 400);
+        }
+
+        if ($newStatus === 'on_track' && $currentStatus !== 'prepared') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Rombongan hanya bisa check-in jika status sebelumnya adalah Belum Naik (prepared).'
+            ], 400);
+        }
+
+        if ($newStatus === 'finished' && $currentStatus !== 'on_track') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Rombongan hanya bisa check-out jika status sebelumnya adalah Di Gunung (on_track).'
+            ], 400);
+        }
 
         // --- VALIDASI TANGGAL CHECK-IN HARUS SESUAI TANGGAL PENDAKIAN ---
         if ($newStatus === 'on_track') {

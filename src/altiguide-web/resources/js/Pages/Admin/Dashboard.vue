@@ -111,11 +111,11 @@ const todayStr = new Date().toLocaleDateString('sv-SE')
 const todayHikingSessions = computed(() => {
   return props.bookings.filter(b => {
     if (b.payment_status !== 'settlement') return false
+    if (b.verification_status !== 'terverifikasi') return false
+    if (b.status === 'prepared') return false
 
-    if (b.status === 'on_track') {
-      return b.end_date === todayStr
-    }
-    return false
+    // Rombongan yang jadwal naik (start_date) hari ini, ATAU jadwal turun (end_date) hari ini
+    return b.start_date === todayStr || b.end_date === todayStr
   })
 })
 
@@ -469,7 +469,7 @@ const openFromScan = (txRef) => {
     status: hs?.status,
   }
   closeScanModal()
-  if (sessionData.status === 'prepared' || sessionData.status === 'finished') {
+  if (sessionData.status === 'prepared') {
     openCheckinModalDirect(sessionData)
   } else if (sessionData.status === 'on_track') {
     openCheckoutModalDirect(sessionData)
@@ -760,14 +760,17 @@ const openFromScan = (txRef) => {
                       </span>
                     </td>
                     <td class="px-4 py-4 text-center">
-                      <button v-if="booking.status === 'prepared'" @click="openCheckinModalDirect(booking)"
+                      <button v-if="booking.status === 'prepared' && booking.start_date === todayStr" @click="openCheckinModalDirect(booking)"
                         class="bg-[#374426] text-white hover:bg-[#2c361e] px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-sm">
                         Check-in
                       </button>
-                      <button v-else-if="booking.status === 'on_track'" @click="openCheckoutModalDirect(booking)"
+                      <button v-else-if="booking.status === 'on_track' && booking.end_date === todayStr" @click="openCheckoutModalDirect(booking)"
                         class="bg-[#5A684C] text-white hover:bg-[#4a5840] px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-sm">
                         Check-out
                       </button>
+                      <span v-else-if="booking.status === 'on_track' && booking.start_date === todayStr" class="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                        Mulai Mendaki
+                      </span>
                       <span v-else class="text-[#8B9A7B] font-bold">—</span>
                     </td>
                   </tr>
@@ -1326,18 +1329,21 @@ const openFromScan = (txRef) => {
                 <button type="button" @click="openScanModal" class="flex-1 py-3 text-sm font-semibold border border-[#D6CCAF] text-[#5A684C] rounded-xl hover:bg-[#F4F1E6] transition cursor-pointer">
                   Scan Ulang
                 </button>
-                <button v-if="scanResult.hiking_session?.status === 'prepared' || scanResult.hiking_session?.status === 'finished'" 
+                <button v-if="scanResult.hiking_session?.status === 'prepared'" 
                   @click="openFromScan(scanResult)" :disabled="scanLoading"
                   class="flex-1 py-3 text-sm font-semibold bg-[#374426] text-white rounded-xl hover:bg-[#2c361e] transition cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2">
                   <svg v-if="scanLoading" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   Proses Check-in &amp; Logistik
                 </button>
-                <button v-if="scanResult.hiking_session?.status === 'on_track'" 
+                <button v-else-if="scanResult.hiking_session?.status === 'on_track'" 
                   @click="openFromScan(scanResult)" :disabled="scanLoading"
                   class="flex-1 py-3 text-sm font-semibold bg-[#5A684C] text-white rounded-xl hover:bg-[#4a5840] transition cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2">
                   <svg v-if="scanLoading" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   Proses Check-out &amp; Sampah
                 </button>
+                <div v-else-if="scanResult.hiking_session?.status === 'finished'" class="flex-1 text-center py-3 text-sm font-bold text-green-700 bg-green-50 border border-green-200 rounded-xl">
+                  Rombongan Sudah Check-out &amp; Selesai
+                </div>
               </div>
             </div>
           </div>
