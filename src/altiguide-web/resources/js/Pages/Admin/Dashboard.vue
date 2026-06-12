@@ -568,7 +568,9 @@ const openFromScan = (txRef) => {
                 <div class="w-9 h-9 rounded-xl bg-[#ded5c4] flex items-center justify-center">
                   <img src="/images/admin-icon/Icon.png" alt="Total Rombongan" class="w-5 h-5 object-contain" />
                 </div>
-                <span class="text-xs font-semibold text-[#4d6639]">+12%</span>
+                <span class="text-xs font-semibold" :class="stats.totalRombonganChange.startsWith('-') ? 'text-red-600' : 'text-[#4d6639]'">
+                  {{ stats.totalRombonganChange }}
+                </span>
               </div>
               <p class="text-xs text-[#5A684C] font-semibold mt-3">Total Rombongan Aktif</p>
               <p class="text-4xl font-bold text-[#374426] mt-1">{{ stats.totalRombongan }}</p>
