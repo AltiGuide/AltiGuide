@@ -40,11 +40,33 @@ class DashboardController extends Controller
             ->whereHas('transaction', fn ($q) => $q->where('status', 'settlement'))
             ->count();
 
+        // Hitung persentase perubahan rombongan aktif minggu ini vs minggu lalu (hingga hari & jam yang sama)
+        $startOfThisWeek = Carbon::now()->startOfWeek();
+        $now = Carbon::now();
+        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek();
+        $sameTimeLastWeek = Carbon::now()->subWeek();
+
+        $thisWeekCount = HikingSession::whereBetween('created_at', [$startOfThisWeek, $now])
+            ->whereHas('transaction', fn ($q) => $q->whereIn('status', ['settlement', 'pending']))
+            ->count();
+
+        $lastWeekCount = HikingSession::whereBetween('created_at', [$startOfLastWeek, $sameTimeLastWeek])
+            ->whereHas('transaction', fn ($q) => $q->whereIn('status', ['settlement', 'pending']))
+            ->count();
+
+        if ($lastWeekCount > 0) {
+            $percentageChange = (($thisWeekCount - $lastWeekCount) / $lastWeekCount) * 100;
+        } else {
+            $percentageChange = $thisWeekCount > 0 ? 100 : 0;
+        }
+        $totalRombonganChange = ($percentageChange >= 0 ? '+' : '') . round($percentageChange) . '%';
+
         $stats = [
-            'totalRombongan'  => $totalRombongan,
-            'pendakiDiGunung' => $pendakiDiGunung,
-            'checkInHariIni'  => $checkInHariIni,
-            'checkOutHariIni' => $checkOutHariIni,
+            'totalRombongan'       => $totalRombongan,
+            'pendakiDiGunung'      => $pendakiDiGunung,
+            'checkInHariIni'       => $checkInHariIni,
+            'checkOutHariIni'      => $checkOutHariIni,
+            'totalRombonganChange' => $totalRombonganChange,
         ];
 
         // ── Bookings ──────────────────────────────────────────────────────
