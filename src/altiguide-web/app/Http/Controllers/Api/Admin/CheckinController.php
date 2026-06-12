@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\HikingSession;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class CheckinController extends Controller
@@ -63,6 +64,32 @@ class CheckinController extends Controller
             ], 400);
         }
 
+        // --- VALIDASI TANGGAL CHECK-IN HARUS SESUAI TANGGAL PENDAKIAN ---
+        $hikingSession = $transaction->hikingSession;
+        if ($hikingSession) {
+            $today = Carbon::today();
+
+            if ($hikingSession->status === 'prepared') {
+                $startDate = Carbon::parse($hikingSession->start_date);
+                if (!$today->equalTo($startDate)) {
+                    $formattedStart = $startDate->translatedFormat('l, d F Y');
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => "Tanggal check-in tidak sesuai. Tiket ini untuk tanggal {$formattedStart}. Hari ini: {$today->translatedFormat('l, d F Y')}."
+                    ], 400);
+                }
+            } elseif ($hikingSession->status === 'on_track') {
+                $endDate = Carbon::parse($hikingSession->end_date);
+                if (!$today->equalTo($endDate)) {
+                    $formattedEnd = $endDate->translatedFormat('l, d F Y');
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => "Tanggal check-out tidak sesuai. Jadwal turun tiket ini adalah tanggal {$formattedEnd}. Hari ini: {$today->translatedFormat('l, d F Y')}."
+                    ], 400);
+                }
+            }
+        }
+
         return response()->json([
             'status'  => 'success',
             'message' => 'Data tiket Valid dan Lunas. Tersertifikasi dari Pos Anda.',
@@ -114,6 +141,31 @@ class CheckinController extends Controller
 
         $currentStatus = $hikingSession->status;
         $newStatus = $request->status;
+
+        // --- VALIDASI TANGGAL CHECK-IN HARUS SESUAI TANGGAL PENDAKIAN ---
+        if ($newStatus === 'on_track') {
+            $today = Carbon::today();
+            $startDate = Carbon::parse($hikingSession->start_date);
+
+            if (!$today->equalTo($startDate)) {
+                $formattedStart = $startDate->translatedFormat('l, d F Y');
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => "Tanggal check-in tidak sesuai. Tiket ini untuk tanggal {$formattedStart}. Hari ini: {$today->translatedFormat('l, d F Y')}."
+                ], 400);
+            }
+        } elseif ($newStatus === 'finished') {
+            $today = Carbon::today();
+            $endDate = Carbon::parse($hikingSession->end_date);
+
+            if (!$today->equalTo($endDate)) {
+                $formattedEnd = $endDate->translatedFormat('l, d F Y');
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => "Tanggal check-out tidak sesuai. Jadwal turun tiket ini adalah tanggal {$formattedEnd}. Hari ini: {$today->translatedFormat('l, d F Y')}."
+                ], 400);
+            }
+        }
 
         $hikingSession->status = $newStatus;
         $hikingSession->save();
