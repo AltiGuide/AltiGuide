@@ -14,7 +14,7 @@ class AdminLoginController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Auth/AdminLogin');
+        return redirect()->route('login');
     }
 
     /**
