@@ -562,55 +562,56 @@ const openFromScan = (txRef) => {
 
           <!-- Stats Cards -->
           <div class="grid grid-cols-4 gap-4 mb-6">
-            <!-- Total Rombongan -->
-            <div class="bg-white rounded-2xl p-5 border border-[#D6CCAF] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+            <!-- Total Rombongan Aktif -->
+            <div class="bg-[#e9e2d3] rounded-2xl p-5 border border-[#ded5c4] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
               <div class="flex items-center justify-between mb-2">
-                <div class="w-9 h-9 rounded-xl bg-[#E8E3D3] flex items-center justify-center">
-                  <svg class="w-5 h-5 text-[#374426]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                <div class="w-9 h-9 rounded-xl bg-[#ded5c4] flex items-center justify-center">
+                  <img src="/images/admin-icon/Icon.png" alt="Total Rombongan" class="w-5 h-5 object-contain" />
                 </div>
+                <span class="text-xs font-semibold text-[#4d6639]">+12%</span>
               </div>
-              <p class="text-xs text-[#8B9A7B] font-medium">Total Rombongan</p>
-              <p class="text-3xl font-bold text-[#374426] mt-1">{{ stats.totalRombongan }}</p>
-              <p class="text-[10px] text-[#A8B89C] mt-1">Semua booking aktif</p>
+              <p class="text-xs text-[#5A684C] font-semibold mt-3">Total Rombongan Aktif</p>
+              <p class="text-4xl font-bold text-[#374426] mt-1">{{ stats.totalRombongan }}</p>
+              <p class="text-[9px] font-bold text-[#8B9A7B] tracking-wider uppercase mt-3">HINGGA MINGGU INI</p>
             </div>
 
             <!-- Pendaki di Gunung -->
-            <div class="bg-[#374426] rounded-2xl p-5 border border-[#2c361e] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 text-white">
+            <div class="bg-[#e9e2d3] rounded-2xl p-5 border border-[#ded5c4] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
               <div class="flex items-center justify-between mb-2">
-                <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <div class="w-9 h-9 rounded-xl bg-[#ded5c4] flex items-center justify-center">
+                  <img src="/images/admin-icon/Icon (1).png" alt="Pendaki di Gunung" class="w-5 h-5 object-contain" />
                 </div>
-                <span class="flex items-center gap-1 text-xs font-medium text-green-300">
-                  <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Live
+                <span class="flex items-center gap-1.5 text-xs font-semibold text-[#374426]">
+                  <span class="w-2 h-2 rounded-full bg-[#4d6639] animate-pulse"></span> Live
                 </span>
               </div>
-              <p class="text-xs text-white/60 font-medium">Pendaki di Gunung</p>
-              <p class="text-3xl font-bold mt-1">{{ stats.pendakiDiGunung }}</p>
-              <p class="text-[10px] text-white/40 mt-1">Status: Active</p>
+              <p class="text-xs text-[#5A684C] font-semibold mt-3">Pendaki di Gunung</p>
+              <p class="text-4xl font-bold text-[#374426] mt-1">{{ stats.pendakiDiGunung }}</p>
+              <p class="text-[9px] font-bold text-[#8B9A7B] tracking-wider uppercase mt-3">PUNCAK & JALUR</p>
             </div>
 
             <!-- Check-in Hari Ini -->
-            <div class="bg-[#A2825B] rounded-2xl p-5 border border-[#8B6E4B] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 text-white">
-              <div class="mb-2">
-                <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="bg-[#e9e2d3] rounded-2xl p-5 border border-[#ded5c4] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div class="flex items-center justify-between mb-2">
+                <div class="w-9 h-9 rounded-xl bg-[#ded5c4] flex items-center justify-center">
+                  <img src="/images/admin-icon/Icon (2).png" alt="Check-in Hari Ini" class="w-5 h-5 object-contain" />
                 </div>
               </div>
-              <p class="text-xs text-white/60 font-medium">Check-in Hari Ini</p>
-              <p class="text-3xl font-bold mt-1">{{ stats.checkInHariIni }}</p>
-              <p class="text-[10px] text-white/40 mt-1">Rombongan mulai hari ini</p>
+              <p class="text-xs text-[#5A684C] font-semibold mt-3">Check-in Hari Ini</p>
+              <p class="text-4xl font-bold text-[#374426] mt-1">{{ stats.checkInHariIni }}</p>
+              <p class="text-[9px] font-bold text-[#8B9A7B] tracking-wider uppercase mt-3">KELOMPOK TERDAFTAR</p>
             </div>
 
             <!-- Check-out Hari Ini -->
-            <div class="bg-white rounded-2xl p-5 border border-[#D6CCAF] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div class="mb-2">
-                <div class="w-9 h-9 rounded-xl bg-[#E8E3D3] flex items-center justify-center">
-                  <svg class="w-5 h-5 text-[#374426]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+            <div class="bg-[#e9e2d3] rounded-2xl p-5 border border-[#ded5c4] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div class="flex items-center justify-between mb-2">
+                <div class="w-9 h-9 rounded-xl bg-[#ded5c4] flex items-center justify-center">
+                  <img src="/images/admin-icon/Icon (3).png" alt="Check-out Hari Ini" class="w-5 h-5 object-contain" />
                 </div>
               </div>
-              <p class="text-xs text-[#8B9A7B] font-medium">Check-out Hari Ini</p>
-              <p class="text-3xl font-bold text-[#374426] mt-1">{{ stats.checkOutHariIni }}</p>
-              <p class="text-[10px] text-[#A8B89C] mt-1">Rombongan selesai hari ini</p>
+              <p class="text-xs text-[#5A684C] font-semibold mt-3">Check-out Hari Ini</p>
+              <p class="text-4xl font-bold text-[#374426] mt-1">{{ stats.checkOutHariIni }}</p>
+              <p class="text-[9px] font-bold text-[#8B9A7B] tracking-wider uppercase mt-3">BERHASIL KEMBALI</p>
             </div>
           </div>
 
