@@ -13,6 +13,10 @@ Berikut adalah daftar fitur utama (*Features*) yang telah berhasil diimplementas
 * **[Selesai] Mountain & Article Detail**: Halaman eksplorasi informasi artikel detail gunung (deskripsi, foto, dan integrasi rute) serta seksi rekomendasi destinasi pendakian lainnya (*Other Destinations*).
 * **[Selesai] Dynamic Route Routing & Database Integration**: Sistem pencarian data berbasis `slug` dan penampilan data dinamis dari database tanpa *hardcoded values*.
 
+### 3. Fitur Utama Tahap 3 (Must-have #3 - Modul P8)
+* **[Selesai] Online Booking SIMAKSI System**: Sistem registrasi pendakian daring yang terintegrasi penuh, memandu pengguna melalui alur pemilihan destinasi, inisiasi grup/manifes, hingga validasi anggota secara otomatis.
+* **[Selesai] Dynamic Cost Calculation & Review**: Modul kalkulasi rincian biaya tiket masukan dan biaya layanan pendakian secara *real-time* dan dinamis yang ditarik langsung dari database pada tahap tinjauan akhir.
+
 ---
 
 ## 1. Peran Anggota Tim (Team Roles)
