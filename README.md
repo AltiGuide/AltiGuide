@@ -2,7 +2,7 @@
 
 Dokumen ini merupakan kesepakatan resmi anggota tim untuk memastikan kelancaran kolaborasi serta dokumentasi progress berkala selama praktikum Rekayasa Perangkat Lunak (RPL).
 
-## 🚀 Status Progress Fitur Aplikasi (Update Modul P7)
+## Status Progress Fitur Aplikasi (Update Modul P8)
 Berikut adalah daftar fitur utama (*Features*) yang telah berhasil diimplementasikan dan di-merge ke dalam branch `dev`:
 
 ### 1. Fitur Utama Tahap 1 (Must-have #1 - Modul P6)
