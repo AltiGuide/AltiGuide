@@ -6,6 +6,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import GlobalLayout from './Layouts/GlobalLayout.vue';
 
 createInertiaApp({
+    title: title => title ? `${title}` : 'AltiGuide',
     resolve: name => {
         const pages = import.meta.glob('./Pages/**/*.vue', { eager: true });
         let page = pages[`./Pages/${name}.vue`];

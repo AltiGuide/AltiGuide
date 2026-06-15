@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1002025271077",
+    "project_id": "altiguide-dd49c",
+    "storage_bucket": "altiguide-dd49c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1002025271077:android:23c893c05840b79edb24cc",
+        "android_client_info": {
+          "package_name": "com.example.altiguide_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1002025271077-mp6q1gmrn0jufbsf5b5evgolvptgcfml.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.altiguide_mobile",
+            "certificate_hash": "f8c896529da0211852f010a40f5d12add1e095d4"
+          }
+        },
+        {
+          "client_id": "1002025271077-adaeq9mrkr5e25b4p3a3grig1rung6p9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3jBL6lyrJeHoT1Uiy6MKnakF31Mna5rg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1002025271077-adaeq9mrkr5e25b4p3a3grig1rung6p9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

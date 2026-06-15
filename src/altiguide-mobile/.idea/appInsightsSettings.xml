@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.altiguide_mobile" />
+                  <option name="mobileSdkAppId" value="1:1002025271077:android:23c893c05840b79edb24cc" />
+                  <option name="projectId" value="altiguide-dd49c" />
+                  <option name="projectNumber" value="1002025271077" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

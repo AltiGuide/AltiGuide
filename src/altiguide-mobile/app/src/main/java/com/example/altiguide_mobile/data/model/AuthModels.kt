@@ -16,11 +16,7 @@ data class RegisterRequest(
     val email: String,
     val password: String,
     val password_confirmation: String,
-    val phone_number: String?,
-    val age: Int?,
-    val address: String?,
-    val emergency_contact: String?,
-    val nik: String
+    val phone_number: String
 )
 
 data class UserModel(
@@ -32,5 +28,9 @@ data class UserModel(
     val address: String?,
     val emergency_contact: String?,
     val nik: String?
+)
+
+data class GoogleAuthRequest(
+    val id_token: String
 )
 

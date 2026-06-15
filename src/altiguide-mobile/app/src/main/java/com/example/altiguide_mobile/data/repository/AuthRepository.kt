@@ -4,6 +4,7 @@ import com.example.altiguide_mobile.data.model.AuthResponse
 import com.example.altiguide_mobile.data.model.LoginRequest
 import com.example.altiguide_mobile.data.model.RegisterRequest
 import com.example.altiguide_mobile.data.model.UserModel
+import com.example.altiguide_mobile.data.model.GoogleAuthRequest
 import com.example.altiguide_mobile.data.network.AltiGuideApiService
 import com.example.altiguide_mobile.util.AuthDataStore
 import retrofit2.Response
@@ -23,12 +24,28 @@ class AuthRepository @Inject constructor(
         return response
     }
 
-    suspend fun register(request: RegisterRequest): AuthResponse {
-        val response = apiService.register(request)
+    suspend fun loginWithGoogle(idToken: String): AuthResponse {
+        val response = apiService.loginWithGoogle(GoogleAuthRequest(idToken))
         response.token?.let {
             authDataStore.saveToken(it)
         }
         return response
+    }
+
+    suspend fun register(request: RegisterRequest): AuthResponse {
+        return apiService.register(request)
+    }
+
+    suspend fun verifyRegisterOtp(email: String, code: String): AuthResponse {
+        val response = apiService.verifyRegisterOtp(mapOf("email" to email, "code" to code))
+        response.token?.let {
+            authDataStore.saveToken(it)
+        }
+        return response
+    }
+
+    suspend fun resendRegisterOtp(email: String): Response<Any> {
+        return apiService.resendRegisterOtp(mapOf("email" to email))
     }
 
     suspend fun logout() {
@@ -43,7 +60,7 @@ class AuthRepository @Inject constructor(
         return apiService.getUserProfile()
     }
 
-    suspend fun updateUserProfile(request: Map<String, Any>): Response<AuthResponse> {
+    suspend fun updateUserProfile(request: Map<String, @JvmSuppressWildcards Any>): Response<AuthResponse> {
         return apiService.updateUserProfile(request)
     }
 
@@ -51,8 +68,18 @@ class AuthRepository @Inject constructor(
         return apiService.changePassword(request)
     }
 
-    suspend fun validateNik(nik: String): Response<Any> {
-        return apiService.validateNik(mapOf("identity_number" to nik))
+    suspend fun validateNik(
+        nik: String,
+        startDate: String = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date()),
+        hikeType: String = "camp"
+    ): Response<Any> {
+        return apiService.validateNik(
+            mapOf(
+                "nik" to nik,
+                "start_date" to startDate,
+                "hike_type" to hikeType
+            )
+        )
     }
 
     suspend fun sendForgotPasswordCode(email: String): Response<Any> {

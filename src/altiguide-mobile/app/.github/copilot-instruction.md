@@ -66,8 +66,8 @@ Dependency Inj  : Hilt (Dagger Hilt)
 ## 4. Backend API — Base URL
 
 ```
-Development (Emulator)  : http://10.0.2.2:8000
-Development (Real Device): http://192.168.x.x:8000   ← use your PC's local IP
+Development (Emulator)  : http://10.0.2.2:8010
+Development (Real Device): http://192.168.x.x:8010   ← use your PC's local IP
 Production              : https://[your-domain].com   ← TBD
 
 All API endpoints are prefixed with /api automatically.

@@ -26,7 +26,7 @@ import kotlinx.coroutines.runBlocking
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8000/api/" // Android Emulator localhost
+    private const val BASE_URL = "http://10.0.2.2:8010/api/" // Android Emulator localhost
 
     @Provides
     @Singleton

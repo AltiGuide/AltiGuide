@@ -3,6 +3,7 @@ package com.example.altiguide_mobile.data.network
 import com.example.altiguide_mobile.data.model.AuthResponse
 import com.example.altiguide_mobile.data.model.LoginRequest
 import com.example.altiguide_mobile.data.model.RegisterRequest
+import com.example.altiguide_mobile.data.model.GoogleAuthRequest
 import com.example.altiguide_mobile.data.model.UserModel
 import com.example.altiguide_mobile.data.model.MountainModel
 import com.example.altiguide_mobile.data.model.RouteModel
@@ -22,9 +23,18 @@ interface AltiGuideApiService {
 
     @POST("register")
     suspend fun register(@Body request: RegisterRequest): AuthResponse
+
+    @POST("register/verify-otp")
+    suspend fun verifyRegisterOtp(@Body request: Map<String, String>): AuthResponse
+
+    @POST("register/resend-otp")
+    suspend fun resendRegisterOtp(@Body request: Map<String, String>): Response<Any>
     
     @POST("login")
     suspend fun login(@Body request: LoginRequest): AuthResponse
+
+    @POST("auth/google")
+    suspend fun loginWithGoogle(@Body request: GoogleAuthRequest): AuthResponse
 
     @POST("logout")
     suspend fun logout() // response structure depends on use cases but usually just 200 OK
@@ -33,7 +43,7 @@ interface AltiGuideApiService {
     suspend fun getUserProfile(): UserModel
 
     @PUT("user/profile")
-    suspend fun updateUserProfile(@Body request: Map<String, Any>): Response<AuthResponse>
+    suspend fun updateUserProfile(@Body request: Map<String, @JvmSuppressWildcards Any>): Response<AuthResponse>
 
     @PUT("user/password")
     suspend fun changePassword(@Body request: Map<String, String>): Response<AuthResponse>

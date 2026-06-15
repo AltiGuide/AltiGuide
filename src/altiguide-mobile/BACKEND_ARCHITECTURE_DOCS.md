@@ -34,7 +34,7 @@ Untuk menjaga kompatibilitas API, mencegah *error build*, dan mendukung integras
 - **`AppModule.kt`**: Modul injeksi Hilt tersentralisasi yang menyuplai:
   - `AuthDataStore` (menyediakan referensi state login lokal).
   - `OkHttpClient` berserta **Interceptor** keamanan (yang otomatis menyisipkan header `Authorization: Bearer <token>` pada setiap pemanggilan API).
-  - `Retrofit` & `AltiGuideApiService` (beralamat pusat di `http://10.0.2.2:8000/`).
+  - `Retrofit` & `AltiGuideApiService` (beralamat pusat di `http://10.0.2.2:8010/`).
   - `AltiGuideDatabase` (pemanggil basis data lokal Room).
 
 ### D. Data Models (`/data/model`)

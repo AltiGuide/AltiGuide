@@ -37,34 +37,33 @@ const otherDestinations = computed(() => {
   return allMountains.value.filter(m => m.slug !== currentSlug.value).slice(0, 6)
 })
 
-// ── Weather ──────────────────────────────────────────────────────────────────
 const weather = ref(null)
 const weatherLoading = ref(false)
 const weatherError = ref(null)
 
 const WMO_CODES = {
-  0:  { label: 'Cerah', icon: '☀️' },
-  1:  { label: 'Hampir Cerah', icon: '🌤️' },
-  2:  { label: 'Berawan Sebagian', icon: '⛅' },
-  3:  { label: 'Berawan Penuh', icon: '☁️' },
-  45: { label: 'Berkabut', icon: '🌫️' },
-  48: { label: 'Kabut Beku', icon: '🌫️' },
-  51: { label: 'Gerimis Ringan', icon: '🌦️' },
-  53: { label: 'Gerimis', icon: '🌦️' },
-  55: { label: 'Gerimis Lebat', icon: '🌧️' },
-  61: { label: 'Hujan Ringan', icon: '🌧️' },
-  63: { label: 'Hujan Sedang', icon: '🌧️' },
-  65: { label: 'Hujan Lebat', icon: '🌧️' },
-  71: { label: 'Salju Ringan', icon: '❄️' },
-  80: { label: 'Hujan Lokal', icon: '🌦️' },
-  95: { label: 'Badai Petir', icon: '⛈️' },
+  0:  { label: 'Cerah', icon: '/images/weather-icon/sun.png' },
+  1:  { label: 'Hampir Cerah', icon: '/images/weather-icon/cloudysunny.png' },
+  2:  { label: 'Berawan Sebagian', icon: '/images/weather-icon/cloudysunny.png' },
+  3:  { label: 'Berawan Penuh', icon: '/images/weather-icon/clouds.png' },
+  45: { label: 'Berkabut', icon: '/images/weather-icon/clouds.png' },
+  48: { label: 'Kabut Beku', icon: '/images/weather-icon/clouds.png' },
+  51: { label: 'Gerimis Ringan', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  53: { label: 'Gerimis', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  55: { label: 'Gerimis Lebat', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  61: { label: 'Hujan Ringan', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  63: { label: 'Hujan Sedang', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  65: { label: 'Hujan Lebat', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  71: { label: 'Salju Ringan', icon: '/images/weather-icon/clouds-snow.png' },
+  80: { label: 'Hujan Lokal', icon: '/images/weather-icon/sun-clouds-rain.png' },
+  95: { label: 'Badai Petir', icon: '/images/weather-icon/lightning.png' },
 }
 
 function getWmoLabel(code) {
   return WMO_CODES[code]?.label ?? 'Tidak Diketahui'
 }
 function getWmoIcon(code) {
-  return WMO_CODES[code]?.icon ?? '🌡️'
+  return WMO_CODES[code]?.icon ?? '/images/weather-icon/sun.png'
 }
 
 function formatHour(isoStr) {
@@ -84,12 +83,18 @@ async function fetchWeather(lat, lon) {
     url.searchParams.set('longitude', lon)
     url.searchParams.set('current', [
       'temperature_2m',
+      'apparent_temperature',
+      'cloudcover',
       'weathercode',
       'windspeed_10m',
       'relativehumidity_2m',
       'precipitation',
       'visibility',
       'surface_pressure',
+    ].join(','))
+    url.searchParams.set('hourly', [
+      'temperature_2m',
+      'weathercode'
     ].join(','))
     url.searchParams.set('daily', [
       'weathercode',
@@ -114,7 +119,23 @@ async function fetchWeather(lat, lon) {
   }
 }
 
-// ── Watchers ─────────────────────────────────────────────────────────────────
+const hourlyForecast = computed(() => {
+  if (!weather.value?.hourly?.time) return []
+  const now = new Date()
+  const idx = weather.value.hourly.time.findIndex(t => new Date(t) >= now)
+  const startIndex = idx !== -1 ? idx : 0
+  
+  return weather.value.hourly.time.slice(startIndex, startIndex + 8).map((timeStr, i) => {
+    const actualIndex = startIndex + i
+    const d = new Date(timeStr)
+    return {
+      time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+      temp: Math.round(weather.value.hourly.temperature_2m[actualIndex]),
+      code: weather.value.hourly.weathercode[actualIndex]
+    }
+  })
+})
+
 watch(currentSlug, () => {
   selectedRoute.value = null
   weather.value = null
@@ -128,7 +149,6 @@ watch(selectedRoute, (route) => {
   }
 })
 
-// ── Difficulty label ──────────────────────────────────────────────────────────
 function difficultyLabel(d) {
   if (d === 'easy') return 'Mudah'
   if (d === 'moderate') return 'Menengah'
@@ -150,7 +170,6 @@ function formatRupiah(val) {
   return 'Rp ' + Number(val).toLocaleString('id-ID')
 }
 
-// ── Water source waypoints ────────────────────────────────────────────────────
 const waterSourceWaypoints = computed(() => {
   if (!selectedRoute.value?.waypoints) return []
   return selectedRoute.value.waypoints.filter(wp => wp.has_water_source)
@@ -171,7 +190,6 @@ const waterSourceWaypoints = computed(() => {
         <Link href="/" class="hover:text-black transition">Home</Link>
         <Link href="/article" class="hover:text-black transition">Article</Link>
         <Link href="/booking" class="hover:text-black transition">Booking</Link>
-        <!-- Auth Button -->
         <template v-if="authUser">
           <Link
             href="/dashboard"
@@ -197,7 +215,6 @@ const waterSourceWaypoints = computed(() => {
       </div>
     </nav>
 
-    <!-- ── Mountain listing ─────────────────────────────────────────────────── -->
     <div v-if="!currentSlug" class="w-full flex flex-col items-center py-12">
       <div class="w-full max-w-[1340px] px-6 mb-12 flex flex-col items-center">
         <h1 class="text-[#374426] text-[48px] font-bold tracking-tight mb-4 text-center" style="font-family: 'Montserrat', sans-serif;">
@@ -239,9 +256,7 @@ const waterSourceWaypoints = computed(() => {
       </div>
     </div>
 
-    <!-- ── Mountain detail ──────────────────────────────────────────────────── -->
     <template v-else-if="currentMountain">
-      <!-- Mountain overview panel (no route selected) -->
       <div v-if="!selectedRoute" class="w-full flex justify-center py-10">
         <div
           class="relative rounded-[40px] shadow-2xl p-10 flex flex-col items-center"
@@ -252,7 +267,6 @@ const waterSourceWaypoints = computed(() => {
           </h1>
 
           <div class="w-full flow-root text-[#F8F3E4] leading-relaxed pr-4" style="font-family: 'Poppins', sans-serif;">
-            <!-- Left column -->
             <div class="float-left w-[504px] mr-10 mb-6 flex flex-col gap-6">
               <div class="w-full h-[600px] rounded-[30px] overflow-hidden shadow-lg border-2 border-white/10">
                 <img :src="currentMountain.image" :alt="currentMountain.name" class="w-full h-full object-cover" @error="e => e.target.style.opacity='0'" />
@@ -276,14 +290,12 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
             </div>
-
-            <!-- Right column / article content -->
             <template v-for="(section, idx) in currentMountain.content" :key="idx">
-              <p v-if="!section.title" class="text-justify text-[18px] mb-8">
+              <p v-if="!section.title" class="text-justify text-[18px] mb-6">
                 <span class="font-semibold">{{ currentMountain.name }}</span> {{ section.text.substring(section.text.indexOf(' ') + 1) }}
               </p>
 
-              <div v-else class="flex flex-col gap-2 mb-8">
+              <div v-else class="flex flex-col gap-2 mb-6">
                 <h3 class="font-semibold text-xl text-[#F8F3E4]">{{ section.title }}</h3>
                 <p class="text-justify text-[18px]">{{ section.text }}</p>
               </div>
@@ -292,10 +304,8 @@ const waterSourceWaypoints = computed(() => {
         </div>
       </div>
 
-      <!-- ── Route detail ─────────────────────────────────────────────────── -->
       <template v-else>
 
-        <!-- Hero: curved route name -->
         <section class="route-hero">
           <div class="route-hero__inner">
             <svg class="route-hero__svg" :viewBox="`0 0 900 220`" xmlns="http://www.w3.org/2000/svg">
@@ -315,11 +325,9 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-        <!-- ── Peta ─────────────────────────────────────────────────────── -->
         <section class="route-section route-map-section">
           <div class="route-container">
             <div class="route-map-frame">
-              <!-- Ada gambar peta -->
               <template v-if="selectedRoute.map_image">
                 <div class="route-map-img-wrapper">
                   <img
@@ -328,7 +336,6 @@ const waterSourceWaypoints = computed(() => {
                     class="route-map-img"
                     @error="e => e.target.closest('.route-map-img-wrapper').innerHTML = '<div class=\'route-map-empty\'><span class=\'route-map-empty__title\'>Peta tidak dapat dimuat</span></div>'"
                   />
-                  <!-- Tombol perbesar -->
                   <button
                     @click="mapLightbox = true"
                     class="route-map-zoom-btn"
@@ -342,7 +349,6 @@ const waterSourceWaypoints = computed(() => {
                   </button>
                 </div>
 
-                <!-- Lightbox modal -->
                 <Teleport to="body">
                   <Transition name="lightbox">
                     <div
@@ -372,7 +378,6 @@ const waterSourceWaypoints = computed(() => {
                 </Teleport>
               </template>
 
-              <!-- Peta belum tersedia -->
               <div v-else class="route-map-empty">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 text-[#A2825B]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
@@ -384,13 +389,11 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-        <!-- ── Deskripsi ─────────────────────────────────────────────────── -->
         <section class="route-section route-deskripsi-section">
           <div class="route-container">
             <div class="route-card">
               <h2 class="route-card__title mb-6">Informasi Basecamp</h2>
 
-              <!-- Info grid -->
               <div class="route-info-grid">
                 <div class="route-info-item">
                   <span class="route-info-item__label">📍 Alamat Basecamp</span>
@@ -410,7 +413,6 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
 
-              <!-- Deskripsi jalur -->
               <div v-if="selectedRoute.route_info?.logistics_description" class="mt-8">
                 <h3 class="route-card__subtitle">Karakteristik Jalur</h3>
                 <p class="route-card__text mt-3">{{ selectedRoute.route_info.logistics_description }}</p>
@@ -419,20 +421,17 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-        <!-- ── Estimasi waktu per pos ─────────────────────────────────────── -->
         <section class="route-section route-estimasi-section">
           <div class="route-container">
             <div class="route-card">
-              <h2 class="route-card__title text-center mb-8">Estimasi Waktu per Pos</h2>
+              <h2 class="route-card__title text-center mb-6">Estimasi Waktu per Pos</h2>
 
               <div v-if="selectedRoute.waypoints?.length" class="route-estimasi-grid">
                 <div v-for="wp in selectedRoute.waypoints" :key="wp.order_index" class="route-pos-item">
                   <div class="route-pos-item__icon mt-1">
-                    <!-- Water source icon -->
                     <svg v-if="wp.has_water_source" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#4A90D9]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9V8h2v9zm4 0h-2V8h2v9z"/>
                     </svg>
-                    <!-- Camp / pos icon -->
                     <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#374426]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                     </svg>
@@ -459,7 +458,6 @@ const waterSourceWaypoints = computed(() => {
                 Data waypoint untuk jalur ini belum tersedia.
               </div>
 
-              <!-- Legend -->
               <div class="route-estimasi-legends mt-10 flex flex-col gap-1">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-[#4A90D9]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9V8h2v9zm4 0h-2V8h2v9z"/></svg>
@@ -474,14 +472,11 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-        <!-- ── Galeri + Statistik + Tips ─────────────────────────────────── -->
         <section class="route-section route-stats-section">
           <div class="route-container">
             <div class="route-stats-wrapper">
 
-              <!-- Galeri foto rute (2 frame) -->
               <div class="route-stats-gallery">
-                <!-- Frame 1: foto rute -->
                 <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
                   <img
                     v-if="selectedRoute.image"
@@ -500,7 +495,6 @@ const waterSourceWaypoints = computed(() => {
                   </div>
                 </div>
 
-                <!-- Frame 2: foto gunung (placeholder sampai foto rute ke-2 tersedia) -->
                 <div class="relative w-full flex-1 rounded-[30px] overflow-hidden flex flex-col bg-[#F0ECD8] border-2 border-dashed border-[#D7DDC2]" style="min-height: 260px;">
                   <img
                     v-if="currentMountain.image"
@@ -520,9 +514,7 @@ const waterSourceWaypoints = computed(() => {
                 </div>
               </div>
 
-              <!-- Statistik + Tips -->
               <div class="route-stats-info route-card">
-                <!-- Statistik Jalur -->
                 <div class="route-stats-block">
                   <h3 class="route-stats-block__title">Statistik Jalur</h3>
                   <ul class="route-stats-list">
@@ -551,7 +543,6 @@ const waterSourceWaypoints = computed(() => {
                   </ul>
                 </div>
 
-                <!-- Tips Khusus -->
                 <div class="route-stats-block">
                   <h3 class="route-stats-block__title">Tips Khusus</h3>
                   <div v-if="selectedRoute.route_info?.logistics_description" class="route-stats-tip">
@@ -575,11 +566,8 @@ const waterSourceWaypoints = computed(() => {
           </div>
         </section>
 
-        <!-- ── Cuaca ─────────────────────────────────────────────────────── -->
         <section class="route-section route-weather-section">
           <div class="route-container">
-
-            <!-- Loading -->
             <div v-if="weatherLoading" class="route-weather-card flex items-center justify-center" style="min-height: 220px;">
               <div class="flex flex-col items-center gap-4 text-white/70">
                 <svg class="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -590,90 +578,91 @@ const waterSourceWaypoints = computed(() => {
               </div>
             </div>
 
-            <!-- Error -->
-            <div v-else-if="weatherError" class="route-weather-card flex items-center justify-center" style="min-height: 180px;">
-              <div class="text-center text-white/70 px-8" style="font-family: 'Poppins', sans-serif;">
+            <div v-else-if="weatherError" class="w-full flex justify-center py-20">
+              <div class="text-center text-[#E6E6E6]/70 px-8" style="font-family: 'Montserrat', sans-serif;">
                 <p class="text-lg mb-2">⚠️ Gagal memuat data cuaca</p>
                 <p class="text-sm">{{ weatherError }}</p>
               </div>
             </div>
 
-            <!-- Cuaca card -->
-            <div v-else-if="weather" class="route-weather-card">
-              <div class="route-weather-card__header">
-                <span class="route-weather-card__badge">Cuaca Real-Time</span>
-              </div>
+            <div v-else-if="weather" class="w-full mt-8 mb-12 rounded-[40px] p-8 md:p-12 text-[#E6E6E6] relative overflow-hidden shadow-[0_20px_50px_rgba(20,30,80,0.5)]" style="background: linear-gradient(to top left, #4021CB 0%, #7176C9 25%, #122E80 100%); font-family: 'Montserrat', sans-serif;">
+              <h2 class="text-center font-bold text-2xl mb-6 tracking-wide">Cuaca</h2>
+              <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-8 mb-6">
+                <div class="flex flex-1 flex-col sm:flex-row items-center sm:items-center justify-start gap-4 sm:gap-12 w-full">
+                  <div class="flex flex-col justify-center">
+                    <h3 class="text-[32px] md:text-[40px] font-bold leading-[1.1] text-center sm:text-left">Gunung<br/>{{ currentMountain.name.replace('Gunung ', '') }}</h3>
+                    <div class="mt-1 text-center sm:text-left">
+                      <span class="text-[56px] md:text-[72px] font-bold leading-none">{{ Math.round(weather.current?.temperature_2m ?? 0) }}°C</span>
+                    </div>
+                    <div class="text-[#E6E6E6]/80 text-lg font-medium -mt-2 text-center sm:text-left">Real feel {{ Math.round(weather.current?.apparent_temperature ?? 0) }}°C</div>
+                  </div>
 
-              <div class="route-weather-card__body">
-                <!-- Current -->
-                <div class="route-weather-current">
-                  <div class="route-weather-current__mountain">
-                    <h3>Gunung</h3>
-                    <h2>{{ currentMountain.name.replace('Gunung ', '') }}</h2>
+                  <div class="flex justify-center items-center relative">
+                    <img :src="getWmoIcon(weather.current?.weathercode)" alt="Current Weather" class="w-48 h-48 md:w-56 md:h-56 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)] z-10" />
                   </div>
-                  <div class="route-weather-current__icon text-4xl">
-                    {{ getWmoIcon(weather.current?.weathercode) }}
-                  </div>
-                  <div class="route-weather-current__temp">
-                    <span class="route-weather-current__degrees">{{ Math.round(weather.current?.temperature_2m ?? 0) }}</span>
-                    <span class="route-weather-current__unit">°C</span>
-                  </div>
-                  <div class="route-weather-current__condition">{{ getWmoLabel(weather.current?.weathercode) }}</div>
                 </div>
 
-                <!-- Forecast 5 hari ke depan -->
-                <div class="route-weather-forecast">
-                  <table class="route-weather-table">
-                    <thead>
-                      <tr>
-                        <th>Hari</th>
-                        <th>Suhu</th>
-                        <th>Cuaca</th>
-                        <th>Angin</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(date, i) in weather.daily?.time?.slice(1, 6)"
-                        :key="date"
-                      >
-                        <td>{{ HARI[new Date(date).getDay()] }}</td>
-                        <td>
-                          {{ Math.round(weather.daily.temperature_2m_min[i + 1]) }}–{{ Math.round(weather.daily.temperature_2m_max[i + 1]) }}°C
-                        </td>
-                        <td>{{ getWmoIcon(weather.daily.weathercode[i + 1]) }} {{ getWmoLabel(weather.daily.weathercode[i + 1]) }}</td>
-                        <td>{{ Math.round(weather.daily.windspeed_10m_max[i + 1]) }} km/j</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div class="w-full lg:w-[400px] xl:w-[450px] bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shrink-0">
+                  <h4 class="text-sm font-semibold mb-4 text-[#E6E6E6]/90">3 Days Forecast</h4>
+                  <div class="flex flex-col gap-4">
+                    <div v-for="(date, i) in weather.daily?.time?.slice(0, 3)" :key="date" class="flex items-center justify-between border-b border-white/10 pb-3 last:border-0 last:pb-0">
+                      <span class="w-16 text-sm font-medium">{{ i === 0 ? 'Today' : HARI[new Date(date).getDay()].substring(0, 3) }}</span>
+                      <img :src="getWmoIcon(weather.daily.weathercode[i])" class="w-8 h-8 object-contain drop-shadow-sm" />
+                      <span class="flex-1 text-center text-sm font-medium">{{ getWmoLabel(weather.daily.weathercode[i]) }}</span>
+                      <span class="w-20 text-right text-sm font-semibold">{{ Math.round(weather.daily.temperature_2m_max[i]) }}°C / {{ Math.round(weather.daily.temperature_2m_min[i]) }}°C</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- Footer info -->
-              <div class="route-weather-card__footer">
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌡 Kelembaban</span>
-                  <span class="route-weather-info-item__value">{{ weather.current?.relativehumidity_2m ?? '-' }}%</span>
+              <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 mb-6">
+                <div class="flex justify-between items-center mb-4 text-sm font-medium">
+                  <span class="text-[#E6E6E6]/90">Hourly Forecast</span>
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>{{ new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }} {{ new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) }}</span>
+                  </div>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌧 Curah Hujan</span>
-                  <span class="route-weather-info-item__value">{{ weather.current?.precipitation ?? '0' }} mm</span>
+                <div class="flex justify-between gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                  <div v-for="hour in hourlyForecast" :key="hour.time" class="flex-1 min-w-[80px] flex flex-col items-center gap-3 border-r border-white/10 last:border-0">
+                    <span class="text-xs font-medium text-[#E6E6E6]/80 whitespace-nowrap">{{ hour.time }}</span>
+                    <img :src="getWmoIcon(hour.code)" class="w-10 h-10 object-contain drop-shadow-sm" />
+                    <span class="text-sm font-bold">{{ hour.temp }}°C</span>
+                  </div>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">💨 Angin</span>
-                  <span class="route-weather-info-item__value">{{ Math.round(weather.current?.windspeed_10m ?? 0) }} km/j</span>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    <span>Wind Speed</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ Math.round(weather.current?.windspeed_10m ?? 0) }} km/h</span>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">💧 Tekanan</span>
-                  <span class="route-weather-info-item__value">{{ Math.round(weather.current?.surface_pressure ?? 0) }} hPa</span>
+                
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a5 5 0 106 0v-9a3 3 0 00-6 0v9z" /></svg>
+                    <span>Temperature</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ Math.round(weather.current?.temperature_2m ?? 0) }} °C</span>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌅 Sunrise</span>
-                  <span class="route-weather-info-item__value">{{ formatHour(weather.daily?.sunrise?.[0]) }}</span>
+
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3c0 0-4 5-4 9a4 4 0 008 0c0-4-4-9-4-9z" /></svg>
+                    <span>Humidity</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ weather.current?.relativehumidity_2m ?? 0 }} %</span>
                 </div>
-                <div class="route-weather-info-item">
-                  <span class="route-weather-info-item__label">🌇 Sunset</span>
-                  <span class="route-weather-info-item__value">{{ formatHour(weather.daily?.sunset?.[0]) }}</span>
+
+                <div class="bg-[#123767]/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col items-center justify-center gap-2">
+                  <div class="flex items-center gap-2 text-[#E6E6E6]/80 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+                    <span>Clouds</span>
+                  </div>
+                  <span class="text-lg font-semibold">{{ weather.current?.cloudcover ?? 0 }} %</span>
                 </div>
               </div>
             </div>
@@ -733,72 +722,70 @@ const waterSourceWaypoints = computed(() => {
 
     <!-- Footer -->
     <div class="w-full flex flex-col mt-auto">
-      <div class="w-full bg-[#E0DBBE] py-10 px-8 md:px-16 xl:px-24 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="w-full bg-[#E0DBBE] py-6 px-6 md:px-12 xl:px-20 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
-          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" />
-          <span class="text-2xl md:text-3xl xl:text-[32px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
+          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
+          <span class="text-xl md:text-2xl xl:text-[28px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
         </div>
 
         <div class="flex items-center gap-4">
-          <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[18px] md:text-[20px] font-medium rounded-lg px-6 py-2.5 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[18px] md:text-[20px] font-medium rounded-lg px-6 py-2.5 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
           </Link>
         </div>
       </div>
 
-      <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
-        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
-          <div class="flex flex-col gap-[96px]">
-            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+      <footer class="w-full bg-[#FFFFFF] px-6 md:px-12 xl:px-20 py-8 flex flex-col">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-6">
+          <div class="flex flex-col gap-[48px]">
+            <Link href="/" class="text-[20px] font-medium text-[#374426] underline underline-offset-4">
               AltiGuide.com
             </Link>
             <div class="flex items-center gap-6 text-[#828282]">
               <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
               </a>
               <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
               </a>
-              <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+              <a href="https://www.instagram.com/altiguide___?igsh=MTRwbW8zbW8wZDVubg==" target="_blank" rel="noopener noreferrer" class="hover:text-[#374426] transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
               </a>
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="#" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Jalur Pendakian</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+          <div class="flex flex-col sm:flex-row gap-8 md:gap-16 xl:gap-24">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
+                <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
+                <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="#" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
+                <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+                <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Komunitas</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="#" class="hover:text-[#374426] transition-colors">Event Mendaki</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Tentang Kami</Link>
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Komunitas</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
+                <Link href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
+                <!-- <Link href="/about" class="hover:text-[#374426] transition-colors">Tentang Kami</Link> -->
               </div>
             </div>
           </div>
         </div>
 
-        <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
+        <div class="w-full border-t border-[#D7DDC2] pt-4 flex justify-end">
           <p class="text-[#5A684C] font-medium text-[14px]">
             © 2026 AltiGuide Team. All rights reserved.
           </p>

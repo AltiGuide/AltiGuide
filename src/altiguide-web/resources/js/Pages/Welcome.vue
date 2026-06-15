@@ -17,16 +17,47 @@ const slides = [
   { image: '/images/gunung_sindoro_8.png', name: 'Gunung Sindoro', description: 'Uji fisikmu di jalur menanjak yang menantang menuju puncak kawah vulkanik aktif yang menawarkan pemandangan "saudara kembarnya", Gunung Sumbing.' },
 ]
 
-const faqs = [
-  "Apa itu aplikasi AltiGuide?",
-  "Apakah peta navigasi tetap berfungsi jika tidak ada sinyal?",
-  "Bagaimana cara mendapatkan info terbaru mengenai status jalur?",
-  "Apakah data estimasi waktu tempuh sudah akurat?",
-  "Bisakah saya memesan simaksi atau tiket melalui web AltiGuide?",
-  "Bisakah saya memesan simaksi atau tiket melalui web AltiGuide?",
-  "Bagaimana jika saya tersesat atau keluar dari jalur yang ditentukan?",
-  "Apakah data sumber air dan pos pendakian selalu diperbarui?"
-]
+const faqs = ref([
+  {
+    question: "Apa itu aplikasi AltiGuide?",
+    answer: "AltiGuide adalah platform panduan pendakian gunung digital yang menyediakan informasi rute pendakian, peta offline, pemesanan tiket SIMAKSI secara online, serta pemantauan posisi GPS untuk menunjang keamanan dan kenyamanan pendakian Anda.",
+    open: false
+  },
+  {
+    question: "Apakah peta navigasi tetap berfungsi jika tidak ada sinyal?",
+    answer: "Ya! Aplikasi mobile AltiGuide mendukung fitur peta offline (Offline Maps) yang terintegrasi dengan GPS smartphone Anda. Anda dapat mengunduh peta rute gunung terlebih dahulu sebelum memulai pendakian di area tanpa sinyal.",
+    open: false
+  },
+  {
+    question: "Bagaimana cara mendapatkan info terbaru mengenai status jalur?",
+    answer: "Informasi status jalur pendakian (buka/tutup, cuaca ekstrem, atau kendala lainnya) akan diperbarui secara berkala oleh pengelola basecamp resmi dan ditampilkan langsung pada halaman informasi detail gunung di aplikasi AltiGuide.",
+    open: false
+  },
+  {
+    question: "Apakah data estimasi waktu tempuh sudah akurat?",
+    answer: "Estimasi waktu tempuh dihitung menggunakan algoritma khusus yang mempertimbangkan jarak trek, tingkat kemiringan elevasi rute, dan rata-rata kecepatan pendaki umum. Namun, waktu tempuh aktual tetap bergantung pada kondisi fisik dan durasi istirahat rombongan Anda.",
+    open: false
+  },
+  {
+    question: "Bisakah saya memesan simaksi atau tiket melalui web AltiGuide?",
+    answer: "Tentu saja! Anda dapat melakukan booking tiket SIMAKSI secara mudah dan melakukan pembayaran online secara instan melalui web AltiGuide. E-Ticket resmi akan langsung diterbitkan ke akun Anda setelah pembayaran selesai diverifikasi.",
+    open: false
+  },
+  {
+    question: "Bagaimana jika saya tersesat atau keluar dari jalur yang ditentukan?",
+    answer: "Aplikasi kami dilengkapi fitur pelacak posisi (Track Position) real-time menggunakan GPS. Jika Anda terdeteksi keluar dari jalur resmi, sistem navigasi akan memberikan peringatan dan membantu memandu Anda kembali ke jalur pendakian yang aman.",
+    open: false
+  },
+  {
+    question: "Apakah data sumber air dan pos pendakian selalu diperbarui?",
+    answer: "Ya, semua data titik penting seperti pos pendakian, shelter camp, sumber air terdekat, hingga area rawan bahaya selalu diperbarui berdasarkan laporan basecamp resmi serta kontribusi komunitas pendaki terverifikasi.",
+    open: false
+  }
+])
+
+const toggleFaq = (index) => {
+  faqs.value[index].open = !faqs.value[index].open
+}
 
 const currentSlide = ref(0)
 let slideInterval = null
@@ -75,7 +106,7 @@ onUnmounted(() => {
 
 <template>
   <div class="w-full text-slate-800">
-    <Head>
+    <Head title="AltiGuide">
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
@@ -94,12 +125,12 @@ onUnmounted(() => {
         </div>
 
         <div class="flex items-center gap-4 md:gap-6 xl:gap-9 text-sm md:text-base">
-          <Link href="/" class="hover:text-black transition">Home</Link>
-          <Link href="/article" class="hover:text-black transition">Article</Link>
-          <Link href="/booking" class="hover:text-black transition">Booking</Link>
+          <a href="/" class="hover:text-black transition">Home</a>
+          <a href="/article" class="hover:text-black transition">Article</a>
+          <a href="/booking" class="hover:text-black transition">Booking</a>
           <!-- Auth Button -->
           <template v-if="authUser">
-            <Link
+            <a
               href="/dashboard"
               class="flex items-center gap-2 border border-[#3b4b3b] px-4 md:px-5 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap"
             >
@@ -113,12 +144,12 @@ onUnmounted(() => {
                 {{ authUser.name?.charAt(0)?.toUpperCase() }}
               </span>
               <span>My Dashboard</span>
-            </Link>
+            </a>
           </template>
           <template v-else>
-            <Link href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
+            <a href="/login" class="border border-[#3b4b3b] px-4 md:px-6 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap">
               Login
-            </Link>
+            </a>
           </template>
         </div>
       </nav>
@@ -140,7 +171,7 @@ onUnmounted(() => {
     </section>
 
     <section class="w-full bg-[#F8F3E4] flex flex-col items-center py-16 md:py-20 xl:py-24 px-6 md:px-12 xl:px-24">
-      <h2 class="text-3xl md:text-4xl xl:text-5xl font-bold text-[#64823E] mb-8 md:mb-12">
+      <h2 class="text-3xl md:text-4xl xl:text-5xl font-bold text-[#64823E] mb-6 md:mb-12">
         "Our Feature"
       </h2>
       
@@ -190,17 +221,17 @@ onUnmounted(() => {
         style="background: radial-gradient(ellipse 400px 300px at 20% 50%, #FAEEAD 0%, #FAEEAD 30%, #EEF1DB 100%)"
       >
         <!-- Left: Title -->
-        <div class="flex flex-col items-center justify-center shrink-0 -rotate-[8deg] lg:-rotate-[10deg] pl-2 lg:pl-6 relative w-[280px] md:w-[380px] lg:w-[480px] h-[150px] lg:h-[220px]">
+        <div class="flex flex-col items-center justify-center shrink-0 -rotate-[8deg] lg:-rotate-[10deg] pl-2 lg:pl-6 relative w-[280px] md:w-[380px] lg:w-[480px] aspect-[2/1]">
           <svg width="100%" height="100%" viewBox="0 0 500 250" class="overflow-visible absolute inset-0">
             <!-- Curve for FIND YOUR -->
-            <path id="curve-sub" d="M 0, 100 Q 250, 30 500, 100" fill="transparent" />
+            <path id="curve-sub" d="M -100, 95 Q 250, 5 600, 95" fill="transparent" />
             <!-- Curve for SUMMIT ! -->
-            <path id="curve-main" d="M 0, 200 Q 250, 115 500, 200" fill="transparent" />
+            <path id="curve-main" d="M -100, 205 Q 250, 95 600, 205" fill="transparent" />
             
-            <text class="summit-title-sub">
+            <text class="summit-title-sub" font-size="32" stroke-width="5">
               <textPath href="#curve-sub" startOffset="50%" text-anchor="middle">FIND YOUR</textPath>
             </text>
-            <text class="summit-title-main">
+            <text class="summit-title-main" font-size="95" stroke-width="9">
               <textPath href="#curve-main" startOffset="50%" text-anchor="middle">SUMMIT !</textPath>
             </text>
           </svg>
@@ -235,7 +266,7 @@ onUnmounted(() => {
                 v-for="(_, idx) in slides"
                 :key="idx"
                 @click="setSlide(idx)"
-                class="w-3 h-3 rounded-full transition-all duration-300 focus:outline-none"
+                class="w-2.5 h-2.5 rounded-full transition-all duration-300 focus:outline-none"
                 :class="currentSlide === idx ? 'bg-[#64823E] scale-125' : 'bg-black/20 hover:bg-[#64823E]/60'"
               />
             </div>
@@ -255,9 +286,37 @@ onUnmounted(() => {
         </button>
 
         <div class="w-full flex flex-col">
-          <div v-for="(faq, index) in faqs" :key="index" class="w-full flex items-center justify-between py-5 border-b border-[#D7DDC2]">
-            <h3 class="text-[22px] font-medium text-[#374426]" style="font-family: 'Montserrat', sans-serif;">{{ faq }}</h3>
-            <span class="text-[#374426] text-[32px] font-medium leading-none">+</span>
+          <div 
+            v-for="(faq, index) in faqs" 
+            :key="index" 
+            class="w-full border-b border-[#D7DDC2] py-5 cursor-pointer group"
+            @click="toggleFaq(index)"
+          >
+            <!-- Question Header -->
+            <div class="w-full flex items-center justify-between">
+              <h3 
+                class="text-[22px] font-medium text-[#374426] group-hover:text-[#64823E] transition-colors duration-200" 
+                style="font-family: 'Montserrat', sans-serif;"
+              >
+                {{ faq.question }}
+              </h3>
+              <span 
+                class="text-[#374426] text-[32px] font-medium leading-none select-none transition-transform duration-300 ease-in-out origin-center inline-block"
+                :class="{ 'rotate-45 text-[#64823E]': faq.open }"
+              >
+                +
+              </span>
+            </div>
+
+            <!-- Answer Content -->
+            <div 
+              class="overflow-hidden transition-all duration-300 ease-in-out"
+              :style="{ maxHeight: faq.open ? '200px' : '0px', opacity: faq.open ? '1' : '0', marginTop: faq.open ? '12px' : '0px' }"
+            >
+              <p class="text-[16px] md:text-[18px] text-[#5A684C] font-normal leading-relaxed" style="font-family: 'Montserrat', sans-serif;">
+                {{ faq.answer }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -267,76 +326,74 @@ onUnmounted(() => {
     <!-- Footer Section -->
     <div class="w-full flex flex-col">
       <!-- CTA Banner -->
-      <div class="w-full bg-[#E0DBBE] py-10 px-8 md:px-16 xl:px-24 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="w-full bg-[#E0DBBE] py-6 px-6 md:px-12 xl:px-20 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
-          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" />
-          <span class="text-2xl md:text-3xl xl:text-[32px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
+          <img src="/images/logo_2.png" alt="AltiGuide Logo" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
+          <span class="text-xl md:text-2xl xl:text-[28px] font-bold text-[#374426] tracking-tight">AltiGuide</span>
         </div>
         
         <div class="flex items-center gap-4">
-          <Link href="#" class="inline-block bg-[#374426] text-[#F8F3E4] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
+          <Link href="mailto:support@altiguide.com" class="inline-block bg-[#374426] text-[#F8F3E4] text-[18px] md:text-[20px] font-medium rounded-lg px-6 py-2.5 hover:opacity-90 transition-opacity" style="font-family: 'Montserrat', sans-serif;">
             Contact Us
           </Link>
-          <Link href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[24px] font-medium rounded-xl px-8 py-4 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
+          <a href="/booking" class="inline-block bg-[#F8F3E4] text-[#374426] text-[18px] md:text-[20px] font-medium rounded-lg px-6 py-2.5 hover:opacity-90 transition-opacity shadow-sm" style="font-family: 'Montserrat', sans-serif;">
             Start Summit
-          </Link>
+          </a>
         </div>
       </div>
 
       <!-- Main Footer Links -->
-      <footer class="w-full bg-[#FFFFFF] px-8 md:px-16 xl:px-24 py-10 flex flex-col">
-        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-8">
+      <footer class="w-full bg-[#FFFFFF] px-6 md:px-12 xl:px-20 py-8 flex flex-col">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-12 mb-6">
           <!-- Left: Logo & Social -->
-          <div class="flex flex-col gap-[96px]">
-            <Link href="/" class="text-[24px] font-medium text-[#374426] underline underline-offset-8">
+          <div class="flex flex-col gap-[48px]">
+            <a href="/" class="text-[20px] font-medium text-[#374426] underline underline-offset-4">
               AltiGuide.com
-            </Link>
+            </a>
             <div class="flex items-center gap-6 text-[#828282]">
               <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
               </a>
               <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.66 2.66 0 0 0-1.875-1.884C18.053 3.86 12 3.86 12 3.86s-6.053 0-7.707.442a2.66 2.66 0 0 0-1.875 1.884C2 7.854 2 12 2 12s0 4.146.418 5.814a2.66 2.66 0 0 0 1.875 1.884C5.947 20.14 12 20.14 12 20.14s6.053 0 7.707-.442a2.66 2.66 0 0 0 1.875-1.884C22 16.146 22 12 22 12s0-4.146-.418-5.814zM9.88 15.15V8.85l6.32 3.15-6.32 3.15z"/></svg>
               </a>
-              <a href="#" class="hover:text-[#374426] transition-colors">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+              <a href="https://www.instagram.com/altiguide___?igsh=MTRwbW8zbW8wZDVubg==" target="_blank" rel="noopener noreferrer" class="hover:text-[#374426] transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
               </a>
             </div>
           </div>
 
           <!-- Right: Links -->
-          <div class="flex flex-col sm:flex-row gap-12 md:gap-24 xl:gap-32">
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Jelajahi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="#" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Jalur Pendakian</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
+          <div class="flex flex-col sm:flex-row gap-8 md:gap-16 xl:gap-24">
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Jelajahi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
+                <Link href="/mountains" class="hover:text-[#374426] transition-colors">Daftar Gunung</Link>
+                <Link href="/weather-analytics" class="hover:text-[#374426] transition-colors">Weather Analytics</Link>
               </div>
             </div>
             
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Informasi</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="#" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Informasi</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
+                <Link href="/tata-tertib" class="hover:text-[#374426] transition-colors">Tata Tertib</Link>
                 <Link href="/booking" class="hover:text-[#374426] transition-colors">Booking Simaksi</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
+                <Link href="/tips-keamanan" class="hover:text-[#374426] transition-colors">Tips Keamanan</Link>
               </div>
             </div>
 
-            <div class="flex flex-col gap-5">
-              <h5 class="text-[#374426] font-semibold text-[18px]">Komunitas</h5>
-              <div class="flex flex-col gap-4 text-[#5A684C] font-medium text-[15px]">
-                <Link href="#" class="hover:text-[#374426] transition-colors">Event Mendaki</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
-                <Link href="#" class="hover:text-[#374426] transition-colors">Tentang Kami</Link>
+            <div class="flex flex-col gap-4">
+              <h5 class="text-[#374426] font-semibold text-base">Komunitas</h5>
+              <div class="flex flex-col gap-3 text-[#5A684C] font-medium text-sm">
+                <Link href="/" class="hover:text-[#374426] transition-colors">Forum Diskusi</Link>
+                <!-- <Link href="/about" class="hover:text-[#374426] transition-colors">Tentang Kami</Link> -->
               </div>
             </div>
           </div>
         </div>
 
         <!-- Copyright -->
-        <div class="w-full border-t border-[#D7DDC2] pt-6 flex justify-end">
+        <div class="w-full border-t border-[#D7DDC2] pt-4 flex justify-end">
           <p class="text-[#5A684C] font-medium text-[14px]">
             © 2026 AltiGuide Team. All rights reserved.
           </p>
@@ -354,10 +411,8 @@ onUnmounted(() => {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-style: italic;
-  font-size: 30px;
   fill: #FFFFFF;
   stroke: #374426;
-  stroke-width: 6px;
   stroke-linejoin: round;
   paint-order: stroke fill;
   filter: drop-shadow(-2px 4px 3px rgba(25, 35, 15, 0.95));
@@ -368,33 +423,11 @@ onUnmounted(() => {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-style: italic;
-  font-size: 90px;
   fill: #FFFFFF;
   stroke: #374426;
-  stroke-width: 12px;
   stroke-linejoin: round;
   paint-order: stroke fill;
-  filter: drop-shadow(-5px 8px 6px rgba(25, 35, 15, 0.95));
+  filter: drop-shadow(-4px 6px 5px rgba(25, 35, 15, 0.95));
   text-transform: uppercase;
-}
-
-@media (max-width: 1280px) {
-  .summit-title-main {
-    font-size: 70px;
-  }
-  .summit-title-sub {
-    font-size: 26px;
-  }
-}
-
-@media (max-width: 768px) {
-  .summit-title-main {
-    font-size: 55px;
-    stroke-width: 6px;
-  }
-  .summit-title-sub {
-    font-size: 22px;
-    stroke-width: 4px;
-  }
 }
 </style>
