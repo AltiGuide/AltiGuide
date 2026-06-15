@@ -2,7 +2,7 @@
 
 Dokumen ini merupakan kesepakatan resmi anggota tim untuk memastikan kelancaran kolaborasi serta dokumentasi progress berkala selama praktikum Rekayasa Perangkat Lunak (RPL).
 
-## 🚀 Status Progress Fitur Aplikasi (Update Modul P7)
+## Status Progress Fitur Aplikasi (Update Modul P8)
 Berikut adalah daftar fitur utama (*Features*) yang telah berhasil diimplementasikan dan di-merge ke dalam branch `dev`:
 
 ### 1. Fitur Utama Tahap 1 (Must-have #1 - Modul P6)
@@ -12,6 +12,10 @@ Berikut adalah daftar fitur utama (*Features*) yang telah berhasil diimplementas
 ### 2. Fitur Utama Tahap 2 (Must-have #2 - Modul P7)
 * **[Selesai] Mountain & Article Detail**: Halaman eksplorasi informasi artikel detail gunung (deskripsi, foto, dan integrasi rute) serta seksi rekomendasi destinasi pendakian lainnya (*Other Destinations*).
 * **[Selesai] Dynamic Route Routing & Database Integration**: Sistem pencarian data berbasis `slug` dan penampilan data dinamis dari database tanpa *hardcoded values*.
+
+### 3. Fitur Utama Tahap 3 (Must-have #3 - Modul P8)
+* **[Selesai] Online Booking SIMAKSI System**: Sistem registrasi pendakian daring yang terintegrasi penuh, memandu pengguna melalui alur pemilihan destinasi, inisiasi grup/manifes, hingga validasi anggota secara otomatis.
+* **[Selesai] Dynamic Cost Calculation & Review**: Modul kalkulasi rincian biaya tiket masukan dan biaya layanan pendakian secara *real-time* dan dinamis yang ditarik langsung dari database pada tahap tinjauan akhir.
 
 ---
 
