@@ -221,17 +221,17 @@ onUnmounted(() => {
         style="background: radial-gradient(ellipse 400px 300px at 20% 50%, #FAEEAD 0%, #FAEEAD 30%, #EEF1DB 100%)"
       >
         <!-- Left: Title -->
-        <div class="flex flex-col items-center justify-center shrink-0 -rotate-[8deg] lg:-rotate-[10deg] pl-2 lg:pl-6 relative w-[280px] md:w-[380px] lg:w-[480px] h-[150px] lg:h-[220px]">
+        <div class="flex flex-col items-center justify-center shrink-0 -rotate-[8deg] lg:-rotate-[10deg] pl-2 lg:pl-6 relative w-[280px] md:w-[380px] lg:w-[480px] aspect-[2/1]">
           <svg width="100%" height="100%" viewBox="0 0 500 250" class="overflow-visible absolute inset-0">
             <!-- Curve for FIND YOUR -->
             <path id="curve-sub" d="M -100, 95 Q 250, 5 600, 95" fill="transparent" />
             <!-- Curve for SUMMIT ! -->
             <path id="curve-main" d="M -100, 205 Q 250, 95 600, 205" fill="transparent" />
             
-            <text class="summit-title-sub">
+            <text class="summit-title-sub" font-size="32" stroke-width="5">
               <textPath href="#curve-sub" startOffset="50%" text-anchor="middle">FIND YOUR</textPath>
             </text>
-            <text class="summit-title-main">
+            <text class="summit-title-main" font-size="95" stroke-width="9">
               <textPath href="#curve-main" startOffset="50%" text-anchor="middle">SUMMIT !</textPath>
             </text>
           </svg>
@@ -411,10 +411,8 @@ onUnmounted(() => {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-style: italic;
-  font-size: 42px;
   fill: #FFFFFF;
   stroke: #374426;
-  stroke-width: 6px;
   stroke-linejoin: round;
   paint-order: stroke fill;
   filter: drop-shadow(-2px 4px 3px rgba(25, 35, 15, 0.95));
@@ -425,33 +423,11 @@ onUnmounted(() => {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-style: italic;
-  font-size: 130px;
   fill: #FFFFFF;
   stroke: #374426;
-  stroke-width: 12px;
   stroke-linejoin: round;
   paint-order: stroke fill;
-  filter: drop-shadow(-5px 8px 6px rgba(25, 35, 15, 0.95));
+  filter: drop-shadow(-4px 6px 5px rgba(25, 35, 15, 0.95));
   text-transform: uppercase;
-}
-
-@media (max-width: 1280px) {
-  .summit-title-main {
-    font-size: 100px;
-  }
-  .summit-title-sub {
-    font-size: 34px;
-  }
-}
-
-@media (max-width: 768px) {
-  .summit-title-main {
-    font-size: 75px;
-    stroke-width: 8px;
-  }
-  .summit-title-sub {
-    font-size: 28px;
-    stroke-width: 4px;
-  }
 }
 </style>
