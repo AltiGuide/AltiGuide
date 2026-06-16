@@ -109,6 +109,9 @@ dependencies {
     // OSMDroid (OpenStreetMap native, no API key needed)
     implementation(libs.osmdroid.android)
 
+    // ZXing (QR Code generation)
+    implementation(libs.zxing.core)
+
     // Google Maps SDK
     implementation("com.google.android.gms:play-services-maps:19.0.0")
     implementation("com.google.maps.android:maps-compose:4.3.3")

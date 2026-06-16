@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -24,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.graphics.SolidColor
@@ -39,7 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.example.altiguide_mobile.R
 import androidx.compose.foundation.lazy.LazyColumn
 import com.example.altiguide_mobile.data.model.MountainModel
@@ -50,6 +48,9 @@ import com.example.altiguide_mobile.ui.profile.ProfileViewModel
 import com.example.altiguide_mobile.ui.navigation.NavigationScreen
 import com.example.altiguide_mobile.util.UiState
 import androidx.compose.foundation.BorderStroke
+import android.graphics.Bitmap
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
 
 // ── Montserrat font family ──────────────────────────────────────────────────
 private val Montserrat = FontFamily(
@@ -1859,22 +1860,38 @@ private fun TicketDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // QR Code image
+                    // QR Code generated from booking code
+                    val qrContent = transaction.orderId.ifEmpty { transaction.id }
+                    val qrBitmap = remember(qrContent) {
+                        runCatching {
+                            val writer = QRCodeWriter()
+                            val bitMatrix = writer.encode(qrContent, BarcodeFormat.QR_CODE, 400, 400)
+                            val bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.RGB_565)
+                            for (x in 0 until 400) {
+                                for (y in 0 until 400) {
+                                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+                                }
+                            }
+                            bitmap
+                        }.getOrNull()
+                    }
+                    val qrImageBitmap = remember(qrBitmap) { qrBitmap?.asImageBitmap() }
+
                     Box(
                         modifier = Modifier
                             .size(200.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(AltiDark.copy(alpha = 0.05f)),
+                            .background(Color.White)
+                            .border(2.dp, AltiDark.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (!transaction.qrUrl.isNullOrEmpty()) {
-                            AsyncImage(
-                                model = transaction.qrUrl,
+                        if (qrImageBitmap != null) {
+                            Image(
+                                bitmap = qrImageBitmap,
                                 contentDescription = "QR Code",
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(12.dp),
-                                contentScale = ContentScale.Fit
                             )
                         } else {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1887,7 +1904,7 @@ private fun TicketDetailScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Belum tersedia",
+                                    text = "Gagal memuat QR",
                                     fontFamily = Montserrat,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 11.sp,
