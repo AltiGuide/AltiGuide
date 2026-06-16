@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.android.application)
@@ -7,6 +9,16 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.google.services)
 }
+
+// Load MAPS_API_KEY from local.properties at top-level scope
+val localProperties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use {
+        localProperties.load(it)
+    }
+}
+val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY", "")
 
 android {
     namespace = "com.example.altiguide_mobile"
@@ -20,6 +32,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Inject the Maps API key into the manifest placeholder
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
@@ -93,6 +108,10 @@ dependencies {
 
     // OSMDroid (OpenStreetMap native, no API key needed)
     implementation(libs.osmdroid.android)
+
+    // Google Maps SDK
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
+    implementation("com.google.maps.android:maps-compose:4.3.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -37,11 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.altiguide_mobile.R
+import androidx.compose.foundation.lazy.LazyColumn
 import com.example.altiguide_mobile.data.model.MountainModel
+import com.example.altiguide_mobile.data.model.TransactionModel
 import com.example.altiguide_mobile.ui.profile.EditProfileScreen
 import com.example.altiguide_mobile.ui.profile.ProfileScreen
 import com.example.altiguide_mobile.ui.profile.ProfileViewModel
+import com.example.altiguide_mobile.ui.navigation.NavigationScreen
 import com.example.altiguide_mobile.util.UiState
+import androidx.compose.foundation.BorderStroke
 
 // ── Montserrat font family ──────────────────────────────────────────────────
 private val Montserrat = FontFamily(
@@ -221,6 +225,7 @@ fun HomeScreen(
     val mountainsState by viewModel.mountainsState.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
     var showEditProfile by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = {
         (mountainsState as? UiState.Success)?.data?.size ?: 0
@@ -368,41 +373,220 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // ── Search Bar ─────────────────────────────────────────
-                    Row(
+                    val mountains = (mountainsState as? UiState.Success)?.data ?: emptyList()
+                    val filteredMountains = remember(searchQuery, mountains) {
+                        if (searchQuery.isBlank()) emptyList()
+                        else mountains.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                    }
+                    val filteredRoutes = remember(searchQuery, mountains) {
+                        if (searchQuery.isBlank()) emptyList()
+                        else {
+                            mountains.flatMap { mountain ->
+                                (mountain.routes ?: emptyList()).map { route ->
+                                    route.copy(mountain = mountain)
+                                }
+                            }.filter { route ->
+                                route.name.contains(searchQuery, ignoreCase = true) ||
+                                (route.mountain?.name ?: "").contains(searchQuery, ignoreCase = true)
+                            }
+                        }
+                    }
+                    val showSuggestions = searchQuery.isNotBlank() && (filteredMountains.isNotEmpty() || filteredRoutes.isNotEmpty())
+
+                    // ── Search & Suggestions Container ──────────────────────
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp)
-                            .height(46.dp)
-                            .clip(RoundedCornerShape(23.dp))
-                            .background(SearchBg.copy(alpha = 0.85f)),
-                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Icon(
-                            imageVector = IconSearch,
-                            contentDescription = "Search",
-                            tint = AltiMedium,
-                            modifier = Modifier.size(17.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Search mountains, regions, routes....",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 12.sp,
-                            color = AltiMedium
-                        )
+                        Column {
+                            // Search Input Field
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                placeholder = {
+                                    Text(
+                                        text = "Search mountains or routes...",
+                                        fontFamily = Montserrat,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 12.sp,
+                                        color = AltiMedium
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = IconSearch,
+                                        contentDescription = "Search",
+                                        tint = AltiMedium,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (searchQuery.isNotEmpty()) {
+                                        IconButton(onClick = { searchQuery = "" }) {
+                                            Text(
+                                                text = "✕",
+                                                fontFamily = Montserrat,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp,
+                                                color = AltiMedium
+                                            )
+                                        }
+                                    }
+                                },
+                                singleLine = true,
+                                shape = RoundedCornerShape(23.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = SearchBg.copy(alpha = 0.95f),
+                                    unfocusedContainerColor = SearchBg.copy(alpha = 0.85f),
+                                    focusedBorderColor = AltiMedium,
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedTextColor = AltiDark,
+                                    unfocusedTextColor = AltiDark
+                                ),
+                                textStyle = LocalTextStyle.current.copy(
+                                    fontFamily = Montserrat,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 12.sp
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                            )
+
+                            // Suggestions Dropdown Card
+                            if (showSuggestions) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight(),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.cardColors(containerColor = SearchBg.copy(alpha = 0.98f)),
+                                    border = BorderStroke(1.dp, AltiMedium.copy(alpha = 0.3f)),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                                ) {
+                                    LazyColumn(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .heightIn(max = 280.dp)
+                                            .padding(vertical = 8.dp)
+                                    ) {
+                                        // Mountains Group
+                                        if (filteredMountains.isNotEmpty()) {
+                                            item {
+                                                Text(
+                                                    text = "GUNUNG",
+                                                    fontFamily = Montserrat,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 10.sp,
+                                                    color = AltiMedium,
+                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                                                )
+                                            }
+                                            items(filteredMountains.size) { idx ->
+                                                val mountain = filteredMountains[idx]
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable {
+                                                            selectedMountainForArticle = mountain
+                                                            searchQuery = ""
+                                                        }
+                                                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = "🏔️  ",
+                                                        fontSize = 14.sp
+                                                    )
+                                                    Column {
+                                                        Text(
+                                                            text = mountain.name,
+                                                            fontFamily = Montserrat,
+                                                            fontWeight = FontWeight.SemiBold,
+                                                            fontSize = 13.sp,
+                                                            color = AltiDark
+                                                        )
+                                                        Text(
+                                                            text = "${mountain.altitude ?: 3000} mdpl • ${mountain.province ?: "Jawa"}",
+                                                            fontFamily = Montserrat,
+                                                            fontWeight = FontWeight.Medium,
+                                                            fontSize = 10.sp,
+                                                            color = AltiDark.copy(alpha = 0.6f)
+                                                        )
+                                                    }
+                                                }
+                                                if (idx < filteredMountains.lastIndex || filteredRoutes.isNotEmpty()) {
+                                                    HorizontalDivider(color = AltiMedium.copy(alpha = 0.15f), thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                                                }
+                                            }
+                                        }
+
+                                        // Routes Group
+                                        if (filteredRoutes.isNotEmpty()) {
+                                            item {
+                                                Text(
+                                                    text = "JALUR PENDAKIAN",
+                                                    fontFamily = Montserrat,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 10.sp,
+                                                    color = AltiMedium,
+                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                                                )
+                                            }
+                                            items(filteredRoutes.size) { idx ->
+                                                val route = filteredRoutes[idx]
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable {
+                                                            viewModel.selectRoute(route)
+                                                            selectedTab = 1 // Navigate to Navigation Screen tab!
+                                                            searchQuery = ""
+                                                        }
+                                                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = "🥾  ",
+                                                        fontSize = 14.sp
+                                                    )
+                                                    Column {
+                                                        Text(
+                                                            text = "${route.mountain?.name ?: "Gunung"} via ${route.name}",
+                                                            fontFamily = Montserrat,
+                                                            fontWeight = FontWeight.SemiBold,
+                                                            fontSize = 13.sp,
+                                                            color = AltiDark
+                                                        )
+                                                        Text(
+                                                            text = "Jalur ${route.difficulty ?: "Sedang"} • Estimasi ${route.duration_hours?.toInt() ?: 7} jam",
+                                                            fontFamily = Montserrat,
+                                                            fontWeight = FontWeight.Medium,
+                                                            fontSize = 10.sp,
+                                                            color = AltiDark.copy(alpha = 0.6f)
+                                                        )
+                                                    }
+                                                }
+                                                if (idx < filteredRoutes.lastIndex) {
+                                                    HorizontalDivider(color = AltiMedium.copy(alpha = 0.15f), thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(22.dp))
 
-                    // ── Section Header ─────────────────────────────────────
+                    // ── Section Header (See All removed) ─────────────────────
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -411,14 +595,6 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = AltiDark
-                        )
-                        Text(
-                            text = "See All",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 12.sp,
-                            color = AltiDark.copy(alpha = 0.75f),
-                            modifier = Modifier.clickable { }
                         )
                     }
 
@@ -833,35 +1009,98 @@ fun HomeScreen(
                 }
             }
             1 -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 90.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Navigation",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-                        color = AltiDark
-                    )
-                }
+                NavigationScreen(viewModel = viewModel)
             }
             2 -> {
-                Box(
+                val bookingsState by viewModel.bookingsState.collectAsState()
+                
+                LaunchedEffect(Unit) {
+                    viewModel.fetchBookings()
+                }
+
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 90.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(bottom = 90.dp)
                 ) {
                     Text(
-                        text = "Bookings",
+                        text = "Tiket Saya",
                         fontFamily = Montserrat,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-                        color = AltiDark
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        color = AltiDark,
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 52.dp, bottom = 12.dp)
                     )
+
+                    when (val state = bookingsState) {
+                        is UiState.Loading -> {
+                            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = AltiDark)
+                            }
+                        }
+                        is UiState.Error -> {
+                            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
+                                    Text(state.message, color = AltiDark, fontFamily = Montserrat, fontSize = 14.sp)
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Button(
+                                        onClick = { viewModel.fetchBookings() },
+                                        colors = ButtonDefaults.buttonColors(containerColor = AltiDark)
+                                    ) {
+                                        Text("Coba Lagi", color = Color.White, fontFamily = Montserrat)
+                                    }
+                                }
+                            }
+                        }
+                        is UiState.Success -> {
+                            val transactions = state.data
+                            if (transactions.isEmpty()) {
+                                Box(
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center,
+                                        modifier = Modifier.padding(24.dp)
+                                    ) {
+                                        Text(
+                                            text = "Belum Ada Tiket Terverifikasi",
+                                            fontFamily = Montserrat,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            color = AltiDark
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "Tiket yang muncul di sini hanya tiket yang sudah dibayar dan diverifikasi oleh admin.",
+                                            fontFamily = Montserrat,
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 12.sp,
+                                            color = AltiDark.copy(alpha = 0.7f),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    items(transactions.size) { index ->
+                                        val transaction = transactions[index]
+                                        TicketCard(transaction = transaction)
+                                    }
+                                }
+                            }
+                        }
+                        else -> {
+                            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = AltiDark)
+                            }
+                        }
+                    }
                 }
             }
             3 -> {
@@ -1181,5 +1420,138 @@ private fun formatHourlyTime(isoTime: String): String {
         return String.format("%02d:%s %s", displayHour, minute, ampm)
     } catch (e: Exception) {
         return timePart
+    }
+}
+
+@Composable
+private fun TicketCard(transaction: TransactionModel) {
+    val session = transaction.hikingSession
+    val route = session?.route
+    val mountainName = route?.mountain?.name ?: "Unknown Mountain"
+    val routeName = route?.name ?: "Unknown Route"
+    val dateText = session?.start_date ?: "-"
+    val groupName = session?.group_name ?: "-"
+    val memberCount = session?.members?.size ?: 1
+    val imageRes = getMountainDrawable(mountainName)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = transaction.orderId,
+                    fontFamily = Montserrat,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    color = AltiDark.copy(alpha = 0.6f)
+                )
+                // Status badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFE8F5E9))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Terverifikasi",
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp,
+                        color = Color(0xFF2E7D32)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Mountain Thumbnail Image
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = mountainName,
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = mountainName,
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = AltiDark
+                    )
+                    Text(
+                        text = "Rute: $routeName",
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
+                        color = AltiDark.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        text = "Tanggal: $dateText",
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 11.sp,
+                        color = AltiDark.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = AltiDark.copy(alpha = 0.1f))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Kelompok: $groupName",
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        color = AltiDark
+                    )
+                    Text(
+                        text = "$memberCount Pendaki",
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 11.sp,
+                        color = AltiDark.copy(alpha = 0.7f)
+                    )
+                }
+                Text(
+                    text = "Rp ${formatNumber(transaction.grossAmount)}",
+                    fontFamily = Montserrat,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = AltiDark
+                )
+            }
+        }
     }
 }
