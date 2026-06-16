@@ -1,3 +1,4 @@
+
 package com.example.altiguide_mobile
 
 import android.app.Application

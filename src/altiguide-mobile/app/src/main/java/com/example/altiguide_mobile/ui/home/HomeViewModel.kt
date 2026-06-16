@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.altiguide_mobile.data.model.MountainModel
+import com.example.altiguide_mobile.data.model.TransactionModel
 import com.example.altiguide_mobile.data.repository.MountainRepository
+import com.example.altiguide_mobile.data.repository.TransactionRepository
 import com.example.altiguide_mobile.util.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -15,13 +17,19 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 
+import com.example.altiguide_mobile.data.model.RouteModel
+
 private const val TAG = "HomeViewModel"
 private const val MAX_RETRIES = 2
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val mountainRepository: MountainRepository
+    private val mountainRepository: MountainRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModel() {
+
+    private val _selectedRoute = MutableStateFlow<RouteModel?>(null)
+    val selectedRoute: StateFlow<RouteModel?> = _selectedRoute.asStateFlow()
 
     private val _mountainsState = MutableStateFlow<UiState<List<MountainModel>>>(UiState.Idle)
     val mountainsState: StateFlow<UiState<List<MountainModel>>> = _mountainsState.asStateFlow()
@@ -31,6 +39,13 @@ class HomeViewModel @Inject constructor(
 
     private val _mountainDetailState = MutableStateFlow<UiState<MountainModel>>(UiState.Idle)
     val mountainDetailState: StateFlow<UiState<MountainModel>> = _mountainDetailState.asStateFlow()
+
+    private val _bookingsState = MutableStateFlow<UiState<List<TransactionModel>>>(UiState.Idle)
+    val bookingsState: StateFlow<UiState<List<TransactionModel>>> = _bookingsState.asStateFlow()
+
+    fun selectRoute(route: RouteModel?) {
+        _selectedRoute.value = route
+    }
 
     fun fetchMountainDetail(id: Int) {
         viewModelScope.launch {
@@ -94,7 +109,21 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun fetchBookings() {
+        viewModelScope.launch {
+            _bookingsState.value = UiState.Loading
+            try {
+                val response = transactionRepository.getTransactions()
+                _bookingsState.value = UiState.Success(response.data)
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal fetch bookings: ${e.message}", e)
+                _bookingsState.value = UiState.Error(e.message ?: "Gagal memuat riwayat booking")
+            }
+        }
+    }
+
     private fun clearError() {
         _mountainsState.value = UiState.Idle
     }
 }
+

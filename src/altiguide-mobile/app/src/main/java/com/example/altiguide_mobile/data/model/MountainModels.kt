@@ -43,14 +43,17 @@ data class RouteModel(
 data class RouteInfoModel(
     val id: Int,
     val route_id: Int,
-    val basecamp_name: String?,
-    val basecamp_altitude: Int?,
-    val simaksi_price: Int?,
-    val facilities: String?,
-    val contact_person: String?,
-    val notes: String?,
-    val ojek_price: Int?,
-    val ojek_description: String?
+    val basecamp_name: String? = null,
+    val basecamp_address: String? = null,
+    val basecamp_altitude: Int? = null,
+    val simaksi_price: String? = null,
+    val facilities: String? = null,
+    val facilities_description: String? = null,
+    val logistics_description: String? = null,
+    val contact_person: String? = null,
+    val notes: String? = null,
+    val ojek_price: String? = null,
+    val ojek_description: String? = null
 )
 
 data class WaypointModel(
@@ -62,7 +65,9 @@ data class WaypointModel(
     val distance_from_prev: Double?,
     val estimated_time_minutes: Int?,
     val description: String?,
-    val has_water_source: Boolean
+    val has_water_source: Boolean,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
 
 data class WeatherResponse(
