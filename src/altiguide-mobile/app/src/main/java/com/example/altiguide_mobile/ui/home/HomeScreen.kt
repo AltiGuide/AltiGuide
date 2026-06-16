@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.graphics.SolidColor
@@ -32,10 +34,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.altiguide_mobile.R
 import androidx.compose.foundation.lazy.LazyColumn
 import com.example.altiguide_mobile.data.model.MountainModel
@@ -198,6 +202,19 @@ private val IconBook: ImageVector get() = ImageVector.Builder(
     }
 }.build()
 
+private val IconBack: ImageVector get() = ImageVector.Builder(
+    name = "Back", defaultWidth = 16.dp, defaultHeight = 16.dp,
+    viewportWidth = 24f, viewportHeight = 24f
+).apply {
+    path(fill = SolidColor(Color.White)) {
+        moveTo(20f, 11f); horizontalLineTo(7.83f)
+        lineTo(13.42f, 5.41f); lineTo(12f, 4f)
+        lineTo(4f, 12f); lineTo(12f, 20f)
+        lineTo(13.41f, 18.59f); lineTo(7.83f, 13f)
+        horizontalLineTo(20f); verticalLineTo(11f); close()
+    }
+}.build()
+
 private val IconPerson: ImageVector get() = ImageVector.Builder(
     name = "Person", defaultWidth = 22.dp, defaultHeight = 22.dp,
     viewportWidth = 24f, viewportHeight = 24f
@@ -235,6 +252,7 @@ fun HomeScreen(
     val updateState by profileViewModel.updateState.collectAsState()
     val activeWeatherState by viewModel.activeWeatherState.collectAsState()
     var selectedMountainForArticle by remember { mutableStateOf<MountainModel?>(null) }
+    var selectedTicket by remember { mutableStateOf<TransactionModel?>(null) }
     val mountainDetailState by viewModel.mountainDetailState.collectAsState()
 
     LaunchedEffect(pagerState.currentPage, mountainsState) {
@@ -497,7 +515,7 @@ fun HomeScreen(
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Text(
-                                                        text = "🏔️  ",
+                                                        text = " ",
                                                         fontSize = 14.sp
                                                     )
                                                     Column {
@@ -549,7 +567,7 @@ fun HomeScreen(
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Text(
-                                                        text = "🥾  ",
+                                                        text = "  ",
                                                         fontSize = 14.sp
                                                     )
                                                     Column {
@@ -1013,91 +1031,75 @@ fun HomeScreen(
             }
             2 -> {
                 val bookingsState by viewModel.bookingsState.collectAsState()
-                
+
                 LaunchedEffect(Unit) {
                     viewModel.fetchBookings()
                 }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 90.dp)
-                ) {
-                    Text(
-                        text = "Tiket Saya",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = AltiDark,
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 52.dp, bottom = 12.dp)
+                if (selectedTicket != null) {
+                    TicketDetailScreen(
+                        transaction = selectedTicket!!,
+                        onBack = { selectedTicket = null }
                     )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 90.dp)
+                    ) {
+                        Text(
+                            text = "Tiket Saya",
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            color = AltiDark,
+                            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 52.dp, bottom = 12.dp)
+                        )
 
-                    when (val state = bookingsState) {
-                        is UiState.Loading -> {
-                            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(color = AltiDark)
+                        when (val state = bookingsState) {
+                            is UiState.Loading -> {
+                                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(color = AltiDark)
+                                }
                             }
-                        }
-                        is UiState.Error -> {
-                            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
-                                    Text(state.message, color = AltiDark, fontFamily = Montserrat, fontSize = 14.sp)
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Button(
-                                        onClick = { viewModel.fetchBookings() },
-                                        colors = ButtonDefaults.buttonColors(containerColor = AltiDark)
+                            is UiState.Error -> {
+                                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
+                                        Text(state.message, color = AltiDark, fontFamily = Montserrat, fontSize = 14.sp)
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Button(
+                                            onClick = { viewModel.fetchBookings() },
+                                            colors = ButtonDefaults.buttonColors(containerColor = AltiDark)
+                                        ) {
+                                            Text("Coba Lagi", color = Color.White, fontFamily = Montserrat)
+                                        }
+                                    }
+                                }
+                            }
+                            is UiState.Success -> {
+                                val transactions = state.data
+                                if (transactions.isEmpty()) {
+                                    EmptyBookingsState()
+                                } else {
+                                    LazyColumn(
+                                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp)
                                     ) {
-                                        Text("Coba Lagi", color = Color.White, fontFamily = Montserrat)
+                                        items(transactions.size) { index ->
+                                            val transaction = transactions[index]
+                                            TicketCard(
+                                                transaction = transaction,
+                                                onClick = { selectedTicket = transaction }
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
-                        is UiState.Success -> {
-                            val transactions = state.data
-                            if (transactions.isEmpty()) {
-                                Box(
-                                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(24.dp)
-                                    ) {
-                                        Text(
-                                            text = "Belum Ada Tiket Terverifikasi",
-                                            fontFamily = Montserrat,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp,
-                                            color = AltiDark
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            text = "Tiket yang muncul di sini hanya tiket yang sudah dibayar dan diverifikasi oleh admin.",
-                                            fontFamily = Montserrat,
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 12.sp,
-                                            color = AltiDark.copy(alpha = 0.7f),
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                        )
-                                    }
+                            else -> {
+                                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(color = AltiDark)
                                 }
-                            } else {
-                                LazyColumn(
-                                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    items(transactions.size) { index ->
-                                        val transaction = transactions[index]
-                                        TicketCard(transaction = transaction)
-                                    }
-                                }
-                            }
-                        }
-                        else -> {
-                            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(color = AltiDark)
                             }
                         }
                     }
@@ -1424,7 +1426,10 @@ private fun formatHourlyTime(isoTime: String): String {
 }
 
 @Composable
-private fun TicketCard(transaction: TransactionModel) {
+private fun TicketCard(
+    transaction: TransactionModel,
+    onClick: () -> Unit
+) {
     val session = transaction.hikingSession
     val route = session?.route
     val mountainName = route?.mountain?.name ?: "Unknown Mountain"
@@ -1434,67 +1439,49 @@ private fun TicketCard(transaction: TransactionModel) {
     val memberCount = session?.members?.size ?: 1
     val imageRes = getMountainDrawable(mountainName)
 
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { onClick() }
     ) {
+        // White card background
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(16.dp)
         ) {
+            // Top: Mountain image + info
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = transaction.orderId,
-                    fontFamily = Montserrat,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp,
-                    color = AltiDark.copy(alpha = 0.6f)
-                )
-                // Status badge
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFE8F5E9))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(16.dp))
                 ) {
-                    Text(
-                        text = "Terverifikasi",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp,
-                        color = Color(0xFF2E7D32)
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = mountainName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, AltiDark.copy(alpha = 0.3f))
+                                )
+                            )
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Mountain Thumbnail Image
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = mountainName,
-                    modifier = Modifier
-                        .size(70.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
 
                 Spacer(modifier = Modifier.width(14.dp))
 
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = mountainName,
                         fontFamily = Montserrat,
@@ -1502,56 +1489,467 @@ private fun TicketCard(transaction: TransactionModel) {
                         fontSize = 16.sp,
                         color = AltiDark
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Rute: $routeName",
+                        text = routeName,
                         fontFamily = Montserrat,
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp,
-                        color = AltiDark.copy(alpha = 0.8f)
+                        color = AltiMedium
                     )
-                    Text(
-                        text = "Tanggal: $dateText",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 11.sp,
-                        color = AltiDark.copy(alpha = 0.7f)
-                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF4CAF50))
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Terverifikasi",
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 10.sp,
+                            color = Color(0xFF4CAF50)
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = AltiDark.copy(alpha = 0.1f))
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
+            // Ticket notches divider
+            TicketDivider()
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Bottom: Date, Group, Members, Price
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Bottom
             ) {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    TicketInfoRow(label = "Tanggal", value = dateText)
+                    TicketInfoRow(label = "Kelompok", value = groupName)
+                    TicketInfoRow(label = "Pendaki", value = "$memberCount Orang")
+                }
+                Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "Kelompok: $groupName",
+                        text = "Rp ${formatNumber(transaction.grossAmount)}",
                         fontFamily = Montserrat,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
                         color = AltiDark
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "$memberCount Pendaki",
+                        text = transaction.orderId,
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 9.sp,
+                        color = AltiDark.copy(alpha = 0.4f)
+                    )
+                }
+            }
+        }
+
+        // Ticket notch decoration - left
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .offset(x = (-10).dp)
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE3E9CD))
+        )
+        // Ticket notch decoration - right
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .offset(x = 10.dp)
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE3E9CD))
+        )
+    }
+}
+
+@Composable
+private fun TicketDivider() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(40) {
+            Box(
+                modifier = Modifier
+                    .size(4.dp)
+                    .clip(CircleShape)
+                    .background(AltiDark.copy(alpha = 0.15f))
+            )
+        }
+    }
+}
+
+@Composable
+private fun TicketInfoRow(label: String, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = label,
+            fontFamily = Montserrat,
+            fontWeight = FontWeight.Medium,
+            fontSize = 11.sp,
+            color = AltiDark.copy(alpha = 0.5f)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = value,
+            fontFamily = Montserrat,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 11.sp,
+            color = AltiDark
+        )
+    }
+}
+
+@Composable
+private fun EmptyBookingsState() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(AltiDark.copy(alpha = 0.08f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🎫",
+                    fontSize = 40.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Belum Ada Tiket",
+                fontFamily = Montserrat,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = AltiDark
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "Tiket yang sudah dibayar dan diverifikasi\nakan muncul di sini.",
+                fontFamily = Montserrat,
+                fontWeight = FontWeight.Medium,
+                fontSize = 13.sp,
+                color = AltiDark.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center,
+                lineHeight = 18.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun TicketDetailScreen(
+    transaction: TransactionModel,
+    onBack: () -> Unit
+) {
+    val session = transaction.hikingSession
+    val route = session?.route
+    val mountainName = route?.mountain?.name ?: "Unknown Mountain"
+    val routeName = route?.name ?: "Unknown Route"
+    val dateText = session?.start_date ?: "-"
+    val groupName = session?.group_name ?: "-"
+    val memberCount = session?.members?.size ?: 1
+    val imageRes = getMountainDrawable(mountainName)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 90.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 24.dp, top = 52.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(AltiDark)
+                    .clickable { onBack() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = IconBack,
+                    contentDescription = "Back",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Text(
+                text = "Detail Tiket",
+                fontFamily = Montserrat,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                color = AltiDark
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Ticket card
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(24.dp))
+            ) {
+                // Image header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                ) {
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = mountainName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        AltiDark.copy(alpha = 0.7f)
+                                    )
+                                )
+                            )
+                    )
+                    // Overlay text on image
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = mountainName,
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = Color.White
+                        )
+                        Text(
+                            text = routeName,
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp,
+                            color = Color.White.copy(alpha = 0.85f)
+                        )
+                    }
+                    // Verified badge top-right
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(12.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFF4CAF50).copy(alpha = 0.9f))
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = "Terverifikasi",
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Info section
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = transaction.orderId,
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 11.sp,
+                            color = AltiDark.copy(alpha = 0.4f)
+                        )
+                        Text(
+                            text = "Rp ${formatNumber(transaction.grossAmount)}",
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = AltiDark
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        DetailInfoItem(label = "Tanggal", value = dateText)
+                        DetailInfoItem(label = "Kelompok", value = groupName)
+                        DetailInfoItem(label = "Pendaki", value = "$memberCount Orang")
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                // Dashed divider
+                TicketDivider()
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // QR Code section
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "E-Ticket",
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = AltiDark
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Tunjukkan QR code ini pada petugas basecamp",
                         fontFamily = Montserrat,
                         fontWeight = FontWeight.Medium,
                         fontSize = 11.sp,
-                        color = AltiDark.copy(alpha = 0.7f)
+                        color = AltiDark.copy(alpha = 0.5f),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // QR Code image
+                    Box(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(AltiDark.copy(alpha = 0.05f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (!transaction.qrUrl.isNullOrEmpty()) {
+                            AsyncImage(
+                                model = transaction.qrUrl,
+                                contentDescription = "QR Code",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(12.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        } else {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "QR",
+                                    fontFamily = Montserrat,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 32.sp,
+                                    color = AltiDark.copy(alpha = 0.3f)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Belum tersedia",
+                                    fontFamily = Montserrat,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 11.sp,
+                                    color = AltiDark.copy(alpha = 0.4f)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "ID: ${transaction.id}",
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 9.sp,
+                        color = AltiDark.copy(alpha = 0.3f)
                     )
                 }
-                Text(
-                    text = "Rp ${formatNumber(transaction.grossAmount)}",
-                    fontFamily = Montserrat,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = AltiDark
-                )
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
+
+            // Ticket notch decorations
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .offset(x = (-10).dp)
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE3E9CD))
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 10.dp)
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE3E9CD))
+            )
         }
+
+        Spacer(modifier = Modifier.height(90.dp))
+    }
+}
+
+@Composable
+private fun DetailInfoItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.Start) {
+        Text(
+            text = label,
+            fontFamily = Montserrat,
+            fontWeight = FontWeight.Medium,
+            fontSize = 11.sp,
+            color = AltiDark.copy(alpha = 0.5f)
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = value,
+            fontFamily = Montserrat,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp,
+            color = AltiDark
+        )
     }
 }
