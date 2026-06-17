@@ -99,7 +99,10 @@ class MountainController extends Controller
         }
 
         try {
-            $response = Http::get('https://api.open-meteo.com/v1/forecast', [
+            $response = Http::when(
+                app()->environment('local'),
+                fn ($http) => $http->withoutVerifying()
+            )->get('https://api.open-meteo.com/v1/forecast', [
                 'latitude'        => $mountain->latitude,
                 'longitude'       => $mountain->longitude,
                 'elevation'       => $mountain->altitude, // Koreksi suhu berdasarkan mdpl

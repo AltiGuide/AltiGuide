@@ -38,6 +38,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.altiguide_mobile.R
 import com.example.altiguide_mobile.data.model.MountainModel
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 // ── Montserrat font family ──────────────────────────────────────────────────
 private val Montserrat = FontFamily(
@@ -347,7 +354,7 @@ fun MountainArticleScreen(
                         .height(180.dp)
                         .clip(RoundedCornerShape(16.dp))
                 ) {
-                    OsmMapView(
+                    ArticleGoogleMapView(
                         latitude = mountain.latitude ?: -7.4497,
                         longitude = mountain.longitude ?: 110.4381,
                         modifier = Modifier.fillMaxSize()
@@ -460,57 +467,33 @@ private fun InfoItem(
 }
 
 @Composable
-private fun OsmMapView(
+private fun ArticleGoogleMapView(
     latitude: Double,
     longitude: Double,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    val mapView = remember {
-        org.osmdroid.views.MapView(context).apply {
-            org.osmdroid.config.Configuration.getInstance().apply {
-                userAgentValue = context.packageName
-                load(context, context.getSharedPreferences("osmdroid", android.content.Context.MODE_PRIVATE))
-            }
-            setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK)
-            setMultiTouchControls(false)
-            isClickable = false
-            isFocusable = false
-            controller.setZoom(13.0)
-            controller.setCenter(org.osmdroid.util.GeoPoint(latitude, longitude))
-
-            // Add a marker at the mountain location
-            val marker = org.osmdroid.views.overlay.Marker(this)
-            marker.position = org.osmdroid.util.GeoPoint(latitude, longitude)
-            marker.setAnchor(
-                org.osmdroid.views.overlay.Marker.ANCHOR_CENTER,
-                org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM
-            )
-            overlays.add(marker)
-        }
+    val mountainLocation = LatLng(latitude, longitude)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(mountainLocation, 13f)
     }
 
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                Lifecycle.Event.ON_PAUSE  -> mapView.onPause()
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            mapView.onDetach()
-        }
+    GoogleMap(
+        modifier = modifier,
+        cameraPositionState = cameraPositionState,
+        uiSettings = MapUiSettings(
+            zoomControlsEnabled = false,
+            myLocationButtonEnabled = false,
+            compassEnabled = false,
+            zoomGesturesEnabled = false,
+            scrollGesturesEnabled = false,
+            rotationGesturesEnabled = false,
+            tiltGesturesEnabled = false
+        )
+    ) {
+        Marker(
+            state = MarkerState(position = mountainLocation)
+        )
     }
-
-    AndroidView(
-        factory = { mapView },
-        modifier = modifier
-    )
 }
 
 

@@ -18,7 +18,10 @@ class GoogleAuthController extends Controller
             'token' => ['required', 'string']
         ]);
 
-        $googleResponse = Http::get('https://www.googleapis.com/oauth2/v3/userinfo', [
+        $googleResponse = Http::when(
+            app()->environment('local'),
+            fn ($http) => $http->withoutVerifying()
+        )->get('https://www.googleapis.com/oauth2/v3/userinfo', [
             'access_token' => $request->token
         ]);
 

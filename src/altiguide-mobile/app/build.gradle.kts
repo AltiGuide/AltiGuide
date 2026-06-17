@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.room)
     alias(libs.plugins.google.services)
 }
 
@@ -59,9 +58,12 @@ android {
     }
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
+// Manually configure KSP for Room
+ksp {
+    // Using a relative path avoids the "Tugas Sem 4" space issue entirely
+    arg("room.schemaLocation", "schemas")
 }
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
