@@ -1,0 +1,57 @@
+[
+    {
+        "id": "019e8e7f-dfb0-734c-bae8-75ccb2aea14d",
+        "name": "Test User",
+        "email": "test@example.com",
+        "phone_number": "084332961887",
+        "age": 29,
+        "address": "488 Romaguera Corners Apt. 559\nEast Rosalindland, NV 60109",
+        "emergency_contact": "089298014931",
+        "nik": "7284185057156020",
+        "avatar_url": null
+    },
+    {
+        "id": "019e980e-baf2-7365-a009-381e37da06d5",
+        "name": "Aryasena",
+        "email": "fauzilazhim12@student.uns.ac.id",
+        "phone_number": "08123456789",
+        "age": 30,
+        "address": "Jalan Selat Selayar Gg 3\/13",
+        "emergency_contact": "082324905011",
+        "nik": "3375030510740007",
+        "avatar_url": null
+    },
+    {
+        "id": "019ea143-b7e6-73a9-9852-82205dbdc1e1",
+        "name": "Fauzil Azhim",
+        "email": "fauzilwhite123@gmail.com",
+        "phone_number": "082324905011",
+        "age": null,
+        "address": null,
+        "emergency_contact": null,
+        "nik": null,
+        "avatar_url": null
+    },
+    {
+        "id": "019e95b7-bb81-73b5-a65d-e0a43fc026ec",
+        "name": "Fauzil Azhim",
+        "email": "fauzilazhim85@gmail.com",
+        "phone_number": "082324905011",
+        "age": 20,
+        "address": "Jalan Selat Selayar Gg 3\/13",
+        "emergency_contact": "082314102020",
+        "nik": "3375031404060002",
+        "avatar_url": null
+    },
+    {
+        "id": "019ecbb5-39af-70c2-8a38-de35a545d465",
+        "name": "Fauzil aciil",
+        "email": "aciilfauzil@gmail.com",
+        "phone_number": null,
+        "age": null,
+        "address": null,
+        "emergency_contact": null,
+        "nik": null,
+        "avatar_url": null
+    }
+]

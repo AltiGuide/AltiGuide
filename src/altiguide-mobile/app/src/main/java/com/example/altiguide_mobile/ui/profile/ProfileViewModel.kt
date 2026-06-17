@@ -67,6 +67,7 @@ class ProfileViewModel @Inject constructor(
                     if (password.isNotBlank()) {
                         authRepository.changePassword(mapOf("password" to password, "password_confirmation" to password))
                     }
+                    kotlinx.coroutines.delay(500)
                     _updateState.value = UiState.Success("Profil berhasil diperbarui")
                     fetchProfile()
                 } else {

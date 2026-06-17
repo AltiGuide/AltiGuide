@@ -27,7 +27,9 @@ data class UserModel(
     val age: Int?,
     val address: String?,
     val emergency_contact: String?,
-    val nik: String?
+    val nik: String?,
+    val avatar_url: String? = null,
+    val image: String? = null
 )
 
 data class GoogleAuthRequest(

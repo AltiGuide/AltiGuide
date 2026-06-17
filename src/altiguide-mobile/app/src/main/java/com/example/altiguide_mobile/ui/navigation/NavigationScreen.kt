@@ -3,6 +3,7 @@ package com.example.altiguide_mobile.ui.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +59,18 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import android.content.Context
+import android.location.Location
+import android.location.LocationManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 // ── Design color tokens ─────────────────────────────────────────────────────
 private val AltiDark      = Color(0xFF20341B)
@@ -524,6 +537,122 @@ private fun RouteDetailNavigationScreen(
     var activeTab by remember { mutableStateOf(0) } // 0: Detail Jalur, 1: Analisis Cuaca
     var showOfflineMapDialog by remember { mutableStateOf(false) }
 
+    // Active Navigation states
+    var isNavigating by remember { mutableStateOf(false) }
+    var userLocation by remember { mutableStateOf<LatLng?>(null) }
+    var userAltitude by remember { mutableStateOf(0.0) }
+    var currentWaypointIndex by remember { mutableStateOf(0) }
+    var phoneAzimuth by remember { mutableStateOf(0f) }
+
+    // Location manager
+    val locationManager = remember { context.getSystemService(Context.LOCATION_SERVICE) as LocationManager }
+    val locationListener = remember {
+        object : android.location.LocationListener {
+            override fun onLocationChanged(location: Location) {
+                userLocation = LatLng(location.latitude, location.longitude)
+                userAltitude = location.altitude
+            }
+            override fun onProviderEnabled(provider: String) {}
+            override fun onProviderDisabled(provider: String) {}
+            @Deprecated("Deprecated in Java")
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+        }
+    }
+
+    // Sensor manager for Compass Azimuth
+    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
+    val magnetometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) }
+
+    val sensorEventListener = remember {
+        object : SensorEventListener {
+            private var lastGravity = FloatArray(3)
+            private var lastGeomagnetic = FloatArray(3)
+            private var hasGravity = false
+            private var hasGeomagnetic = false
+
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+                    System.arraycopy(event.values, 0, lastGravity, 0, event.values.size)
+                    hasGravity = true
+                } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+                    System.arraycopy(event.values, 0, lastGeomagnetic, 0, event.values.size)
+                    hasGeomagnetic = true
+                }
+
+                if (hasGravity && hasGeomagnetic) {
+                    val r = FloatArray(9)
+                    val i = FloatArray(9)
+                    if (SensorManager.getRotationMatrix(r, i, lastGravity, lastGeomagnetic)) {
+                        val orientation = FloatArray(3)
+                        SensorManager.getOrientation(r, orientation)
+                        val azimuthRad = orientation[0]
+                        var azimuthDeg = Math.toDegrees(azimuthRad.toDouble()).toFloat()
+                        azimuthDeg = (azimuthDeg + 360) % 360
+                        phoneAzimuth = azimuthDeg
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+    }
+
+    // Register Sensors
+    DisposableEffect(isNavigating) {
+        if (isNavigating) {
+            accelerometer?.let { sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI) }
+            magnetometer?.let { sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI) }
+        }
+        onDispose {
+            sensorManager.unregisterListener(sensorEventListener)
+        }
+    }
+
+    // Permission Launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseGranted = permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        if (fineGranted || coarseGranted) {
+            isNavigating = true
+        } else {
+            Toast.makeText(context, "Izin lokasi diperlukan untuk navigasi offline.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Register Location GPS
+    DisposableEffect(isNavigating) {
+        if (isNavigating) {
+            val fine = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            val coarse = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            if (fine || coarse) {
+                try {
+                    locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        5000L,
+                        2f,
+                        locationListener
+                    )
+                    val lastKnown = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                        ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                    lastKnown?.let {
+                        userLocation = LatLng(it.latitude, it.longitude)
+                        userAltitude = it.altitude
+                    }
+                } catch (e: SecurityException) {
+                    android.util.Log.e("OfflineNav", "Permission error requesting updates", e)
+                } catch (e: Exception) {
+                    android.util.Log.e("OfflineNav", "Error starting GPS updates", e)
+                }
+            }
+        }
+        onDispose {
+            locationManager.removeUpdates(locationListener)
+        }
+    }
+
     // Parse coordinates and define camera state
     val trackPoints = remember(route) { parseTrackCoordinates(route.trackCoordinates) }
     val routeCenter = remember(trackPoints) {
@@ -535,9 +664,9 @@ private fun RouteDetailNavigationScreen(
         position = CameraPosition.fromLatLngZoom(routeCenter, 13f)
     }
 
-    // Auto-fit path bounds on map load
+    // Auto-fit path bounds on map load (only when not active navigating)
     LaunchedEffect(trackPoints) {
-        if (trackPoints.isNotEmpty()) {
+        if (!isNavigating && trackPoints.isNotEmpty()) {
             try {
                 val builder = LatLngBounds.Builder()
                 trackPoints.forEach { builder.include(it) }
@@ -548,6 +677,65 @@ private fun RouteDetailNavigationScreen(
                 )
             } catch (e: Exception) {
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(routeCenter, 13f)
+            }
+        }
+    }
+
+    // Auto-center camera on user location when navigating
+    LaunchedEffect(userLocation, isNavigating) {
+        if (isNavigating && userLocation != null) {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngZoom(userLocation!!, 15f),
+                1000
+            )
+        }
+    }
+
+    // Calculate distance and bearing to current target waypoint
+    val currentTargetWaypoint = route.waypoints?.getOrNull(currentWaypointIndex)
+    val distanceToTarget = remember(userLocation, currentTargetWaypoint) {
+        if (userLocation != null && currentTargetWaypoint != null) {
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                userLocation!!.latitude, userLocation!!.longitude,
+                currentTargetWaypoint.latitude ?: 0.0, currentTargetWaypoint.longitude ?: 0.0,
+                results
+            )
+            results[0]
+        } else {
+            0f
+        }
+    }
+
+    val bearingToTarget = remember(userLocation, currentTargetWaypoint) {
+        if (userLocation != null && currentTargetWaypoint != null) {
+            val userLoc = Location("").apply {
+                latitude = userLocation!!.latitude
+                longitude = userLocation!!.longitude
+            }
+            val targetLoc = Location("").apply {
+                latitude = currentTargetWaypoint.latitude ?: 0.0
+                longitude = currentTargetWaypoint.longitude ?: 0.0
+            }
+            userLoc.bearingTo(targetLoc)
+        } else {
+            0f
+        }
+    }
+
+    val arrowRotation = remember(bearingToTarget, phoneAzimuth) {
+        (bearingToTarget - phoneAzimuth + 360) % 360
+    }
+
+    // Automatic target waypoint progression
+    LaunchedEffect(distanceToTarget, isNavigating) {
+        if (isNavigating && distanceToTarget > 0f && distanceToTarget < 15f) {
+            val waypointsCount = route.waypoints?.size ?: 0
+            if (currentWaypointIndex < waypointsCount - 1) {
+                Toast.makeText(context, "Sampai di ${currentTargetWaypoint?.name ?: "Pos"}! Berlanjut ke pos berikutnya.", Toast.LENGTH_SHORT).show()
+                currentWaypointIndex++
+            } else {
+                Toast.makeText(context, "Selamat! Anda telah sampai di puncak!", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -595,53 +783,55 @@ private fun RouteDetailNavigationScreen(
                     .padding(horizontal = 24.dp)
             ) {
 
-                // Tab Selector (Detail Jalur vs Analisis Cuaca)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(AltiDark.copy(alpha = 0.08f))
-                        .border(1.dp, AltiDark.copy(alpha = 0.15f), RoundedCornerShape(20.dp)),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
+                // Tab Selector (Detail Jalur vs Analisis Cuaca) - Hidden when navigating
+                if (!isNavigating) {
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
+                            .fillMaxWidth()
+                            .height(40.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (activeTab == 0) AltiDark else Color.Transparent)
-                            .clickable { activeTab = 0 },
-                        contentAlignment = Alignment.Center
+                            .background(AltiDark.copy(alpha = 0.08f))
+                            .border(1.dp, AltiDark.copy(alpha = 0.15f), RoundedCornerShape(20.dp)),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Detail Jalur",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = if (activeTab == 0) Color.White else AltiDark
-                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (activeTab == 0) AltiDark else Color.Transparent)
+                                .clickable { activeTab = 0 },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Detail Jalur",
+                                fontFamily = Montserrat,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = if (activeTab == 0) Color.White else AltiDark
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (activeTab == 1) AltiDark else Color.Transparent)
+                                .clickable { activeTab = 1 },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Analisis Cuaca",
+                                fontFamily = Montserrat,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = if (activeTab == 1) Color.White else AltiDark
+                            )
+                        }
                     }
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(if (activeTab == 1) AltiDark else Color.Transparent)
-                            .clickable { activeTab = 1 },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Analisis Cuaca",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = if (activeTab == 1) Color.White else AltiDark
-                        )
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 // Scrollable tab content
                 Column(
@@ -649,59 +839,170 @@ private fun RouteDetailNavigationScreen(
                         .fillMaxWidth()
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
+                        .padding(bottom = 100.dp)
                 ) {
-                    if (activeTab == 0) {
-                        // ── TAB 1: DETAIL JALUR ──────────────────────────────────────
-                        // Action Buttons Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                    if (isNavigating) {
+                        // ── MODE NAVIGASI AKTIF IN-APP ──
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            // Direction Button
-                            Button(
-                                onClick = {
-                                    try {
-                                        val gmmIntentUri = Uri.parse("google.navigation:q=${route.latitude},${route.longitude}")
-                                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                                            setPackage("com.google.android.apps.maps")
+                            // Header: Target Pos & Stop Button
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Navigasi Aktif",
+                                        fontFamily = Montserrat,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = AltiDark.copy(alpha = 0.5f)
+                                    )
+                                    Text(
+                                        text = "Menuju: ${currentTargetWaypoint?.name ?: "Puncak"}",
+                                        fontFamily = Montserrat,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        color = AltiDark
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFFEA4335).copy(alpha = 0.1f))
+                                        .border(1.dp, Color(0xFFEA4335).copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                        .clickable { 
+                                            isNavigating = false
+                                            userLocation = null
+                                            currentWaypointIndex = 0
                                         }
-                                        context.startActivity(mapIntent)
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Google Maps tidak terpasang di perangkat.", Toast.LENGTH_SHORT).show()
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = "Stop",
+                                        fontFamily = Montserrat,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = Color(0xFFEA4335)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // Compass Dial
+                            val distanceText = remember(distanceToTarget) {
+                                if (distanceToTarget >= 1000f) {
+                                    String.format("%.1f km", distanceToTarget / 1000f)
+                                } else {
+                                    "${distanceToTarget.toInt()} m"
+                                }
+                            }
+                            OfflineCompassDial(
+                                arrowRotation = arrowRotation,
+                                distanceText = distanceText
+                            )
+
+                            // Target Info Card
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = AltiDark.copy(alpha = 0.05f)),
+                                border = BorderStroke(1.dp, AltiDark.copy(alpha = 0.1f))
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    // Live Elevation Progress
+                                    val targetAltitude = currentTargetWaypoint?.altitude?.toDouble() ?: 0.0
+                                    val currentAltitude = userAltitude
+                                    val altitudeText = if (currentAltitude > 0.0) "${currentAltitude.toInt()} mdpl" else "-"
+                                    val targetAltitudeText = if (targetAltitude > 0.0) "${targetAltitude.toInt()} mdpl" else "-"
+                                    
+                                    Column {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = "Ketinggian Saya: $altitudeText",
+                                                fontFamily = Montserrat,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 11.sp,
+                                                color = AltiDark
+                                            )
+                                            Text(
+                                                text = "Target: $targetAltitudeText",
+                                                fontFamily = Montserrat,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 11.sp,
+                                                color = AltiDark
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        val startAltitude = route.waypoints?.firstOrNull()?.altitude?.toDouble() ?: 1000.0
+                                        val progress = remember(currentAltitude, startAltitude, targetAltitude) {
+                                            if (targetAltitude > startAltitude && currentAltitude >= startAltitude) {
+                                                ((currentAltitude - startAltitude) / (targetAltitude - startAltitude)).coerceIn(0.0, 1.0).toFloat()
+                                            } else {
+                                                0f
+                                            }
+                                        }
+                                        LinearProgressIndicator(
+                                            progress = { progress },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(8.dp)
+                                                .clip(RoundedCornerShape(4.dp)),
+                                            color = AltiMedium,
+                                            trackColor = AltiDark.copy(alpha = 0.1f)
+                                        )
                                     }
-                                },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = AltiDark),
-                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
-                                modifier = Modifier.weight(1f).height(44.dp)
-                            ) {
-                                Text("Direction", fontSize = 11.sp, fontFamily = Montserrat, fontWeight = FontWeight.Bold, color = Color.White)
-                            }
 
-                            // Start Button
-                            Button(
-                                onClick = {
-                                    Toast.makeText(context, "Navigasi pendakian dimulai untuk ${route.name}!", Toast.LENGTH_LONG).show()
-                                },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = AltiDark),
-                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
-                                modifier = Modifier.weight(1f).height(44.dp)
-                            ) {
-                                Text("Start", fontSize = 11.sp, fontFamily = Montserrat, fontWeight = FontWeight.Bold, color = Color.White)
+                                    // Waypoint description
+                                    HorizontalDivider(color = AltiDark.copy(alpha = 0.1f), thickness = 0.5.dp)
+                                    Text(
+                                        text = currentTargetWaypoint?.description ?: "Menuju Pos target pendakian.",
+                                        fontFamily = Montserrat,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 11.sp,
+                                        color = AltiDark.copy(alpha = 0.7f),
+                                        lineHeight = 16.sp
+                                    )
+                                }
                             }
-
-                            // Download Offline Maps Button
-                            Button(
-                                onClick = { showOfflineMapDialog = true },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = AltiDark),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
-                                modifier = Modifier.weight(1.2f).height(44.dp)
-                            ) {
-                                Text("Offline Maps", fontSize = 10.sp, fontFamily = Montserrat, fontWeight = FontWeight.Bold, color = Color.White)
-                            }
+                        }
+                    } else if (activeTab == 0) {
+                        // ── TAB 1: DETAIL JALUR ──────────────────────────────────────
+                        // Start Button
+                        Button(
+                            onClick = {
+                                val fine = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                val coarse = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                if (fine || coarse) {
+                                    isNavigating = true
+                                } else {
+                                    permissionLauncher.launch(
+                                        arrayOf(
+                                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                            android.Manifest.permission.ACCESS_COARSE_LOCATION
+                                        )
+                                    )
+                                }
+                            },
+                            shape = RoundedCornerShape(22.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = AltiDark),
+                            contentPadding = PaddingValues(vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().height(44.dp)
+                        ) {
+                            Text("Start Navigation", fontSize = 13.sp, fontFamily = Montserrat, fontWeight = FontWeight.Bold, color = Color.White)
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
@@ -795,200 +1096,289 @@ private fun RouteDetailNavigationScreen(
                         Text("Weather", fontFamily = Montserrat, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AltiDark)
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        when (val weatherStateObj = weatherState) {
-                            is UiState.Loading -> {
-                                // Shimmer Loader Card
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(180.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(AltiDark.copy(alpha = 0.15f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(color = AltiDark)
-                                }
-                            }
-                            is UiState.Error -> {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(180.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(Color.Red.copy(alpha = 0.1f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Gagal mengambil data cuaca",
-                                        fontFamily = Montserrat,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Red,
-                                        fontSize = 13.sp
-                                    )
-                                }
-                            }
-                            is UiState.Success -> {
-                                val weatherData = weatherStateObj.data.data
-                                val currentWeather = weatherData?.current_weather
-                                val tempVal = currentWeather?.temperature ?: 24.0
-                                val windspeed = currentWeather?.windspeed ?: 6.0
-                                val code = currentWeather?.weathercode ?: 0
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.background_frame_rekap_cuaca),
+                                contentDescription = null,
+                                modifier = Modifier.matchParentSize(),
+                                contentScale = ContentScale.FillBounds
+                            )
 
-                                // Weather main gradient card
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(
-                                            Brush.verticalGradient(
-                                                colors = listOf(Color(0xFF5E6DF8), Color(0xFF3B24D9))
-                                            )
-                                        )
-                                        .padding(20.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                            when (val weatherStateObj = weatherState) {
+                                is UiState.Loading -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(180.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Column {
-                                            Text(
-                                                text = "Hari Ini",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp,
-                                                color = Color.White
-                                            )
-                                            Text(
-                                                text = getWeatherDescription(code),
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Medium,
-                                                fontSize = 12.sp,
-                                                color = Color.White.copy(alpha = 0.8f)
-                                            )
-                                            Spacer(modifier = Modifier.height(14.dp))
-                                            Text(
-                                                text = "${tempVal.toInt()}°C",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 38.sp,
-                                                color = Color.White
-                                            )
-                                            Text(
-                                                text = "Real feel ${(tempVal - 2).toInt()}°C",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Medium,
-                                                fontSize = 11.sp,
-                                                color = Color.White.copy(alpha = 0.7f)
-                                            )
-                                        }
-
-                                        // Custom Sun/Cloud illustration
-                                        WeatherIllustration(modifier = Modifier.size(90.dp))
-                                    }
-
-                                    Spacer(modifier = Modifier.height(20.dp))
-
-                                    // Sub-chips row
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        WeatherDetailMiniChip(label = "Wind", value = "${windspeed.toInt()} km/h", emoji = "🍃", modifier = Modifier.weight(1f))
-                                        WeatherDetailMiniChip(label = "Temp", value = "${tempVal.toInt()}°C", emoji = "🌡️", modifier = Modifier.weight(1f))
-                                        WeatherDetailMiniChip(label = "Humidity", value = "51%", emoji = "💧", modifier = Modifier.weight(1.1f))
+                                        CircularProgressIndicator(color = Color.White)
                                     }
                                 }
-
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                // Hourly forecast
-                                Text("Hourly Forecast", fontFamily = Montserrat, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AltiDark)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    val hourly = weatherData?.hourly
-                                    val limit = minOf(hourly?.temperature_2m?.size ?: 0, 5)
-                                    for (i in 0 until limit) {
-                                        val temp = hourly?.temperature_2m?.get(i) ?: 20.0
-                                        val hCode = hourly?.weathercode?.get(i) ?: 0
-                                        val hourLabel = when (i) {
-                                            0 -> "05:00 AM"
-                                            1 -> "06:00 AM"
-                                            2 -> "07:00 AM"
-                                            3 -> "08:00 AM"
-                                            else -> "09:00 AM"
-                                        }
-                                        HourlyForecastItem(
-                                            time = hourLabel,
-                                            temp = "${temp.toInt()}°",
-                                            code = hCode,
-                                            modifier = Modifier.weight(1f)
-                                        )
+                                is UiState.Error -> {
+                                    val calendar = java.util.Calendar.getInstance()
+                                    val todayIndex = calendar.get(java.util.Calendar.DAY_OF_WEEK) - 1
+                                    val daysOfWeek = listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
+                                    val daysList = List(7) { i ->
+                                        daysOfWeek[(todayIndex + i) % 7]
                                     }
-                                }
+                                    val hourlyMocks = getHourlyMockList(todayIndex)
 
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                // Tomorrow card
-                                Text("Besok", fontFamily = Montserrat, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AltiDark)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(containerColor = AltiDark.copy(alpha = 0.95f))
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth().padding(14.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
                                     ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier.size(36.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.15f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text("⛈️", fontSize = 16.sp)
-                                            }
-                                            Column {
-                                                Text("Tomorrow", fontFamily = Montserrat, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.White)
-                                                val tmrCode = weatherData?.daily?.weathercode?.firstOrNull() ?: 0
-                                                Text(getWeatherDescription(tmrCode), fontFamily = Montserrat, fontWeight = FontWeight.Medium, fontSize = 10.sp, color = Color.White.copy(alpha = 0.7f))
-                                            }
-                                        }
-
-                                        val maxTemp = weatherData?.daily?.temperature_2m_max?.firstOrNull() ?: 24.0
-                                        val minTemp = weatherData?.daily?.temperature_2m_min?.firstOrNull() ?: 16.0
+                                        // ── Hourly Section ──
                                         Text(
-                                            text = "^ ${maxTemp.toInt()}° . v ${minTemp.toInt()}°",
+                                            text = "Hourly Forecast",
                                             fontFamily = Montserrat,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 12.sp,
-                                            color = Color.White
+                                            color = Color.White,
+                                            modifier = Modifier.padding(bottom = 8.dp)
                                         )
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .horizontalScroll(rememberScrollState()),
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                        ) {
+                                            hourlyMocks.forEach { mock ->
+                                                Column(
+                                                    modifier = Modifier.width(60.dp),
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                                ) {
+                                                    Text(
+                                                        text = mock.time,
+                                                        color = Color.White.copy(alpha = 0.9f),
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.Medium,
+                                                        fontSize = 9.sp
+                                                    )
+                                                    Text(
+                                                        text = mock.emoji,
+                                                        fontSize = 16.sp
+                                                    )
+                                                    Text(
+                                                        text = "${mock.temp}°",
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontSize = 10.sp,
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(14.dp))
+                                        HorizontalDivider(color = Color.White.copy(alpha = 0.2f), thickness = 1.dp)
+                                        Spacer(modifier = Modifier.height(12.dp))
+
+                                        // ── Daily Section ──
+                                        Text(
+                                            text = "Weekly Forecast",
+                                            fontFamily = Montserrat,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            color = Color.White,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .horizontalScroll(rememberScrollState()),
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                        ) {
+                                            daysList.forEachIndexed { dayIndex, dayName ->
+                                                val mock = getWeatherMock(route.id, dayIndex)
+                                                Column(
+                                                    modifier = Modifier.width(60.dp),
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                                ) {
+                                                    Text(
+                                                        text = dayName,
+                                                        color = Color.White.copy(alpha = 0.9f),
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.Medium,
+                                                        fontSize = 9.sp
+                                                    )
+                                                    Text(
+                                                        text = mock.emoji,
+                                                        fontSize = 16.sp
+                                                    )
+                                                    Text(
+                                                        text = "${mock.tempMax}° - ${mock.tempMin}°",
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontSize = 10.sp,
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                 }
+                                is UiState.Success -> {
+                                    val weatherData = weatherStateObj.data.data
+                                    val daily = weatherData?.daily
+                                    val hourly = weatherData?.hourly
 
-                                Spacer(modifier = Modifier.height(30.dp))
-                            }
-                            else -> {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(180.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(color = AltiDark)
+                                    val calendar = java.util.Calendar.getInstance()
+                                    val currentHour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+                                    val todayIndex = calendar.get(java.util.Calendar.DAY_OF_WEEK) - 1
+                                    val daysOfWeek = listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
+                                    val daysList = List(7) { i ->
+                                        daysOfWeek[(todayIndex + i) % 7]
+                                    }
+
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        // ── Hourly Section ──
+                                        Text(
+                                            text = "Hourly Forecast",
+                                            fontFamily = Montserrat,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            color = Color.White,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .horizontalScroll(rememberScrollState()),
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                        ) {
+                                            for (i in 0..5) {
+                                                val targetHourIndex = (currentHour + i) % 24
+                                                val timeString = hourly?.time?.getOrNull(targetHourIndex) ?: ""
+                                                val temp = hourly?.temperature_2m?.getOrNull(targetHourIndex)?.toInt() ?: 20
+                                                val weatherCode = hourly?.weathercode?.getOrNull(targetHourIndex) ?: 0
+
+                                                val emoji = when (weatherCode) {
+                                                    0 -> "☀️"
+                                                    1, 2, 3 -> "⛅"
+                                                    45, 48 -> "🌫️"
+                                                    51, 53, 55, 61, 63, 65, 80, 81, 82 -> "🌧️"
+                                                    71, 73, 75 -> "❄️"
+                                                    95, 96, 99 -> "⛈️"
+                                                    else -> "⛅"
+                                                }
+
+                                                val displayTime = if (timeString.isNotEmpty()) formatHourlyTime(timeString) else "${targetHourIndex.toString().padStart(2, '0')}:00"
+
+                                                Column(
+                                                    modifier = Modifier.width(60.dp),
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                                ) {
+                                                    Text(
+                                                        text = displayTime,
+                                                        color = Color.White.copy(alpha = 0.9f),
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.Medium,
+                                                        fontSize = 9.sp
+                                                    )
+                                                    Text(
+                                                        text = emoji,
+                                                        fontSize = 16.sp
+                                                    )
+                                                    Text(
+                                                        text = "${temp}°",
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontSize = 10.sp,
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(14.dp))
+                                        HorizontalDivider(color = Color.White.copy(alpha = 0.2f), thickness = 1.dp)
+                                        Spacer(modifier = Modifier.height(12.dp))
+
+                                        // ── Daily Section ──
+                                        Text(
+                                            text = "Weekly Forecast",
+                                            fontFamily = Montserrat,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            color = Color.White,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .horizontalScroll(rememberScrollState()),
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                        ) {
+                                            daysList.forEachIndexed { dayIndex, dayName ->
+                                                val weatherCode = daily?.weathercode?.getOrNull(dayIndex) ?: 0
+                                                val tempMax = daily?.temperature_2m_max?.getOrNull(dayIndex)?.toInt() ?: 20
+                                                val tempMin = daily?.temperature_2m_min?.getOrNull(dayIndex)?.toInt() ?: 14
+
+                                                val emoji = when (weatherCode) {
+                                                    0 -> "☀️"
+                                                    1, 2, 3 -> "⛅"
+                                                    45, 48 -> "🌫️"
+                                                    51, 53, 55, 61, 63, 65, 80, 81, 82 -> "🌧️"
+                                                    71, 73, 75 -> "❄️"
+                                                    95, 96, 99 -> "⛈️"
+                                                    else -> "⛅"
+                                                }
+
+                                                Column(
+                                                    modifier = Modifier.width(60.dp),
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                                ) {
+                                                    Text(
+                                                        text = dayName,
+                                                        color = Color.White.copy(alpha = 0.9f),
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.Medium,
+                                                        fontSize = 9.sp
+                                                    )
+                                                    Text(
+                                                        text = emoji,
+                                                        fontSize = 16.sp
+                                                    )
+                                                    Text(
+                                                        text = "${tempMax}° - ${tempMin}°",
+                                                        fontFamily = Montserrat,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontSize = 10.sp,
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(180.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(color = AltiDark)
+                                    }
                                 }
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(30.dp))
                     }
                 }
             }
@@ -1029,6 +1419,20 @@ private fun RouteDetailNavigationScreen(
                             )
                         )
                     }
+                }
+
+                // Live User Location Marker (Rotating blue arrow for offline navigation)
+                if (isNavigating && userLocation != null) {
+                    val arrowIcon = remember { getNavigationArrowBitmap() }
+                    Marker(
+                        state = MarkerState(position = userLocation!!),
+                        title = "Lokasi Saya",
+                        snippet = "${userAltitude.toInt()} mdpl",
+                        icon = arrowIcon,
+                        flat = true,
+                        anchor = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
+                        rotation = phoneAzimuth
+                    )
                 }
             }
 
@@ -1212,136 +1616,60 @@ private fun WaypointTimelineItem(
     }
 }
 
-@Composable
-private fun WeatherDetailMiniChip(
-    label: String,
-    value: String,
-    emoji: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.height(64.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFD0E1FD).copy(alpha = 0.25f)),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(emoji, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(value, fontFamily = Montserrat, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.White, maxLines = 1)
-            Text(label, fontFamily = Montserrat, fontWeight = FontWeight.Medium, fontSize = 9.sp, color = Color.White.copy(alpha = 0.6f), maxLines = 1)
-        }
+private data class WeatherMock(val emoji: String, val tempMax: Int, val tempMin: Int)
+
+private fun getWeatherMock(mountainIndex: Int, dayIndex: Int): WeatherMock {
+    val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️")
+    val hash = (mountainIndex * 7 + dayIndex) % 5
+    val emoji = emojis[hash]
+
+    val baseTempMax = when (mountainIndex) {
+        0 -> 20 // Merbabu
+        1 -> 24 // Andong
+        2 -> 18 // Lawu
+        3 -> 21 // Prau
+        4 -> 17 // Sindoro
+        5 -> 15 // Slamet
+        6 -> 17 // Sumbing
+        7 -> 22 // Ungaran
+        else -> 20
+    }
+
+    val tempVarianceMax = (dayIndex % 3) - 1
+    val max = baseTempMax + tempVarianceMax
+    val min = max - 6 - (dayIndex % 3)
+    return WeatherMock(emoji, max, min)
+}
+
+private data class HourlyMock(val time: String, val emoji: String, val temp: Int)
+
+private fun getHourlyMockList(dayIndex: Int): List<HourlyMock> {
+    val times = listOf("05:00 AM", "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM")
+    val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️", "⛅")
+    val temps = listOf(22, 18, 16, 19, 23, 25)
+    return List(6) { index ->
+        val emojiShift = (dayIndex + index) % emojis.size
+        val tempShift = temps[index] + (dayIndex % 3) - 1
+        HourlyMock(times[index], emojis[emojiShift], tempShift)
     }
 }
 
-@Composable
-private fun HourlyForecastItem(
-    time: String,
-    temp: String,
-    code: Int,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.height(96.dp),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = AltiDark.copy(alpha = 0.05f)),
-        border = BorderStroke(1.dp, AltiDark.copy(alpha = 0.1f))
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Little dynamic mini canvas icon
-            MiniWeatherIcon(code = code, modifier = Modifier.size(24.dp))
-            
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(temp, fontFamily = Montserrat, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = AltiDark)
-                Text(time, fontFamily = Montserrat, fontWeight = FontWeight.Medium, fontSize = 8.sp, color = AltiDark.copy(alpha = 0.6f))
-            }
+private fun formatHourlyTime(isoTime: String): String {
+    val timePart = isoTime.substringAfter('T', "")
+    if (timePart.isEmpty()) return isoTime
+    try {
+        val parts = timePart.split(":")
+        val hour = parts[0].toInt()
+        val minute = parts.getOrNull(1) ?: "00"
+        val ampm = if (hour >= 12) "PM" else "AM"
+        val displayHour = when {
+            hour == 0 -> 12
+            hour > 12 -> hour - 12
+            else -> hour
         }
-    }
-}
-
-@Composable
-private fun MiniWeatherIcon(code: Int, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        when (code) {
-            0 -> { // Cerah
-                drawCircle(
-                    color = Color(0xFFFBC02D),
-                    radius = size.minDimension / 3f
-                )
-            }
-            1, 2, 3 -> { // Berawan
-                drawCircle(
-                    color = Color(0xFFFBC02D),
-                    radius = size.minDimension / 5f,
-                    center = center.copy(x = center.x + 3f, y = center.y - 3f)
-                )
-                drawCircle(
-                    color = Color.White,
-                    radius = size.minDimension / 3.5f,
-                    center = center.copy(x = center.x - 2f, y = center.y + 2f)
-                )
-            }
-            45, 48 -> { // Kabut
-                val w = size.width
-                val h = size.height
-                drawLine(Color.Gray, start = center.copy(x = w * 0.2f, y = h * 0.3f), end = center.copy(x = w * 0.8f, y = h * 0.3f), strokeWidth = 2f)
-                drawLine(Color.Gray, start = center.copy(x = w * 0.15f, y = h * 0.5f), end = center.copy(x = w * 0.85f, y = h * 0.5f), strokeWidth = 2f)
-                drawLine(Color.Gray, start = center.copy(x = w * 0.2f, y = h * 0.7f), end = center.copy(x = w * 0.8f, y = h * 0.7f), strokeWidth = 2f)
-            }
-            else -> { // Awan / Hujan / Overcast
-                drawCircle(
-                    color = Color.White,
-                    radius = size.minDimension / 3.5f
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WeatherIllustration(
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        // Golden Sun
-        Canvas(modifier = Modifier.size(54.dp).align(Alignment.TopEnd).offset(x = (-8).dp, y = 8.dp)) {
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color(0xFFFFF176), Color(0xFFFBC02D))
-                ),
-                radius = size.minDimension / 2
-            )
-        }
-        // White Cloud
-        Canvas(modifier = Modifier.size(72.dp).align(Alignment.BottomStart)) {
-            val path = android.graphics.Path().apply {
-                val w = size.width
-                val h = size.height
-                moveTo(w * 0.2f, h * 0.75f)
-                cubicTo(w * 0.05f, h * 0.75f, w * 0.05f, h * 0.5f, w * 0.2f, h * 0.5f)
-                cubicTo(w * 0.2f, h * 0.25f, w * 0.5f, h * 0.25f, w * 0.5f, h * 0.4f)
-                cubicTo(w * 0.65f, h * 0.2f, w * 0.9f, h * 0.3f, w * 0.85f, h * 0.5f)
-                cubicTo(w * 0.98f, h * 0.5f, w * 0.98f, h * 0.75f, w * 0.85f, h * 0.75f)
-                close()
-            }
-            drawPath(
-                path = path.asComposePath(),
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.White, Color(0xFFCFD8DC))
-                )
-            )
-        }
+        return String.format("%02d:%s %s", displayHour, minute, ampm)
+    } catch (e: Exception) {
+        return timePart
     }
 }
 
@@ -1359,4 +1687,188 @@ private fun getMountainDrawable(name: String): Int {
         "ungaran"  -> R.drawable.ungaran
         else       -> R.drawable.startjourney_img
     }
+}
+
+@Composable
+private fun OfflineCompassDial(
+    arrowRotation: Float,
+    distanceText: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(200.dp)
+            .background(Color.Transparent),
+        contentAlignment = Alignment.Center
+    ) {
+        // Outer glow/shadow & background
+        Box(
+            modifier = Modifier
+                .size(190.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            AltiDark.copy(alpha = 0.15f),
+                            AltiDark.copy(alpha = 0.02f)
+                        )
+                    )
+                )
+                .border(2.dp, AltiDark.copy(alpha = 0.15f), CircleShape)
+        )
+
+        // The compass Canvas (outer ring, compass ticks, rotating needle)
+        Canvas(
+            modifier = Modifier
+                .size(180.dp)
+                .rotate(arrowRotation)
+        ) {
+            val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+            val radius = size.minDimension / 2f
+
+            // Draw small ticks/markings on the outer edge (every 30 degrees)
+            for (angle in 0 until 360 step 30) {
+                val isCardinal = angle % 90 == 0
+                val tickLength = if (isCardinal) 12f else 6f
+                val strokeWidth = if (isCardinal) 3f else 1.5f
+                val tickColor = if (isCardinal) AltiDark else AltiDark.copy(alpha = 0.4f)
+                
+                val angleRad = Math.toRadians(angle.toDouble())
+                val startX = (center.x + (radius - 12f) * Math.sin(angleRad)).toFloat()
+                val startY = (center.y - (radius - 12f) * Math.cos(angleRad)).toFloat()
+                val endX = (center.x + (radius - 12f - tickLength) * Math.sin(angleRad)).toFloat()
+                val endY = (center.y - (radius - 12f - tickLength) * Math.cos(angleRad)).toFloat()
+                
+                drawLine(
+                    color = tickColor,
+                    start = androidx.compose.ui.geometry.Offset(startX, startY),
+                    end = androidx.compose.ui.geometry.Offset(endX, endY),
+                    strokeWidth = strokeWidth
+                )
+            }
+
+            // Draw target needle (pointing North / top, since Canvas itself is rotated by arrowRotation)
+            val needleWidth = 16f
+            val needleLength = radius - 35f
+
+            // Red half (North-facing pointer, points up)
+            val northPath = androidx.compose.ui.graphics.Path().apply {
+                moveTo(center.x, center.y - needleLength) // Tip of needle
+                lineTo(center.x + needleWidth / 2f, center.y) // Right joint
+                lineTo(center.x, center.y - 4f) // Center indent
+                close()
+            }
+            drawPath(
+                path = northPath,
+                color = Color(0xFFEA4335)
+            )
+
+            val northLeftPath = androidx.compose.ui.graphics.Path().apply {
+                moveTo(center.x, center.y - needleLength) // Tip of needle
+                lineTo(center.x - needleWidth / 2f, center.y) // Left joint
+                lineTo(center.x, center.y - 4f) // Center indent
+                close()
+            }
+            drawPath(
+                path = northLeftPath,
+                color = Color(0xFFC5221F) // darker red for shadow effect
+            )
+
+            // South-facing pointer (points down, color coordinated to theme)
+            val southPath = androidx.compose.ui.graphics.Path().apply {
+                moveTo(center.x, center.y + needleLength) // Tip of needle
+                lineTo(center.x + needleWidth / 2f, center.y) // Right joint
+                lineTo(center.x, center.y + 4f) // Center indent
+                close()
+            }
+            drawPath(
+                path = southPath,
+                color = AltiMedium
+            )
+
+            val southLeftPath = androidx.compose.ui.graphics.Path().apply {
+                moveTo(center.x, center.y + needleLength) // Tip of needle
+                lineTo(center.x - needleWidth / 2f, center.y) // Left joint
+                lineTo(center.x, center.y + 4f) // Center indent
+                close()
+            }
+            drawPath(
+                path = southLeftPath,
+                color = AltiDark
+            )
+
+            // Center pivot point
+            drawCircle(
+                color = Color.White,
+                radius = 6f,
+                center = center
+            )
+            drawCircle(
+                color = AltiDark,
+                radius = 3f,
+                center = center
+            )
+        }
+
+        // Inner circle overlay for Distance text (unrotated, so text stays upright!)
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE3E9CD))
+                .border(2.dp, Color.White.copy(alpha = 0.5f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Jarak",
+                    fontFamily = Montserrat,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 10.sp,
+                    color = AltiDark.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = distanceText,
+                    fontFamily = Montserrat,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = AltiDark
+                )
+            }
+        }
+    }
+}
+
+private fun getNavigationArrowBitmap(): com.google.android.gms.maps.model.BitmapDescriptor {
+    val size = 64
+    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(bitmap)
+    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+    
+    // Draw white outer shadow/circle
+    paint.color = android.graphics.Color.WHITE
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, paint)
+    
+    // Draw blue inner circle
+    paint.color = android.graphics.Color.parseColor("#4285F4") // Google Blue
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 6f, paint)
+    
+    // Draw white arrow (chevron pointing up)
+    paint.color = android.graphics.Color.WHITE
+    val path = android.graphics.Path()
+    val cx = size / 2f
+    val cy = size / 2f
+    
+    path.moveTo(cx, cy - size / 4f) // Top tip
+    path.lineTo(cx - size / 5f, cy + size / 5f) // Bottom left
+    path.lineTo(cx, cy + size / 10f) // Center indent
+    path.lineTo(cx + size / 5f, cy + size / 5f) // Bottom right
+    path.close()
+    
+    canvas.drawPath(path, paint)
+    
+    return com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap(bitmap)
 }

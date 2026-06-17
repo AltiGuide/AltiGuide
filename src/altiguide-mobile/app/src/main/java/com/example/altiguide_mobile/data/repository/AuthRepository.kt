@@ -43,17 +43,13 @@ class AuthRepository @Inject constructor(
     suspend fun login(request: LoginRequest): AuthResponse {
         val email = request.email.trim()
         
-        // 1. Try local users first
-        val localUser = loadUsersFromAssets().find { it.email.equals(email, ignoreCase = true) }
-        if (localUser != null) {
-            authDataStore.saveToken("mock_token")
-            authDataStore.saveEmail(localUser.email)
-            return AuthResponse("Login successful (Offline)", localUser, "mock_token")
-        }
-
-        // 2. Fallback to Firebase Realtime Database
+        // 1. Try Firebase Realtime Database first (for updated synced data)
         val safeKey = getSafeEmailKey(email)
-        val client = okhttp3.OkHttpClient()
+        val client = okhttp3.OkHttpClient.Builder()
+            .connectTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
         val gson = Gson()
         val url = "https://altiguide-dd49c-default-rtdb.asia-southeast1.firebasedatabase.app/users/$safeKey.json"
         val firebaseRequest = okhttp3.Request.Builder().url(url).build()
@@ -75,9 +71,15 @@ class AuthRepository @Inject constructor(
         }
 
         if (firebaseUser != null) {
-            authDataStore.saveToken("mock_token")
-            authDataStore.saveEmail(firebaseUser.email)
+            authDataStore.saveAuthData("mock_token", firebaseUser.email)
             return AuthResponse("Login successful (Firebase)", firebaseUser, "mock_token")
+        }
+
+        // 2. Fallback to local users
+        val localUser = loadUsersFromAssets().find { it.email.equals(email, ignoreCase = true) }
+        if (localUser != null) {
+            authDataStore.saveAuthData("mock_token", localUser.email)
+            return AuthResponse("Login successful (Offline)", localUser, "mock_token")
         }
 
         throw Exception("Email atau password salah.")
@@ -119,18 +121,13 @@ class AuthRepository @Inject constructor(
             throw Exception("Gagal mendapatkan email dari Google ID Token.")
         }
 
-        // 1. Try local users first
-        val localUsers = loadUsersFromAssets()
-        val matchedUser = localUsers.find { it.email.equals(email, ignoreCase = true) }
-        if (matchedUser != null) {
-            authDataStore.saveToken("mock_token")
-            authDataStore.saveEmail(matchedUser.email)
-            return AuthResponse("Login Google Berhasil", matchedUser, "mock_token")
-        }
-
-        // 2. Try Firebase Realtime Database
+        // 1. Try Firebase Realtime Database first
         val safeKey = getSafeEmailKey(email)
-        val client = okhttp3.OkHttpClient()
+        val client = okhttp3.OkHttpClient.Builder()
+            .connectTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
         val gson = Gson()
         val url = "https://altiguide-dd49c-default-rtdb.asia-southeast1.firebasedatabase.app/users/$safeKey.json"
         
@@ -152,9 +149,16 @@ class AuthRepository @Inject constructor(
         }
 
         if (firebaseUser != null) {
-            authDataStore.saveToken("mock_token")
-            authDataStore.saveEmail(firebaseUser.email)
+            authDataStore.saveAuthData("mock_token", firebaseUser.email)
             return AuthResponse("Login Google Berhasil (Firebase)", firebaseUser, "mock_token")
+        }
+
+        // 2. Try local users
+        val localUsers = loadUsersFromAssets()
+        val matchedUser = localUsers.find { it.email.equals(email, ignoreCase = true) }
+        if (matchedUser != null) {
+            authDataStore.saveAuthData("mock_token", matchedUser.email)
+            return AuthResponse("Login Google Berhasil", matchedUser, "mock_token")
         }
 
         // 3. Create new user in Firebase if not found (first time Google login)
@@ -186,14 +190,12 @@ class AuthRepository @Inject constructor(
         }
 
         if (success) {
-            authDataStore.saveToken("mock_token")
-            authDataStore.saveEmail(newUser.email)
+            authDataStore.saveAuthData("mock_token", newUser.email)
             return AuthResponse("Registrasi Google Berhasil", newUser, "mock_token")
         }
 
         // Fallback to local profile if Firebase write fails
-        authDataStore.saveToken("mock_token")
-        authDataStore.saveEmail(newUser.email)
+        authDataStore.saveAuthData("mock_token", newUser.email)
         return AuthResponse("Login Google Berhasil (Offline)", newUser, "mock_token")
     }
 
@@ -203,8 +205,8 @@ class AuthRepository @Inject constructor(
 
     suspend fun verifyRegisterOtp(email: String, code: String): AuthResponse {
         val response = apiService.verifyRegisterOtp(mapOf("email" to email, "code" to code))
-        response.token?.let {
-            authDataStore.saveToken(it)
+        response.token?.let { token ->
+            authDataStore.saveAuthData(token, email)
         }
         return response
     }
@@ -226,14 +228,14 @@ class AuthRepository @Inject constructor(
         if (email.isEmpty()) {
             throw IOException("No user logged in")
         }
-        val localUser = loadUsersFromAssets().find { it.email.equals(email, ignoreCase = true) }
-        if (localUser != null) {
-            return localUser
-        }
 
-        // Try to fetch from Firebase
+        // 1. Try to fetch from Firebase first (for fresh, synced data)
         val safeKey = getSafeEmailKey(email)
-        val client = okhttp3.OkHttpClient()
+        val client = okhttp3.OkHttpClient.Builder()
+            .connectTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
         val gson = Gson()
         val url = "https://altiguide-dd49c-default-rtdb.asia-southeast1.firebasedatabase.app/users/$safeKey.json"
         val firebaseRequest = okhttp3.Request.Builder().url(url).build()
@@ -253,7 +255,17 @@ class AuthRepository @Inject constructor(
             }
         }
 
-        return firebaseUser ?: throw IOException("User profile not found")
+        if (firebaseUser != null) {
+            return firebaseUser
+        }
+
+        // 2. Fallback to local asset if offline or not in Firebase
+        val localUser = loadUsersFromAssets().find { it.email.equals(email, ignoreCase = true) }
+        if (localUser != null) {
+            return localUser
+        }
+
+        throw IOException("User profile not found")
     }
 
     suspend fun updateUserProfile(request: Map<String, @JvmSuppressWildcards Any>): Response<AuthResponse> {

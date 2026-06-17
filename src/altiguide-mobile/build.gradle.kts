@@ -12,6 +12,7 @@ plugins {
 // to prevent "AccessDeniedException" and "Unable to delete directory" errors.
 allprojects {
     val buildDirName = if (project == rootProject) "root" else project.name
-    // Commented out to prevent KSP directory traversal error on Windows
-    // layout.buildDirectory.set(file("C:/android_builds/altiguide-mobile/$buildDirName"))
+    // Redirect build directory to user home (outside OneDrive) to avoid AccessDeniedException and OneDrive locks
+    val userHome = System.getProperty("user.home")
+    layout.buildDirectory.set(file("$userHome/android_builds/altiguide-mobile/$buildDirName"))
 }
