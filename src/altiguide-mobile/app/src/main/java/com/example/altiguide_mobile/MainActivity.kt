@@ -50,7 +50,10 @@ class MainActivity : ComponentActivity() {
                                 HomeScreen(
                                     userName = "Diva",
                                     onLogout = {
-                                        scope.launch { authDataStore.clearToken() }
+                                        scope.launch {
+                                            authDataStore.clearToken()
+                                            this@MainActivity.recreate()
+                                        }
                                     }
                                 )
                             }

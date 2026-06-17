@@ -48,6 +48,7 @@ import com.example.altiguide_mobile.ui.profile.ProfileViewModel
 import com.example.altiguide_mobile.ui.navigation.NavigationScreen
 import com.example.altiguide_mobile.util.UiState
 import androidx.compose.foundation.BorderStroke
+import coil.compose.SubcomposeAsyncImage
 import android.graphics.Bitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
@@ -440,16 +441,52 @@ fun HomeScreen(
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.35f))
                                 .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape)
-                                .clickable { onLogout() },
+                                .clickable {
+                                    selectedTab = 3
+                                    showEditProfile = true
+                                },
                             contentAlignment = Alignment.Center
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.logo_altiguide),
-                                contentDescription = "Profile",
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                            )
+                            val user = (profileState as? UiState.Success)?.data
+                            val imageUrl = user?.let { if (!it.avatar_url.isNullOrEmpty()) it.avatar_url else it.image }
+                            if (!imageUrl.isNullOrEmpty()) {
+                                SubcomposeAsyncImage(
+                                    model = imageUrl,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop,
+                                    loading = {
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(
+                                                color = Color.White,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    },
+                                    error = {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.logo_altiguide),
+                                            contentDescription = "Profile",
+                                            modifier = Modifier
+                                                .size(30.dp)
+                                                .clip(CircleShape)
+                                        )
+                                    }
+                                )
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo_altiguide),
+                                    contentDescription = "Profile",
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
                         }
                     }
 

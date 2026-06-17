@@ -35,6 +35,13 @@ class AuthDataStore(private val context: Context) {
         }
     }
 
+    suspend fun saveAuthData(token: String, email: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TOKEN_KEY] = token
+            preferences[EMAIL_KEY] = email
+        }
+    }
+
     suspend fun clearToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(TOKEN_KEY)

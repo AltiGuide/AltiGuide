@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.example.altiguide_mobile.R
 import com.example.altiguide_mobile.data.model.UserModel
 import com.example.altiguide_mobile.util.UiState
+import coil.compose.SubcomposeAsyncImage
 
 private val Montserrat = FontFamily(
     Font(R.font.montserrat_regular, FontWeight.Normal),
@@ -119,13 +120,48 @@ fun EditProfileScreen(
                     .background(AltiMedium),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = user.name.take(1).uppercase(),
-                    fontFamily = Montserrat,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 34.sp,
-                    color = Color.White
-                )
+                val imageUrl = if (!user.avatar_url.isNullOrEmpty()) user.avatar_url else user.image
+                if (!imageUrl.isNullOrEmpty()) {
+                    SubcomposeAsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        loading = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        },
+                        error = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = user.name.take(1).uppercase(),
+                                    fontFamily = Montserrat,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 34.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    )
+                } else {
+                    Text(
+                        text = user.name.take(1).uppercase(),
+                        fontFamily = Montserrat,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 34.sp,
+                        color = Color.White
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
