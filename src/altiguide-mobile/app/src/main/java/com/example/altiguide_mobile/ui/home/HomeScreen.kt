@@ -51,6 +51,11 @@ import androidx.compose.foundation.BorderStroke
 import android.graphics.Bitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 // ── Montserrat font family ──────────────────────────────────────────────────
 private val Montserrat = FontFamily(
@@ -230,6 +235,64 @@ private val IconPerson: ImageVector get() = ImageVector.Builder(
         curveTo(9.33f, 14f, 4f, 15.34f, 4f, 18f)
         lineTo(4f, 20f); lineTo(20f, 20f); lineTo(20f, 18f)
         curveTo(20f, 15.34f, 14.67f, 14f, 12f, 14f); close()
+    }
+}.build()
+
+private val IconCalendar: ImageVector get() = ImageVector.Builder(
+    name = "Calendar", defaultWidth = 14.dp, defaultHeight = 14.dp,
+    viewportWidth = 24f, viewportHeight = 24f
+).apply {
+    path(fill = SolidColor(AltiDark)) {
+        moveTo(19f, 4f)
+        horizontalLineToRelative(-1f)
+        verticalLineTo(2f)
+        horizontalLineToRelative(-2f)
+        verticalLineToRelative(2f)
+        horizontalLineTo(8f)
+        verticalLineTo(2f)
+        horizontalLineTo(6f)
+        verticalLineToRelative(2f)
+        horizontalLineTo(5f)
+        curveTo(3.89f, 4f, 3f, 4.9f, 3f, 6f)
+        verticalLineToRelative(14f)
+        curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+        horizontalLineToRelative(14f)
+        curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+        verticalLineTo(6f)
+        curveTo(21f, 4.9f, 20.1f, 4f, 19f, 4f)
+        close()
+        moveTo(19f, 20f)
+        horizontalLineTo(5f)
+        verticalLineTo(10f)
+        horizontalLineToRelative(14f)
+        verticalLineTo(20f)
+        close()
+        moveTo(19f, 8f)
+        horizontalLineTo(5f)
+        verticalLineTo(6f)
+        horizontalLineToRelative(14f)
+        verticalLineTo(8f)
+        close()
+    }
+}.build()
+
+private val IconPin: ImageVector get() = ImageVector.Builder(
+    name = "Pin", defaultWidth = 14.dp, defaultHeight = 14.dp,
+    viewportWidth = 24f, viewportHeight = 24f
+).apply {
+    path(fill = SolidColor(AltiDark)) {
+        moveTo(12f, 2f)
+        curveTo(8.13f, 2f, 5f, 5.13f, 5f, 9f)
+        curveTo(5f, 14.25f, 12f, 22f, 12f, 22f)
+        curveTo(12f, 22f, 19f, 14.25f, 19f, 9f)
+        curveTo(19f, 5.13f, 15.87f, 2f, 12f, 2f)
+        close()
+        moveTo(12f, 11.5f)
+        curveTo(10.62f, 11.5f, 9.5f, 10.38f, 9.5f, 9f)
+        curveTo(9.5f, 7.62f, 10.62f, 6.5f, 12f, 6.5f)
+        curveTo(13.38f, 6.5f, 14.5f, 7.62f, 14.5f, 9f)
+        curveTo(14.5f, 10.38f, 13.38f, 11.5f, 12f, 11.5f)
+        close()
     }
 }.build()
 
@@ -1049,7 +1112,7 @@ fun HomeScreen(
                             .padding(bottom = 90.dp)
                     ) {
                         Text(
-                            text = "Tiket Saya",
+                            text = "My Bookings",
                             fontFamily = Montserrat,
                             fontWeight = FontWeight.Bold,
                             fontSize = 22.sp,
@@ -1426,6 +1489,62 @@ private fun formatHourlyTime(isoTime: String): String {
     }
 }
 
+private fun formatIndonesianDate(dateStr: String?): String {
+    if (dateStr == null) return "-"
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val date = inputFormat.parse(dateStr.substring(0, 10))
+        if (date != null) {
+            val outputFormat = SimpleDateFormat("d MMMM yyyy", Locale("id", "ID"))
+            outputFormat.format(date)
+        } else {
+            dateStr
+        }
+    } catch (e: Exception) {
+        dateStr
+    }
+}
+
+private fun calculateDurationDays(startDateStr: String?, endDateStr: String?): String {
+    if (startDateStr == null || endDateStr == null) return "2 - 3 Days"
+    return try {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val startDate = LocalDate.parse(startDateStr.substring(0, 10), formatter)
+        val endDate = LocalDate.parse(endDateStr.substring(0, 10), formatter)
+        val days = ChronoUnit.DAYS.between(startDate, endDate) + 1
+        if (days <= 1) "1 Day" else "$days Days"
+    } catch (e: Exception) {
+        "2 - 3 Days"
+    }
+}
+
+@Composable
+private fun TicketDetailRow(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = AltiDark,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = text,
+            fontFamily = Montserrat,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            color = AltiDark.copy(alpha = 0.8f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
 @Composable
 private fun TicketCard(
     transaction: TransactionModel,
@@ -1435,145 +1554,83 @@ private fun TicketCard(
     val route = session?.route
     val mountainName = route?.mountain?.name ?: "Unknown Mountain"
     val routeName = route?.name ?: "Unknown Route"
-    val dateText = session?.start_date ?: "-"
-    val groupName = session?.group_name ?: "-"
-    val memberCount = session?.members?.size ?: 1
+    val shortRouteName = remember(routeName) {
+        if (routeName.contains(" via ")) {
+            "Jalur " + routeName.substringAfter(" via ")
+        } else {
+            routeName
+        }
+    }
+    val rawDate = session?.start_date
+    val dateText = remember(rawDate) { formatIndonesianDate(rawDate) }
+    val durationText = remember(session) {
+        calculateDurationDays(session?.start_date, session?.end_date)
+    }
     val imageRes = getMountainDrawable(mountainName)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(130.dp)
             .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
     ) {
-        // White card background
-        Column(
+        // Background Mountain Image
+        Image(
+            painter = painterResource(id = imageRes),
+            contentDescription = mountainName,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // Overlay layout matching Figma dimensions and linear gradient stops
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White, RoundedCornerShape(20.dp))
-                .padding(16.dp)
+                .fillMaxHeight()
+                .width(167.dp)
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colorStops = arrayOf(
+                            0.0f to Color.White.copy(alpha = 0.85f),
+                            0.35f to Color.White.copy(alpha = 0.60f),
+                            0.65f to Color.White.copy(alpha = 0.35f),
+                            1.0f to Color.White.copy(alpha = 0.00f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(
+                        topStart = 20.dp,
+                        bottomStart = 20.dp,
+                        topEnd = 30.dp,
+                        bottomEnd = 30.dp
+                    )
+                )
+                .padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
         ) {
-            // Top: Mountain image + info
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                // Mountain Title
+                Text(
+                    text = mountainName,
+                    fontFamily = Montserrat,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = AltiDark,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                // Info Rows (Calendar, Pin, Clock)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Image(
-                        painter = painterResource(id = imageRes),
-                        contentDescription = mountainName,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, AltiDark.copy(alpha = 0.3f))
-                                )
-                            )
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(14.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = mountainName,
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = AltiDark
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = routeName,
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 12.sp,
-                        color = AltiMedium
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF4CAF50))
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Terverifikasi",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 10.sp,
-                            color = Color(0xFF4CAF50)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Ticket notches divider
-            TicketDivider()
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Bottom: Date, Group, Members, Price
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    TicketInfoRow(label = "Tanggal", value = dateText)
-                    TicketInfoRow(label = "Kelompok", value = groupName)
-                    TicketInfoRow(label = "Pendaki", value = "$memberCount Orang")
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Rp ${formatNumber(transaction.grossAmount)}",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = AltiDark
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = transaction.orderId,
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 9.sp,
-                        color = AltiDark.copy(alpha = 0.4f)
-                    )
+                    TicketDetailRow(icon = IconCalendar, text = dateText)
+                    TicketDetailRow(icon = IconPin, text = shortRouteName)
+                    TicketDetailRow(icon = IconClock, text = durationText)
                 }
             }
         }
-
-        // Ticket notch decoration - left
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .offset(x = (-10).dp)
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFE3E9CD))
-        )
-        // Ticket notch decoration - right
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .offset(x = 10.dp)
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFE3E9CD))
-        )
     }
 }
 
