@@ -15,6 +15,7 @@ const props = defineProps({
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
+const authAdmin = computed(() => page.props.auth?.admin)
 
 const state = reactive({
     currentStep: 1,
@@ -140,6 +141,14 @@ const scrollToTop = () => {
                         class="nav-btn-logout"
                     >
                         Logout
+                    </Link>
+                </template>
+                <template v-else-if="authAdmin">
+                    <Link
+                        href="/admin/dashboard"
+                        class="nav-btn-login"
+                    >
+                        Admin Dashboard
                     </Link>
                 </template>
                 <template v-else>

@@ -4,6 +4,7 @@ import { computed } from 'vue'
 
 const page = usePage()
 const authUser = computed(() => page.props.auth?.user)
+const authAdmin = computed(() => page.props.auth?.admin)
 </script>
 
 <template>
@@ -27,6 +28,14 @@ const authUser = computed(() => page.props.auth?.user)
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
             </svg>
             <span class="hidden md:inline">{{ authUser.name.split(' ')[0] }}</span>
+          </Link>
+        </template>
+        <template v-else-if="authAdmin">
+          <Link href="/admin/dashboard" class="flex items-center gap-2 border border-[#374426] px-4 md:px-5 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap">
+            <span class="w-6 h-6 rounded-full bg-[#374426] flex items-center justify-center text-white text-xs font-bold">
+              {{ authAdmin.name?.charAt(0)?.toUpperCase() }}
+            </span>
+            <span class="hidden md:inline">Admin Dashboard</span>
           </Link>
         </template>
         <template v-else>

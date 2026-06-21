@@ -122,14 +122,8 @@ const isPaymentSuccess = computed(() => paymentStatus.value === 'settlement')
 const downloadETicket = () => {
     const formatFullDate = (dateStr) => {
         if (!dateStr) return '-'
-        const cleanStr = String(dateStr).substring(0, 10)
         const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
-        const d = new Date(cleanStr + 'T00:00:00')
-        if (isNaN(d.getTime())) {
-            const fallback = new Date(dateStr)
-            return isNaN(fallback.getTime()) ? dateStr : fallback.toLocaleDateString('id-ID', options)
-        }
-        return d.toLocaleDateString('id-ID', options)
+        return new Date(dateStr + 'T00:00:00').toLocaleDateString('id-ID', options)
     }
 
     const mountainImages = {
@@ -466,12 +460,12 @@ const downloadETicket = () => {
 
             <div class="qr-section">
                 <h3 class="qr-title">QRIS</h3>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(props.orderId)}" alt="Check-in QR" class="qr-code" />
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${props.orderId}" alt="Check-in QR" class="qr-code" />
             </div>
 
             <button class="print-btn" onclick="window.print()">Download PDF</button>
         </div>
-    </body>
+    </body> 
     </html>`
 
     const w = window.open('', '_blank')

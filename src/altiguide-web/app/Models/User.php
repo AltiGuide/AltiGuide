@@ -90,4 +90,56 @@ class User extends Authenticatable
     {
         return $this->hasMany(HikingMember::class);
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($user) {
+            try {
+                $email = strtolower(trim($user->email));
+                $safeEmailKey = str_replace(['@', '.'], '_', $email);
+                
+                $imageBase64 = null;
+                if ($user->avatar) {
+                    if (filter_var($user->avatar, FILTER_VALIDATE_URL)) {
+                        try {
+                            $imageResponse = \Illuminate\Support\Facades\Http::timeout(3)->get($user->avatar);
+                            if ($imageResponse->successful()) {
+                                $contentType = $imageResponse->header('Content-Type') ?: 'image/jpeg';
+                                $imageBase64 = 'data:' . $contentType . ';base64,' . base64_encode($imageResponse->body());
+                            }
+                        } catch (\Exception $ex) {
+                            // ignore and fallback to null or URL
+                        }
+                    } else {
+                        $path = storage_path('app/public/' . $user->avatar);
+                        if (file_exists($path)) {
+                            $type = pathinfo($path, PATHINFO_EXTENSION);
+                            $imgData = file_get_contents($path);
+                            $imageBase64 = 'data:image/' . $type . ';base64,' . base64_encode($imgData);
+                        }
+                    }
+                }
+
+                $data = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone_number' => $user->phone_number,
+                    'age' => $user->age ? (int)$user->age : null,
+                    'address' => $user->address,
+                    'emergency_contact' => $user->emergency_contact,
+                    'nik' => $user->nik,
+                    'avatar_url' => $user->avatar_url,
+                    'image' => $imageBase64,
+                ];
+
+                \Illuminate\Support\Facades\Http::put(
+                    "https://altiguide-dd49c-default-rtdb.asia-southeast1.firebasedatabase.app/users/{$safeEmailKey}.json",
+                    $data
+                );
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to sync user to Firebase: " . $e->getMessage());
+            }
+        });
+    }
 }

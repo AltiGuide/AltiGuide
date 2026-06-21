@@ -275,7 +275,7 @@ const removeSection = (idx) => mtnForm.content.splice(idx, 1)
 
 const submitMtnContent = () => {
   if (!editingMtn.value) return
-  mtnForm.put(`/admin/content/mountains/${editingMtn.value.id}`, {
+  mtnForm.put(`/admin/content/mountains/${editingMtn.value.slug}`, {
     preserveScroll: true,
     onSuccess: () => closeMtnModal(),
   })
@@ -310,7 +310,7 @@ const closeRouteModal = () => { showRouteModal.value = false; editingRoute.value
 
 const submitRouteInfo = () => {
   if (!editingRoute.value) return
-  routeForm.put(`/admin/content/routes/${editingRoute.value.id}/info`, {
+  routeForm.put(`/admin/content/routes/${editingRoute.value.slug}/info`, {
     preserveScroll: true,
     onSuccess: () => closeRouteModal(),
   })

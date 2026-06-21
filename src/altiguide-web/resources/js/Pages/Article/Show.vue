@@ -13,6 +13,7 @@ const allMountains = computed(() => props.mountains)
 
 const page = usePage()
 const authUser = computed(() => page.props.auth?.user)
+const authAdmin = computed(() => page.props.auth?.admin)
 
 const currentSlug = computed(() => {
   const url = new URL(page.url, window.location.origin)
@@ -205,6 +206,17 @@ const waterSourceWaypoints = computed(() => {
               {{ authUser.name?.charAt(0)?.toUpperCase() }}
             </span>
             <span>My Dashboard</span>
+          </Link>
+        </template>
+        <template v-else-if="authAdmin">
+          <Link
+            href="/admin/dashboard"
+            class="flex items-center gap-2 border border-[#374426] px-4 md:px-5 py-2 rounded-lg hover:bg-[#374426] hover:text-white transition duration-200 whitespace-nowrap"
+          >
+            <span class="w-6 h-6 rounded-full bg-[#374426] flex items-center justify-center text-white text-xs font-bold">
+              {{ authAdmin.name?.charAt(0)?.toUpperCase() }}
+            </span>
+            <span>Admin Dashboard</span>
           </Link>
         </template>
         <template v-else>
