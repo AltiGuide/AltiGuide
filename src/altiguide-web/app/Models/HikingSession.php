@@ -45,4 +45,13 @@ class HikingSession extends Model
     {
         return $this->hasMany(HikingMember::class, 'hiking_session_id');
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($session) {
+            if ($session->transaction_id) {
+                Transaction::syncToFirebase($session->transaction_id);
+            }
+        });
+    }
 }

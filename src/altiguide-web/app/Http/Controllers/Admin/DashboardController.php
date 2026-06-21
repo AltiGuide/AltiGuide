@@ -129,6 +129,7 @@ class DashboardController extends Controller
                 'routes'      => $m->routes->map(fn ($r) => [
                     'id'   => $r->id,
                     'name' => $r->name,
+                    'slug' => $r->slug,
                     'route_info' => $r->routeInfo ? [
                         'basecamp_address'       => $r->routeInfo->basecamp_address,
                         'basecamp_altitude'      => $r->routeInfo->basecamp_altitude,

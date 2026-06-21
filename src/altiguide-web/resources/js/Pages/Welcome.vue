@@ -5,6 +5,7 @@ import { computed } from 'vue'
 
 const page = usePage()
 const authUser = computed(() => page.props.auth?.user)
+const authAdmin = computed(() => page.props.auth?.admin)
 
 const slides = [
   { image: '/images/gunung_andong_1.png', name: 'Gunung Andong', description: 'Pilihan tepat untuk pendakian santai di akhir pekan bersama teman dengan pemandangan 360 derajat yang memperlihatkan deretan gunung di Jawa Tengah.' },
@@ -144,6 +145,17 @@ onUnmounted(() => {
                 {{ authUser.name?.charAt(0)?.toUpperCase() }}
               </span>
               <span>My Dashboard</span>
+            </a>
+          </template>
+          <template v-else-if="authAdmin">
+            <a
+              href="/admin/dashboard"
+              class="flex items-center gap-2 border border-[#3b4b3b] px-4 md:px-5 py-2 rounded-lg hover:bg-[#3b4b3b] hover:text-white transition duration-200 whitespace-nowrap"
+            >
+              <span class="w-6 h-6 rounded-full bg-[#374426] flex items-center justify-center text-white text-xs font-bold">
+                {{ authAdmin.name?.charAt(0)?.toUpperCase() }}
+              </span>
+              <span>Admin Dashboard</span>
             </a>
           </template>
           <template v-else>
