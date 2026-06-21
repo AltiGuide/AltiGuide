@@ -1,5 +1,10 @@
+
+
+
 package com.example.altiguide_mobile.data.repository
 
+import com.example.altiguide_mobile.data.local.dao.TransactionDao
+import com.example.altiguide_mobile.data.local.entity.CachedTransaction
 import com.example.altiguide_mobile.data.model.HikingSessionModel
 import com.example.altiguide_mobile.data.model.TransactionDetailResponse
 import com.example.altiguide_mobile.data.model.TransactionListResponse
@@ -19,7 +24,8 @@ import javax.inject.Singleton
 @Singleton
 class TransactionRepository @Inject constructor(
     private val apiService: AltiGuideApiService,
-    private val authDataStore: AuthDataStore
+    private val authDataStore: AuthDataStore,
+    private val transactionDao: TransactionDao
 ) {
     private fun getSafeEmailKey(email: String): String {
         return email.lowercase().trim().replace("@", "_").replace(".", "_")
@@ -27,7 +33,9 @@ class TransactionRepository @Inject constructor(
 
     suspend fun getTransactions(): TransactionListResponse {
         val email = authDataStore.authEmailFlow.first()
+        android.util.Log.d("TransactionRepository", "getTransactions: email is '$email'")
         if (email.isEmpty()) {
+            android.util.Log.w("TransactionRepository", "getTransactions: email is empty, returning empty list")
             return TransactionListResponse("success", emptyList())
         }
 
@@ -35,27 +43,58 @@ class TransactionRepository @Inject constructor(
         val client = okhttp3.OkHttpClient()
         val gson = Gson()
         val url = "https://altiguide-dd49c-default-rtdb.asia-southeast1.firebasedatabase.app/bookings/$safeKey.json"
+        android.util.Log.d("TransactionRepository", "getTransactions: requesting URL $url")
         val request = okhttp3.Request.Builder().url(url).build()
 
         return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             try {
                 client.newCall(request).execute().use { response ->
+                    android.util.Log.d("TransactionRepository", "getTransactions: response code is ${response.code}")
                     if (!response.isSuccessful) {
-                        return@withContext TransactionListResponse("success", emptyList())
+                        android.util.Log.w("TransactionRepository", "getTransactions: response unsuccessful, falling back to cache")
+                        val cached = transactionDao.getTransactionsForEmail(email).map {
+                            gson.fromJson(it.jsonContent, TransactionModel::class.java)
+                        }
+                        return@withContext TransactionListResponse("success", cached)
                     }
                     val body = response.body?.string()
+                    android.util.Log.d("TransactionRepository", "getTransactions: response body is '$body'")
                     if (body.isNullOrEmpty() || body == "null") {
+                        transactionDao.deleteTransactionsForEmail(email)
                         return@withContext TransactionListResponse("success", emptyList())
                     }
                     val mapType = object : TypeToken<Map<String, TransactionModel>>() {}.type
                     val map: Map<String, TransactionModel>? = gson.fromJson(body, mapType)
                     val list = map?.values?.toList() ?: emptyList()
+                    android.util.Log.d("TransactionRepository", "getTransactions: successfully parsed ${list.size} transactions")
+
+                    // Save to local cache database
+                    transactionDao.deleteTransactionsForEmail(email)
+                    if (list.isNotEmpty()) {
+                        transactionDao.insertTransactions(list.map {
+                            CachedTransaction(
+                                id = it.id,
+                                userEmail = email,
+                                jsonContent = gson.toJson(it),
+                                createdAt = it.createdAt
+                            )
+                        })
+                    }
+
                     val sortedList = list.sortedByDescending { it.createdAt ?: "" }
                     TransactionListResponse("success", sortedList)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("TransactionRepository", "Error fetching firebase bookings", e)
-                TransactionListResponse("success", emptyList())
+                android.util.Log.e("TransactionRepository", "Error fetching firebase bookings, falling back to cache", e)
+                val cached = try {
+                    transactionDao.getTransactionsForEmail(email).map {
+                        gson.fromJson(it.jsonContent, TransactionModel::class.java)
+                    }
+                } catch (dbEx: Exception) {
+                    android.util.Log.e("TransactionRepository", "Error querying cached transactions", dbEx)
+                    emptyList()
+                }
+                TransactionListResponse("success", cached)
             }
         }
     }

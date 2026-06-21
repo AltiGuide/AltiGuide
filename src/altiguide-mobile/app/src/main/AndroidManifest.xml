@@ -30,10 +30,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-        <!-- Google Maps API Key -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
+        <!-- OSMDroid: no API key needed, tile cache configured in AltiGuideApplication -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -53,12 +50,12 @@
         <activity
             android:name=".OnboardingActivity"
             android:exported="false"
-            android:theme="@style/Theme.Altiguidemobile.Splash" />
+            android:theme="@style/Theme.Altiguidemobile.Onboarding" />
 
         <activity
             android:name=".IntroActivity"
             android:exported="false"
-            android:theme="@style/Theme.Altiguidemobile.Splash" />
+            android:theme="@style/Theme.Altiguidemobile.Onboarding" />
     </application>
 
 </manifest>

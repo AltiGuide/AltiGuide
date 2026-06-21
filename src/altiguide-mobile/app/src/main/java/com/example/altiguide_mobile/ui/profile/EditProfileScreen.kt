@@ -120,10 +120,10 @@ fun EditProfileScreen(
                     .background(AltiMedium),
                 contentAlignment = Alignment.Center
             ) {
-                val imageUrl = if (!user.avatar_url.isNullOrEmpty()) user.avatar_url else user.image
-                if (!imageUrl.isNullOrEmpty()) {
+                val imageModel = user.getAvatarModel()
+                if (imageModel != null) {
                     SubcomposeAsyncImage(
-                        model = imageUrl,
+                        model = imageModel,
                         contentDescription = "Profile Picture",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,

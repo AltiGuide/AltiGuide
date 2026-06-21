@@ -13,9 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -38,13 +36,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.altiguide_mobile.R
 import com.example.altiguide_mobile.data.model.MountainModel
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+// ── OSMDroid ──
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 
 // ── Montserrat font family ──────────────────────────────────────────────────
 private val Montserrat = FontFamily(
@@ -354,19 +350,17 @@ fun MountainArticleScreen(
                         .height(180.dp)
                         .clip(RoundedCornerShape(16.dp))
                 ) {
-                    ArticleGoogleMapView(
+                    ArticleOsmMapView(
                         latitude = mountain.latitude ?: -7.4497,
                         longitude = mountain.longitude ?: 110.4381,
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Transparent overlay to capture clicks and prevent map scroll intercept
+                    // Transparent overlay — tap to open maps app
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clickable {
-                                launchGoogleMaps(context, mountain)
-                            }
+                            .clickable { launchMaps(context, mountain) }
                     )
                 }
 
@@ -374,9 +368,7 @@ fun MountainArticleScreen(
 
                 // Open on Maps Pill Button
                 Button(
-                    onClick = {
-                        launchGoogleMaps(context, mountain)
-                    },
+                    onClick = { launchMaps(context, mountain) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = AltiDark,
                         contentColor = Color.White
@@ -467,42 +459,62 @@ private fun InfoItem(
 }
 
 @Composable
-private fun ArticleGoogleMapView(
+private fun ArticleOsmMapView(
     latitude: Double,
     longitude: Double,
     modifier: Modifier = Modifier
 ) {
-    val mountainLocation = LatLng(latitude, longitude)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(mountainLocation, 13f)
+    val center = GeoPoint(latitude, longitude)
+    val mapViewRef = remember { mutableStateOf<MapView?>(null) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> mapViewRef.value?.onResume()
+                Lifecycle.Event.ON_PAUSE  -> mapViewRef.value?.onPause()
+                else                       -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            mapViewRef.value?.onDetach()
+        }
     }
 
-    GoogleMap(
+    AndroidView(
         modifier = modifier,
-        cameraPositionState = cameraPositionState,
-        uiSettings = MapUiSettings(
-            zoomControlsEnabled = false,
-            myLocationButtonEnabled = false,
-            compassEnabled = false,
-            zoomGesturesEnabled = false,
-            scrollGesturesEnabled = false,
-            rotationGesturesEnabled = false,
-            tiltGesturesEnabled = false
-        )
-    ) {
-        Marker(
-            state = MarkerState(position = mountainLocation)
-        )
-    }
+        factory = { ctx ->
+            MapView(ctx).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(false)
+                setBuiltInZoomControls(false)
+                setUseDataConnection(true)
+                controller.setZoom(13.0)
+                controller.setCenter(center)
+                // Add a marker for the mountain summit
+                val marker = Marker(this).apply {
+                    position = center
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                }
+                overlays.add(marker)
+                mapViewRef.value = this
+            }
+        },
+        update = { mapView ->
+            mapView.invalidate()
+        }
+    )
 }
 
 
-private fun launchGoogleMaps(context: Context, mountain: MountainModel) {
+private fun launchMaps(context: Context, mountain: MountainModel) {
     val lat = mountain.latitude ?: -7.4497
     val lon = mountain.longitude ?: 110.4381
     val encodedName = Uri.encode(mountain.name)
 
-    // Strategy 1: Try Google Maps app via geo: URI (checks if app is available first)
+    // Strategy 1: Try Google Maps app via geo: URI
     val geoUri = Uri.parse("geo:$lat,$lon?q=$encodedName")
     val geoIntent = Intent(Intent.ACTION_VIEW, geoUri).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -513,34 +525,23 @@ private fun launchGoogleMaps(context: Context, mountain: MountainModel) {
 
     if (mapsAppInstalled) {
         geoIntent.setPackage("com.google.android.apps.maps")
-        try {
-            context.startActivity(geoIntent)
-            return
-        } catch (_: Exception) {}
+        try { context.startActivity(geoIntent); return } catch (_: Exception) {}
     }
 
-    // Strategy 2: Universal Google Maps URL — opens Maps app if installed, otherwise browser
-    val mapsUrl = "https://www.google.com/maps/search/?api=1&query=$lat,$lon&query_place_id=$encodedName"
-    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
+    // Strategy 2: OpenStreetMap in browser (always works without Google)
+    val osmUrl = "https://www.openstreetmap.org/?mlat=$lat&mlon=$lon&zoom=14"
     try {
-        context.startActivity(browserIntent)
-    } catch (_: Exception) {
-        // Strategy 3: Simple maps.google.com fallback
-        try {
-            val fallbackIntent = Intent(Intent.ACTION_VIEW,
-                Uri.parse("https://maps.google.com/maps?q=$lat,$lon")).apply {
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse(osmUrl)).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
-            context.startActivity(fallbackIntent)
-        } catch (_: Exception) {
-            android.widget.Toast.makeText(
-                context,
-                "Tidak dapat membuka peta. Pastikan browser atau Google Maps terinstall.",
-                android.widget.Toast.LENGTH_LONG
-            ).show()
-        }
+        )
+    } catch (_: Exception) {
+        android.widget.Toast.makeText(
+            context,
+            "Tidak dapat membuka peta.",
+            android.widget.Toast.LENGTH_LONG
+        ).show()
     }
 }
 

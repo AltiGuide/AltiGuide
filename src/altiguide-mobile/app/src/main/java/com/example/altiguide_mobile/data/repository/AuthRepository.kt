@@ -256,10 +256,30 @@ class AuthRepository @Inject constructor(
         }
 
         if (firebaseUser != null) {
+            val localCacheJson = authDataStore.userProfileFlow.first()
+            val freshJson = gson.toJson(firebaseUser)
+            if (localCacheJson != freshJson) {
+                android.util.Log.d("AuthRepository", "Local user profile cache is different or empty, updating cache.")
+                authDataStore.saveUserProfile(freshJson)
+            }
             return firebaseUser
         }
 
-        // 2. Fallback to local asset if offline or not in Firebase
+        // 2. Fallback to local cache in DataStore first
+        val cachedProfileJson = authDataStore.userProfileFlow.first()
+        if (cachedProfileJson.isNotEmpty()) {
+            try {
+                val cachedUser = gson.fromJson(cachedProfileJson, UserModel::class.java)
+                if (cachedUser != null) {
+                    android.util.Log.d("AuthRepository", "Loaded user profile from local cache (offline).")
+                    return cachedUser
+                }
+            } catch (e: Exception) {
+                // ignore and fallback
+            }
+        }
+
+        // 3. Fallback to local asset if offline or not in Firebase and no cache exists
         val localUser = loadUsersFromAssets().find { it.email.equals(email, ignoreCase = true) }
         if (localUser != null) {
             return localUser

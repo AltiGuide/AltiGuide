@@ -114,9 +114,7 @@ dependencies {
     // ZXing (QR Code generation)
     implementation(libs.zxing.core)
 
-    // Google Maps SDK
-    implementation("com.google.android.gms:play-services-maps:19.0.0")
-    implementation("com.google.maps.android:maps-compose:4.3.3")
+    // Google Maps SDK removed — using OSMDroid instead (offline support, no API key needed)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

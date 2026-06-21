@@ -1,4 +1,4 @@
-package com.example.altiguide_mobile.ui.home
+﻿package com.example.altiguide_mobile.ui.home
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -42,6 +43,7 @@ import com.example.altiguide_mobile.R
 import androidx.compose.foundation.lazy.LazyColumn
 import com.example.altiguide_mobile.data.model.MountainModel
 import com.example.altiguide_mobile.data.model.TransactionModel
+import com.example.altiguide_mobile.data.model.UserModel
 import com.example.altiguide_mobile.ui.profile.EditProfileScreen
 import com.example.altiguide_mobile.ui.profile.ProfileScreen
 import com.example.altiguide_mobile.ui.profile.ProfileViewModel
@@ -310,7 +312,7 @@ fun HomeScreen(
     var searchQuery by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = {
-        (mountainsState as? UiState.Success)?.data?.size ?: 0
+        (mountainsState as? UiState.Success<List<MountainModel>>)?.data?.size ?: 0
     })
     val profileViewModel: ProfileViewModel = hiltViewModel()
     val profileState by profileViewModel.profileState.collectAsState()
@@ -322,7 +324,7 @@ fun HomeScreen(
 
     LaunchedEffect(pagerState.currentPage, mountainsState) {
         val state = mountainsState
-        if (state is UiState.Success) {
+        if (state is UiState.Success<List<MountainModel>>) {
             val mountains = state.data
             if (pagerState.currentPage in mountains.indices) {
                 val activeMountain = mountains[pagerState.currentPage]
@@ -335,11 +337,11 @@ fun HomeScreen(
     }
 
     val displayName = remember(profileState) {
-        when (val state = profileState) {
-            is UiState.Success -> {
-                state.data.name.trim().split("\\s+".toRegex()).firstOrNull() ?: userName
-            }
-            else -> userName
+        val state = profileState
+        if (state is UiState.Success<UserModel>) {
+            state.data.name.trim().split("\\s+".toRegex()).firstOrNull() ?: userName
+        } else {
+            userName
         }
     }
 
@@ -387,7 +389,7 @@ fun HomeScreen(
                                 }
                             }
                         }
-                        is UiState.Success -> {
+                        is UiState.Success<MountainModel> -> {
                             MountainArticleScreen(
                                 mountain = detailState.data,
                                 onBack = {
@@ -403,728 +405,26 @@ fun HomeScreen(
                         }
                     }
                 } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(bottom = 90.dp)
-                    ) {
-                    // ── Header ─────────────────────────────────────────────
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 20.dp, end = 20.dp, top = 52.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Hello, $displayName",
-                                fontFamily = Montserrat,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
-                                color = AltiDark,
-                                lineHeight = 24.sp
-                            )
-                            Text(
-                                text = "Where would you like to go?",
-                                fontFamily = Montserrat,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 12.sp,
-                                color = AltiDark.copy(alpha = 0.7f)
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.35f))
-                                .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape)
-                                .clickable {
-                                    selectedTab = 3
-                                    showEditProfile = true
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val user = (profileState as? UiState.Success)?.data
-                            val imageUrl = user?.let { if (!it.avatar_url.isNullOrEmpty()) it.avatar_url else it.image }
-                            if (!imageUrl.isNullOrEmpty()) {
-                                SubcomposeAsyncImage(
-                                    model = imageUrl,
-                                    contentDescription = "Profile",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop,
-                                    loading = {
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            CircularProgressIndicator(
-                                                color = Color.White,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    },
-                                    error = {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.logo_altiguide),
-                                            contentDescription = "Profile",
-                                            modifier = Modifier
-                                                .size(30.dp)
-                                                .clip(CircleShape)
-                                        )
-                                    }
-                                )
-                            } else {
-                                Image(
-                                    painter = painterResource(id = R.drawable.logo_altiguide),
-                                    contentDescription = "Profile",
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .clip(CircleShape)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    val mountains = (mountainsState as? UiState.Success)?.data ?: emptyList()
-                    val filteredMountains = remember(searchQuery, mountains) {
-                        if (searchQuery.isBlank()) emptyList()
-                        else mountains.filter { it.name.contains(searchQuery, ignoreCase = true) }
-                    }
-                    val filteredRoutes = remember(searchQuery, mountains) {
-                        if (searchQuery.isBlank()) emptyList()
-                        else {
-                            mountains.flatMap { mountain ->
-                                (mountain.routes ?: emptyList()).map { route ->
-                                    route.copy(mountain = mountain)
-                                }
-                            }.filter { route ->
-                                route.name.contains(searchQuery, ignoreCase = true) ||
-                                (route.mountain?.name ?: "").contains(searchQuery, ignoreCase = true)
-                            }
-                        }
-                    }
-                    val showSuggestions = searchQuery.isNotBlank() && (filteredMountains.isNotEmpty() || filteredRoutes.isNotEmpty())
-
-                    // ── Search & Suggestions Container ──────────────────────
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                    ) {
-                        Column {
-                            // Search Input Field
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                placeholder = {
-                                    Text(
-                                        text = "Search mountains or routes...",
-                                        fontFamily = Montserrat,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 12.sp,
-                                        color = AltiMedium
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = IconSearch,
-                                        contentDescription = "Search",
-                                        tint = AltiMedium,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (searchQuery.isNotEmpty()) {
-                                        IconButton(onClick = { searchQuery = "" }) {
-                                            Text(
-                                                text = "✕",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 14.sp,
-                                                color = AltiMedium
-                                            )
-                                        }
-                                    }
-                                },
-                                singleLine = true,
-                                shape = RoundedCornerShape(23.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = SearchBg.copy(alpha = 0.95f),
-                                    unfocusedContainerColor = SearchBg.copy(alpha = 0.85f),
-                                    focusedBorderColor = AltiMedium,
-                                    unfocusedBorderColor = Color.Transparent,
-                                    focusedTextColor = AltiDark,
-                                    unfocusedTextColor = AltiDark
-                                ),
-                                textStyle = LocalTextStyle.current.copy(
-                                    fontFamily = Montserrat,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 12.sp
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(48.dp)
-                            )
-
-                            // Suggestions Dropdown Card
-                            if (showSuggestions) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight(),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(containerColor = SearchBg.copy(alpha = 0.98f)),
-                                    border = BorderStroke(1.dp, AltiMedium.copy(alpha = 0.3f)),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-                                ) {
-                                    LazyColumn(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .heightIn(max = 280.dp)
-                                            .padding(vertical = 8.dp)
-                                    ) {
-                                        // Mountains Group
-                                        if (filteredMountains.isNotEmpty()) {
-                                            item {
-                                                Text(
-                                                    text = "GUNUNG",
-                                                    fontFamily = Montserrat,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 10.sp,
-                                                    color = AltiMedium,
-                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                                                )
-                                            }
-                                            items(filteredMountains.size) { idx ->
-                                                val mountain = filteredMountains[idx]
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .clickable {
-                                                            selectedMountainForArticle = mountain
-                                                            searchQuery = ""
-                                                        }
-                                                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Text(
-                                                        text = " ",
-                                                        fontSize = 14.sp
-                                                    )
-                                                    Column {
-                                                        Text(
-                                                            text = mountain.name,
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            fontSize = 13.sp,
-                                                            color = AltiDark
-                                                        )
-                                                        Text(
-                                                            text = "${mountain.altitude ?: 3000} mdpl • ${mountain.province ?: "Jawa"}",
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 10.sp,
-                                                            color = AltiDark.copy(alpha = 0.6f)
-                                                        )
-                                                    }
-                                                }
-                                                if (idx < filteredMountains.lastIndex || filteredRoutes.isNotEmpty()) {
-                                                    HorizontalDivider(color = AltiMedium.copy(alpha = 0.15f), thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
-                                                }
-                                            }
-                                        }
-
-                                        // Routes Group
-                                        if (filteredRoutes.isNotEmpty()) {
-                                            item {
-                                                Text(
-                                                    text = "JALUR PENDAKIAN",
-                                                    fontFamily = Montserrat,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 10.sp,
-                                                    color = AltiMedium,
-                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                                                )
-                                            }
-                                            items(filteredRoutes.size) { idx ->
-                                                val route = filteredRoutes[idx]
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .clickable {
-                                                            viewModel.selectRoute(route)
-                                                            selectedTab = 1 // Navigate to Navigation Screen tab!
-                                                            searchQuery = ""
-                                                        }
-                                                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Text(
-                                                        text = "  ",
-                                                        fontSize = 14.sp
-                                                    )
-                                                    Column {
-                                                        Text(
-                                                            text = "${route.mountain?.name ?: "Gunung"} via ${route.name}",
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            fontSize = 13.sp,
-                                                            color = AltiDark
-                                                        )
-                                                        Text(
-                                                            text = "Jalur ${route.difficulty ?: "Sedang"} • Estimasi ${route.duration_hours?.toInt() ?: 7} jam",
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 10.sp,
-                                                            color = AltiDark.copy(alpha = 0.6f)
-                                                        )
-                                                    }
-                                                }
-                                                if (idx < filteredRoutes.lastIndex) {
-                                                    HorizontalDivider(color = AltiMedium.copy(alpha = 0.15f), thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(22.dp))
-
-                    // ── Section Header (See All removed) ─────────────────────
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Find Your Summit!",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = AltiDark
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // ── Mountains State ─────────────────────────────────────
-                    when (val state = mountainsState) {
-                        is UiState.Loading, is UiState.Idle -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(300.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(color = AltiDark)
-                            }
-                        }
-                        is UiState.Error -> {
-                            val errorMsg = state.message
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(300.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "Gagal memuat data",
-                                        fontFamily = Montserrat,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp,
-                                        color = AltiDark
-                                    )
-                                    Text(
-                                        text = errorMsg,
-                                        fontFamily = Montserrat,
-                                        fontWeight = FontWeight.Normal,
-                                        fontSize = 11.sp,
-                                        color = AltiDark.copy(alpha = 0.6f),
-                                        modifier = Modifier.padding(horizontal = 32.dp, vertical = 4.dp),
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Button(
-                                        onClick = { viewModel.fetchMountains() },
-                                        colors = ButtonDefaults.buttonColors(containerColor = AltiDark)
-                                    ) {
-                                        Text("Coba Lagi", color = Color.White, fontFamily = Montserrat)
-                                    }
-                                }
-                            }
-                        }
-                        is UiState.Success -> {
-                            val mountains = state.data
-                            val cardWidth = LocalConfiguration.current.screenWidthDp.dp - 48.dp
-
-                            HorizontalPager(
-                                state = pagerState,
-                                contentPadding = PaddingValues(horizontal = 24.dp),
-                                pageSpacing = 12.dp,
-                                modifier = Modifier.fillMaxWidth()
-                            ) { page ->
-                                val mountain = mountains[page]
-                                MountainCard(
-                                    mountain = mountain,
-                                    cardWidth = cardWidth,
-                                    onClick = {
-                                        if (pagerState.currentPage == page) {
-                                            selectedMountainForArticle = mountain
-                                        } else {
-                                            scope.launch {
-                                                pagerState.animateScrollToPage(page)
-                                            }
-                                        }
-                                    }
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                mountains.forEachIndexed { index, _ ->
-                                    val dotSize by animateDpAsState(
-                                        targetValue = if (pagerState.currentPage == index) 10.dp else 7.dp,
-                                        label = "dot_size_$index"
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(horizontal = 3.dp)
-                                            .size(dotSize)
-                                            .clip(CircleShape)
-                                            .background(
-                                                if (pagerState.currentPage == index) Color.White
-                                                else Color.White.copy(alpha = 0.4f)
-                                            )
-                                            .clickable {
-                                                scope.launch {
-                                                    pagerState.animateScrollToPage(index)
-                                                }
-                                            }
-                                    )
-                                }
-                            }
-
-                            // ── Prakiraan Cuaca Mingguan ───────────────────
-                            Spacer(modifier = Modifier.height(26.dp))
-
-                            val currentMountainName = mountains.getOrNull(pagerState.currentPage)?.name?.replace("Gunung ", "") ?: ""
-
-                            Text(
-                                text = "Prakiraan Cuaca - $currentMountainName",
-                                fontFamily = Montserrat,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = AltiDark,
-                                modifier = Modifier.padding(horizontal = 20.dp)
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "Prakiraan cuaca 7 hari ke depan berdasarkan posisi puncak",
-                                fontFamily = Montserrat,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 11.sp,
-                                color = AltiDark.copy(alpha = 0.7f),
-                                modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp)
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.background_frame_rekap_cuaca),
-                                    contentDescription = null,
-                                    modifier = Modifier.matchParentSize(),
-                                    contentScale = ContentScale.FillBounds
-                                )
-
-                                when (val weatherState = activeWeatherState) {
-                                    is UiState.Loading -> {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(180.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            CircularProgressIndicator(color = Color.White)
-                                        }
-                                    }
-                                    is UiState.Error -> {
-                                        // Fallback to mock data for both Hourly & Daily Forecast
-                                        val calendar = java.util.Calendar.getInstance()
-                                        val todayIndex = calendar.get(java.util.Calendar.DAY_OF_WEEK) - 1
-                                        val daysOfWeek = listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
-                                        val daysList = List(7) { i ->
-                                            daysOfWeek[(todayIndex + i) % 7]
-                                        }
-                                        val hourlyMocks = getHourlyMockList(todayIndex)
-
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp)
-                                        ) {
-                                            // ── Hourly Section ──
-                                            Text(
-                                                text = "Hourly Forecast",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp,
-                                                color = Color.White,
-                                                modifier = Modifier.padding(bottom = 8.dp)
-                                            )
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .horizontalScroll(rememberScrollState()),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                            ) {
-                                                hourlyMocks.forEach { mock ->
-                                                    Column(
-                                                        modifier = Modifier.width(60.dp),
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = mock.time,
-                                                            color = Color.White.copy(alpha = 0.9f),
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 9.sp
-                                                        )
-                                                        Text(
-                                                            text = mock.emoji,
-                                                            fontSize = 16.sp
-                                                        )
-                                                        Text(
-                                                            text = "${mock.temp}°",
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            fontSize = 10.sp,
-                                                            color = Color.White
-                                                        )
-                                                    }
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.height(14.dp))
-                                            HorizontalDivider(color = Color.White.copy(alpha = 0.2f), thickness = 1.dp)
-                                            Spacer(modifier = Modifier.height(12.dp))
-
-                                            // ── Daily Section ──
-                                            Text(
-                                                text = "Weekly Forecast",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp,
-                                                color = Color.White,
-                                                modifier = Modifier.padding(bottom = 8.dp)
-                                            )
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .horizontalScroll(rememberScrollState()),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                            ) {
-                                                daysList.forEachIndexed { dayIndex, dayName ->
-                                                    val mock = getWeatherMock(pagerState.currentPage, dayIndex)
-                                                    Column(
-                                                        modifier = Modifier.width(60.dp),
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = dayName,
-                                                            color = Color.White.copy(alpha = 0.9f),
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 9.sp
-                                                        )
-                                                        Text(
-                                                            text = mock.emoji,
-                                                            fontSize = 16.sp
-                                                        )
-                                                        Text(
-                                                            text = "${mock.tempMax}° - ${mock.tempMin}°",
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            fontSize = 10.sp,
-                                                            color = Color.White
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    is UiState.Success -> {
-                                        val weatherData = weatherState.data.data
-                                        val daily = weatherData?.daily
-                                        val hourly = weatherData?.hourly
-
-                                        val calendar = java.util.Calendar.getInstance()
-                                        val currentHour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
-                                        val todayIndex = calendar.get(java.util.Calendar.DAY_OF_WEEK) - 1
-                                        val daysOfWeek = listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
-                                        val daysList = List(7) { i ->
-                                            daysOfWeek[(todayIndex + i) % 7]
-                                        }
-
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp)
-                                        ) {
-                                            // ── Hourly Section ──
-                                            Text(
-                                                text = "Hourly Forecast",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp,
-                                                color = Color.White,
-                                                modifier = Modifier.padding(bottom = 8.dp)
-                                            )
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .horizontalScroll(rememberScrollState()),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                            ) {
-                                                // Show next 6 hours
-                                                for (i in 0..5) {
-                                                    val targetHourIndex = (currentHour + i) % 24
-                                                    val timeString = hourly?.time?.getOrNull(targetHourIndex) ?: ""
-                                                    val temp = hourly?.temperature_2m?.getOrNull(targetHourIndex)?.toInt() ?: 20
-                                                    val weatherCode = hourly?.weathercode?.getOrNull(targetHourIndex) ?: 0
-
-                                                    val emoji = when (weatherCode) {
-                                                        0 -> "☀️"
-                                                        1, 2, 3 -> "⛅"
-                                                        45, 48 -> "🌫️"
-                                                        51, 53, 55, 61, 63, 65, 80, 81, 82 -> "🌧️"
-                                                        71, 73, 75 -> "❄️"
-                                                        95, 96, 99 -> "⛈️"
-                                                        else -> "⛅"
-                                                    }
-
-                                                    val displayTime = if (timeString.isNotEmpty()) formatHourlyTime(timeString) else "${targetHourIndex.toString().padStart(2, '0')}:00"
-
-                                                    Column(
-                                                        modifier = Modifier.width(60.dp),
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = displayTime,
-                                                            color = Color.White.copy(alpha = 0.9f),
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 9.sp
-                                                        )
-                                                        Text(
-                                                            text = emoji,
-                                                            fontSize = 16.sp
-                                                        )
-                                                        Text(
-                                                            text = "${temp}°",
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            fontSize = 10.sp,
-                                                            color = Color.White
-                                                        )
-                                                    }
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.height(14.dp))
-                                            HorizontalDivider(color = Color.White.copy(alpha = 0.2f), thickness = 1.dp)
-                                            Spacer(modifier = Modifier.height(12.dp))
-
-                                            // ── Daily Section ──
-                                            Text(
-                                                text = "Weekly Forecast",
-                                                fontFamily = Montserrat,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp,
-                                                color = Color.White,
-                                                modifier = Modifier.padding(bottom = 8.dp)
-                                            )
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .horizontalScroll(rememberScrollState()),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                            ) {
-                                                daysList.forEachIndexed { dayIndex, dayName ->
-                                                    val weatherCode = daily?.weathercode?.getOrNull(dayIndex) ?: 0
-                                                    val tempMax = daily?.temperature_2m_max?.getOrNull(dayIndex)?.toInt() ?: 20
-                                                    val tempMin = daily?.temperature_2m_min?.getOrNull(dayIndex)?.toInt() ?: 14
-
-                                                    val emoji = when (weatherCode) {
-                                                        0 -> "☀️"
-                                                        1, 2, 3 -> "⛅"
-                                                        45, 48 -> "🌫️"
-                                                        51, 53, 55, 61, 63, 65, 80, 81, 82 -> "🌧️"
-                                                        71, 73, 75 -> "❄️"
-                                                        95, 96, 99 -> "⛈️"
-                                                        else -> "⛅"
-                                                    }
-
-                                                    Column(
-                                                        modifier = Modifier.width(60.dp),
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = dayName,
-                                                            color = Color.White.copy(alpha = 0.9f),
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 9.sp
-                                                        )
-                                                        Text(
-                                                            text = emoji,
-                                                            fontSize = 16.sp
-                                                        )
-                                                        Text(
-                                                            text = "${tempMax}° - ${tempMin}°",
-                                                            fontFamily = Montserrat,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            fontSize = 10.sp,
-                                                            color = Color.White
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    else -> {}
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
+                    ExploreTabContent(
+                        displayName = displayName,
+                        profileState = profileState,
+                        mountainsState = mountainsState,
+                        activeWeatherState = activeWeatherState,
+                        pagerState = pagerState,
+                        scope = scope,
+                        onAvatarClick = {
+                            selectedTab = 3
+                            showEditProfile = true
+                        },
+                        onMountainSelected = { mountain ->
+                            selectedMountainForArticle = mountain
+                        },
+                        onNavigateToRoute = { route ->
+                            viewModel.selectRoute(route)
+                            selectedTab = 1
+                        },
+                        viewModel = viewModel
+                    )
                 }
             }
             1 -> {
@@ -1177,7 +477,7 @@ fun HomeScreen(
                                     }
                                 }
                             }
-                            is UiState.Success -> {
+                            is UiState.Success<List<TransactionModel>> -> {
                                 val transactions = state.data
                                 if (transactions.isEmpty()) {
                                     EmptyBookingsState()
@@ -1208,7 +508,7 @@ fun HomeScreen(
             }
             3 -> {
                 if (showEditProfile) {
-                    val user = (profileState as? UiState.Success)?.data
+                    val user = (profileState as? UiState.Success<UserModel>)?.data
                     if (user != null) {
                         EditProfileScreen(
                             user = user,
@@ -1275,7 +575,7 @@ fun HomeScreen(
 
 // ── Mountain Card ───────────────────────────────────────────────────────────
 @Composable
-private fun MountainCard(
+internal fun MountainCard(
     mountain: MountainModel,
     cardWidth: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit
@@ -1430,21 +730,23 @@ private fun NavItem(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 8.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
             tint = if (isSelected) Color.White else AltiLight,
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier.size(20.dp)
         )
-        Spacer(modifier = Modifier.height(3.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = label,
             fontFamily = Montserrat,
             fontWeight = FontWeight.Medium,
-            fontSize = 12.sp,
-            color = if (isSelected) Color.White else AltiLight
+            fontSize = 10.sp,
+            color = if (isSelected) Color.White else AltiLight,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }
@@ -1469,9 +771,9 @@ private fun getMountainDrawable(name: String): Int {
     }
 }
 
-private data class WeatherMock(val emoji: String, val tempMax: Int, val tempMin: Int)
+internal data class WeatherMock(val emoji: String, val tempMax: Int, val tempMin: Int)
 
-private fun getWeatherMock(mountainIndex: Int, dayIndex: Int): WeatherMock {
+internal fun getWeatherMock(mountainIndex: Int, dayIndex: Int): WeatherMock {
     val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️")
     val hash = (mountainIndex * 7 + dayIndex) % 5
     val emoji = emojis[hash]
@@ -1494,9 +796,9 @@ private fun getWeatherMock(mountainIndex: Int, dayIndex: Int): WeatherMock {
     return WeatherMock(emoji, max, min)
 }
 
-private data class HourlyMock(val time: String, val emoji: String, val temp: Int)
+internal data class HourlyMock(val time: String, val emoji: String, val temp: Int)
 
-private fun getHourlyMockList(dayIndex: Int): List<HourlyMock> {
+internal fun getHourlyMockList(dayIndex: Int): List<HourlyMock> {
     val times = listOf("05:00 AM", "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM")
     val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️", "⛅")
     val temps = listOf(22, 18, 16, 19, 23, 25)
@@ -1507,7 +809,7 @@ private fun getHourlyMockList(dayIndex: Int): List<HourlyMock> {
     }
 }
 
-private fun formatHourlyTime(isoTime: String): String {
+internal fun formatHourlyTime(isoTime: String): String {
     val timePart = isoTime.substringAfter('T', "")
     if (timePart.isEmpty()) return isoTime
     try {
@@ -2064,3 +1366,24 @@ private fun DetailInfoItem(label: String, value: String) {
         )
     }
 }
+
+internal fun getAvatarModelForUser(user: UserModel?): Any? {
+    if (user == null) return null
+    val base64 = user.image
+    if (!base64.isNullOrEmpty() && base64.startsWith("data:image")) {
+        try {
+            val cleanString = if (base64.contains(",")) base64.substring(base64.indexOf(",") + 1) else base64
+            val decodedBytes = android.util.Base64.decode(cleanString, android.util.Base64.DEFAULT)
+            return android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+        } catch (e: Exception) {
+            // fallback
+        }
+    }
+    val url = if (!user.avatar_url.isNullOrEmpty()) user.avatar_url else user.image
+    if (url.isNullOrEmpty()) return null
+    return url.replace("localhost", "10.0.2.2").replace("127.0.0.1", "10.0.2.2")
+}
+
+
+
+
