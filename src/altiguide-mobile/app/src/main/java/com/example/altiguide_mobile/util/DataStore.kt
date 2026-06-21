@@ -13,6 +13,7 @@ class AuthDataStore(private val context: Context) {
     companion object {
         val TOKEN_KEY = stringPreferencesKey("auth_token")
         val EMAIL_KEY = stringPreferencesKey("auth_email")
+        val USER_PROFILE_KEY = stringPreferencesKey("user_profile_json")
     }
 
     val authTokenFlow: Flow<String> = context.dataStore.data.map { preferences ->
@@ -21,6 +22,10 @@ class AuthDataStore(private val context: Context) {
 
     val authEmailFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[EMAIL_KEY] ?: ""
+    }
+
+    val userProfileFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[USER_PROFILE_KEY] ?: ""
     }
 
     suspend fun saveToken(token: String) {
@@ -35,6 +40,12 @@ class AuthDataStore(private val context: Context) {
         }
     }
 
+    suspend fun saveUserProfile(userJson: String) {
+        context.dataStore.edit { preferences ->
+            preferences[USER_PROFILE_KEY] = userJson
+        }
+    }
+
     suspend fun saveAuthData(token: String, email: String) {
         context.dataStore.edit { preferences ->
             preferences[TOKEN_KEY] = token
@@ -46,6 +57,7 @@ class AuthDataStore(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences.remove(TOKEN_KEY)
             preferences.remove(EMAIL_KEY)
+            preferences.remove(USER_PROFILE_KEY)
         }
     }
 }

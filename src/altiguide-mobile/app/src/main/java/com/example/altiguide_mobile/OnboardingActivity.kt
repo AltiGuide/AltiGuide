@@ -12,7 +12,7 @@ class OnboardingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply onboarding theme (fullscreen, no action bar)
-        setTheme(R.style.Theme_Altiguidemobile_Splash)
+        setTheme(R.style.Theme_Altiguidemobile_Onboarding)
         super.onCreate(savedInstanceState)
 
         binding = ActivityOnboardingBinding.inflate(layoutInflater)

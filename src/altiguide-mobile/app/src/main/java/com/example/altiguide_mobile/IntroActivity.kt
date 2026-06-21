@@ -14,7 +14,7 @@ class IntroActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply the fullscreen splash theme
-        setTheme(R.style.Theme_Altiguidemobile_Splash)
+        setTheme(R.style.Theme_Altiguidemobile_Onboarding)
         super.onCreate(savedInstanceState)
 
         binding = ActivityIntroBinding.inflate(layoutInflater)

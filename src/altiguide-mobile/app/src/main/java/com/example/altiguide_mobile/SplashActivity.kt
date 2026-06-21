@@ -44,7 +44,7 @@ class SplashActivity : AppCompatActivity() {
             }
             val intent = Intent(this@SplashActivity, destination)
             startActivity(intent)
-            // overridePendingTransition(0, 0)
+            overridePendingTransition(0, 0)
             finish()
         }
     }

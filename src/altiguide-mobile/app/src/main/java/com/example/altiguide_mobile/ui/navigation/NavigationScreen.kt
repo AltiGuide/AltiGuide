@@ -48,17 +48,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.ui.viewinterop.AndroidView
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
@@ -71,6 +61,20 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+// ── OSMDroid imports ──────────────────────────────────────────────────────────
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import android.graphics.drawable.Drawable
+import androidx.core.graphics.drawable.DrawableCompat
+import android.graphics.Color as AndroidColor
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 // ── Design color tokens ─────────────────────────────────────────────────────
 private val AltiDark      = Color(0xFF20341B)
@@ -489,16 +493,16 @@ private fun RoutePill(
     }
 }
 
-private fun parseTrackCoordinates(element: com.google.gson.JsonElement?): List<LatLng> {
+private fun parseTrackCoordinates(element: com.google.gson.JsonElement?): List<GeoPoint> {
     if (element == null || !element.isJsonArray) return emptyList()
-    val list = mutableListOf<LatLng>()
+    val list = mutableListOf<GeoPoint>()
     try {
         val array = element.asJsonArray
         for (i in 0 until array.size()) {
             val pt = array.get(i).asJsonArray
             val lat = pt.get(0).asDouble
             val lng = pt.get(1).asDouble
-            list.add(LatLng(lat, lng))
+            list.add(GeoPoint(lat, lng))
         }
     } catch (e: Exception) {
         android.util.Log.e("TrackCoordinates", "Error parsing track coordinates", e)
@@ -539,17 +543,20 @@ private fun RouteDetailNavigationScreen(
 
     // Active Navigation states
     var isNavigating by remember { mutableStateOf(false) }
-    var userLocation by remember { mutableStateOf<LatLng?>(null) }
+    var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
     var userAltitude by remember { mutableStateOf(0.0) }
     var currentWaypointIndex by remember { mutableStateOf(0) }
     var phoneAzimuth by remember { mutableStateOf(0f) }
+
+    // MapView reference for imperative camera control
+    val mapViewRef = remember { mutableStateOf<MapView?>(null) }
 
     // Location manager
     val locationManager = remember { context.getSystemService(Context.LOCATION_SERVICE) as LocationManager }
     val locationListener = remember {
         object : android.location.LocationListener {
             override fun onLocationChanged(location: Location) {
-                userLocation = LatLng(location.latitude, location.longitude)
+                userLocation = GeoPoint(location.latitude, location.longitude)
                 userAltitude = location.altitude
             }
             override fun onProviderEnabled(provider: String) {}
@@ -579,7 +586,6 @@ private fun RouteDetailNavigationScreen(
                     System.arraycopy(event.values, 0, lastGeomagnetic, 0, event.values.size)
                     hasGeomagnetic = true
                 }
-
                 if (hasGravity && hasGeomagnetic) {
                     val r = FloatArray(9)
                     val i = FloatArray(9)
@@ -593,7 +599,6 @@ private fun RouteDetailNavigationScreen(
                     }
                 }
             }
-
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
     }
@@ -604,9 +609,7 @@ private fun RouteDetailNavigationScreen(
             accelerometer?.let { sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI) }
             magnetometer?.let { sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI) }
         }
-        onDispose {
-            sensorManager.unregisterListener(sensorEventListener)
-        }
+        onDispose { sensorManager.unregisterListener(sensorEventListener) }
     }
 
     // Permission Launcher
@@ -615,11 +618,8 @@ private fun RouteDetailNavigationScreen(
     ) { permissions ->
         val fineGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] ?: false
         val coarseGranted = permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-        if (fineGranted || coarseGranted) {
-            isNavigating = true
-        } else {
-            Toast.makeText(context, "Izin lokasi diperlukan untuk navigasi offline.", Toast.LENGTH_SHORT).show()
-        }
+        if (fineGranted || coarseGranted) isNavigating = true
+        else Toast.makeText(context, "Izin lokasi diperlukan untuk navigasi offline.", Toast.LENGTH_SHORT).show()
     }
 
     // Register Location GPS
@@ -629,16 +629,11 @@ private fun RouteDetailNavigationScreen(
             val coarse = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
             if (fine || coarse) {
                 try {
-                    locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER,
-                        5000L,
-                        2f,
-                        locationListener
-                    )
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000L, 2f, locationListener)
                     val lastKnown = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                         ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
                     lastKnown?.let {
-                        userLocation = LatLng(it.latitude, it.longitude)
+                        userLocation = GeoPoint(it.latitude, it.longitude)
                         userAltitude = it.altitude
                     }
                 } catch (e: SecurityException) {
@@ -648,35 +643,40 @@ private fun RouteDetailNavigationScreen(
                 }
             }
         }
-        onDispose {
-            locationManager.removeUpdates(locationListener)
-        }
+        onDispose { locationManager.removeUpdates(locationListener) }
     }
 
-    // Parse coordinates and define camera state
+    // Parse coordinates from mountains.json assets (fully offline)
     val trackPoints = remember(route) { parseTrackCoordinates(route.trackCoordinates) }
     val routeCenter = remember(trackPoints) {
         if (trackPoints.isNotEmpty()) trackPoints[trackPoints.size / 2]
-        else LatLng(route.latitude ?: -7.4556, route.longitude ?: 110.4389)
+        else GeoPoint(route.latitude ?: -7.4556, route.longitude ?: 110.4389)
     }
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(routeCenter, 13f)
-    }
-
-    // Auto-fit path bounds on map load (only when not active navigating)
+    // Auto-fit path bounds on map load via MapView controller
     LaunchedEffect(trackPoints) {
         if (!isNavigating && trackPoints.isNotEmpty()) {
-            try {
-                val builder = LatLngBounds.Builder()
-                trackPoints.forEach { builder.include(it) }
-                val bounds = builder.build()
-                cameraPositionState.animate(
-                    CameraUpdateFactory.newLatLngBounds(bounds, 80),
-                    1000
-                )
-            } catch (e: Exception) {
-                cameraPositionState.position = CameraPosition.fromLatLngZoom(routeCenter, 13f)
+            mapViewRef.value?.let { mv ->
+                // Compute bounding box center and zoom to fit
+                val minLat = trackPoints.minOf { it.latitude }
+                val maxLat = trackPoints.maxOf { it.latitude }
+                val minLon = trackPoints.minOf { it.longitude }
+                val maxLon = trackPoints.maxOf { it.longitude }
+                val centerLat = (minLat + maxLat) / 2.0
+                val centerLon = (minLon + maxLon) / 2.0
+                mv.controller.setCenter(GeoPoint(centerLat, centerLon))
+                // Calculate zoom level to fit the bounding box
+                val latSpan = maxLat - minLat
+                val lonSpan = maxLon - minLon
+                val span = maxOf(latSpan, lonSpan)
+                val zoom = when {
+                    span < 0.01 -> 15.0
+                    span < 0.05 -> 13.0
+                    span < 0.1  -> 12.0
+                    span < 0.5  -> 10.0
+                    else        -> 9.0
+                }
+                mv.controller.setZoom(zoom)
             }
         }
     }
@@ -684,10 +684,8 @@ private fun RouteDetailNavigationScreen(
     // Auto-center camera on user location when navigating
     LaunchedEffect(userLocation, isNavigating) {
         if (isNavigating && userLocation != null) {
-            cameraPositionState.animate(
-                CameraUpdateFactory.newLatLngZoom(userLocation!!, 15f),
-                1000
-            )
+            mapViewRef.value?.controller?.animateTo(userLocation)
+            mapViewRef.value?.controller?.setZoom(15.0)
         }
     }
 
@@ -1385,54 +1383,86 @@ private fun RouteDetailNavigationScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-            // 1. Google Maps View
-            GoogleMap(
+            // 1. OSMDroid Map View (offline-capable OpenStreetMap)
+            AndroidView(
                 modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState,
-                uiSettings = MapUiSettings(
-                    zoomControlsEnabled = false,
-                    myLocationButtonEnabled = false,
-                    compassEnabled = true
-                )
-            ) {
-                if (trackPoints.isNotEmpty()) {
-                    Polyline(
-                        points = trackPoints,
-                        color = Color(0xFFEA4335), // Red line for trail path
-                        width = 8f
-                    )
-                }
+                factory = { ctx ->
+                    MapView(ctx).apply {
+                        setTileSource(TileSourceFactory.MAPNIK)
+                        setMultiTouchControls(true)
+                        setBuiltInZoomControls(false)
+                        // Allow data connection for tile download (auto-cached after first load)
+                        setUseDataConnection(true)
+                        // Set initial zoom and center
+                        controller.setZoom(13.0)
+                        controller.setCenter(routeCenter)
+                        mapViewRef.value = this
+                    }
+                },
+                update = { mapView ->
+                    mapView.overlays.clear()
 
-                // Waypoint Markers
-                val waypoints = route.waypoints ?: emptyList()
-                waypoints.forEachIndexed { index, pos ->
-                    val posLatLng = LatLng(pos.latitude ?: 0.0, pos.longitude ?: 0.0)
-                    if (pos.latitude != null && pos.longitude != null && pos.latitude != 0.0) {
-                        Marker(
-                            state = MarkerState(position = posLatLng),
-                            title = pos.name,
-                            snippet = "${pos.altitude ?: 0} mdpl",
-                            icon = BitmapDescriptorFactory.defaultMarker(
-                                if (index == 0) BitmapDescriptorFactory.HUE_GREEN
-                                else if (index == (waypoints.size - 1)) BitmapDescriptorFactory.HUE_RED
-                                else BitmapDescriptorFactory.HUE_AZURE
-                            )
-                        )
+                    // ── Draw track polyline (from mountains.json, 100% offline) ──
+                    if (trackPoints.isNotEmpty()) {
+                        val polyline = Polyline(mapView).apply {
+                            setPoints(trackPoints)
+                            outlinePaint.color = AndroidColor.parseColor("#EA4335") // red trail
+                            outlinePaint.strokeWidth = 10f
+                            outlinePaint.isAntiAlias = true
+                        }
+                        mapView.overlays.add(polyline)
+                    }
+
+                    // ── Draw waypoint markers ──
+                    val waypoints = route.waypoints ?: emptyList()
+                    waypoints.forEachIndexed { index, pos ->
+                        if (pos.latitude != null && pos.longitude != null && pos.latitude != 0.0) {
+                            val markerColor = when {
+                                index == 0                    -> AndroidColor.parseColor("#34A853") // green = start
+                                index == waypoints.size - 1   -> AndroidColor.parseColor("#EA4335") // red = summit
+                                else                          -> AndroidColor.parseColor("#4285F4") // blue = intermediate
+                            }
+                            val marker = Marker(mapView).apply {
+                                position = GeoPoint(pos.latitude, pos.longitude)
+                                title = pos.name
+                                snippet = "${pos.altitude ?: 0} mdpl"
+                                // Build a tinted circle bitmap as marker icon
+                                icon = buildColoredMarkerIcon(context, markerColor)
+                                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                            }
+                            mapView.overlays.add(marker)
+                        }
+                    }
+
+                    // ── Live user location overlay (when navigating) ──
+                    if (isNavigating) {
+                        val myLocationOverlay = MyLocationNewOverlay(
+                            GpsMyLocationProvider(context), mapView
+                        ).apply {
+                            enableMyLocation()
+                            enableFollowLocation()
+                        }
+                        mapView.overlays.add(myLocationOverlay)
+                    }
+
+                    mapView.invalidate()
+                }
+            )
+
+            // Lifecycle management for OSMDroid MapView
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    when (event) {
+                        Lifecycle.Event.ON_RESUME -> mapViewRef.value?.onResume()
+                        Lifecycle.Event.ON_PAUSE  -> mapViewRef.value?.onPause()
+                        else                       -> {}
                     }
                 }
-
-                // Live User Location Marker (Rotating blue arrow for offline navigation)
-                if (isNavigating && userLocation != null) {
-                    val arrowIcon = remember { getNavigationArrowBitmap() }
-                    Marker(
-                        state = MarkerState(position = userLocation!!),
-                        title = "Lokasi Saya",
-                        snippet = "${userAltitude.toInt()} mdpl",
-                        icon = arrowIcon,
-                        flat = true,
-                        anchor = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
-                        rotation = phoneAzimuth
-                    )
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                    mapViewRef.value?.onDetach()
                 }
             }
 
@@ -1448,12 +1478,7 @@ private fun RouteDetailNavigationScreen(
                         .size(44.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color.White.copy(alpha = 0.9f))
-                        .clickable {
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                                cameraPositionState.position.target,
-                                cameraPositionState.position.zoom + 1f
-                            )
-                        },
+                        .clickable { mapViewRef.value?.controller?.zoomIn() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text("+", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AltiDark)
@@ -1463,12 +1488,7 @@ private fun RouteDetailNavigationScreen(
                         .size(44.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color.White.copy(alpha = 0.9f))
-                        .clickable {
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                                cameraPositionState.position.target,
-                                cameraPositionState.position.zoom - 1f
-                            )
-                        },
+                        .clickable { mapViewRef.value?.controller?.zoomOut() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text("-", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AltiDark)
@@ -1842,33 +1862,23 @@ private fun OfflineCompassDial(
     }
 }
 
-private fun getNavigationArrowBitmap(): com.google.android.gms.maps.model.BitmapDescriptor {
-    val size = 64
+/**
+ * Build a colored circle Drawable to use as an OSMDroid Marker icon.
+ * Colors: green=start, red=summit, blue=intermediate waypoint.
+ */
+private fun buildColoredMarkerIcon(context: Context, color: Int): Drawable {
+    val size = 48 // px
     val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
     val canvas = android.graphics.Canvas(bitmap)
     val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
-    
-    // Draw white outer shadow/circle
-    paint.color = android.graphics.Color.WHITE
-    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, paint)
-    
-    // Draw blue inner circle
-    paint.color = android.graphics.Color.parseColor("#4285F4") // Google Blue
-    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 6f, paint)
-    
-    // Draw white arrow (chevron pointing up)
-    paint.color = android.graphics.Color.WHITE
-    val path = android.graphics.Path()
-    val cx = size / 2f
-    val cy = size / 2f
-    
-    path.moveTo(cx, cy - size / 4f) // Top tip
-    path.lineTo(cx - size / 5f, cy + size / 5f) // Bottom left
-    path.lineTo(cx, cy + size / 10f) // Center indent
-    path.lineTo(cx + size / 5f, cy + size / 5f) // Bottom right
-    path.close()
-    
-    canvas.drawPath(path, paint)
-    
-    return com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap(bitmap)
+
+    // White border
+    paint.color = AndroidColor.WHITE
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint)
+
+    // Colored fill
+    paint.color = color
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, paint)
+
+    return android.graphics.drawable.BitmapDrawable(context.resources, bitmap)
 }
