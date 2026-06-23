@@ -1,4 +1,4 @@
-﻿package com.example.altiguide_mobile.ui.home
+package com.example.altiguide_mobile.ui.home
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
@@ -47,7 +47,13 @@ import com.example.altiguide_mobile.data.model.UserModel
 import com.example.altiguide_mobile.ui.profile.EditProfileScreen
 import com.example.altiguide_mobile.ui.profile.ProfileScreen
 import com.example.altiguide_mobile.ui.profile.ProfileViewModel
+import com.example.altiguide_mobile.ui.profile.HelpCenterScreen
+import com.example.altiguide_mobile.ui.profile.AboutScreen
 import com.example.altiguide_mobile.ui.navigation.NavigationScreen
+import com.example.altiguide_mobile.ui.mountain.MountainArticleScreen
+import com.example.altiguide_mobile.ui.transaction.TicketCard
+import com.example.altiguide_mobile.ui.transaction.TicketDetailScreen
+import com.example.altiguide_mobile.ui.transaction.EmptyBookingsState
 import com.example.altiguide_mobile.util.UiState
 import androidx.compose.foundation.BorderStroke
 import coil.compose.SubcomposeAsyncImage
@@ -302,13 +308,18 @@ private val IconPin: ImageVector get() = ImageVector.Builder(
 // ── HomeScreen composable ───────────────────────────────────────────────────
 @Composable
 fun HomeScreen(
-    userName: String = "Diva",
+    userName: String = "User",
     onLogout: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val mountainsState by viewModel.mountainsState.collectAsState()
+    val selectedRoute by viewModel.selectedRoute.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
+    var enteredRouteFromExplore by remember { mutableStateOf(false) }
+    val exploreScrollState = rememberScrollState()
     var showEditProfile by remember { mutableStateOf(false) }
+    var showHelpCenter by remember { mutableStateOf(false) }
+    var showAbout by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = {
@@ -321,6 +332,24 @@ fun HomeScreen(
     var selectedMountainForArticle by remember { mutableStateOf<MountainModel?>(null) }
     var selectedTicket by remember { mutableStateOf<TransactionModel?>(null) }
     val mountainDetailState by viewModel.mountainDetailState.collectAsState()
+
+    // Save pager page explicitly BEFORE state changes, then restore in LaunchedEffect
+    val savedPagerPage = remember { mutableIntStateOf(0) }
+    LaunchedEffect(selectedTab, selectedMountainForArticle) {
+        if (selectedTab == 0 && selectedMountainForArticle == null) {
+            val page = savedPagerPage.intValue
+            if (page in 1 until pagerState.pageCount && pagerState.currentPage != page) {
+                pagerState.scrollToPage(page)
+            }
+        }
+    }
+
+    LaunchedEffect(selectedRoute) {
+        if (selectedRoute == null && enteredRouteFromExplore) {
+            selectedTab = 0
+            enteredRouteFromExplore = false
+        }
+    }
 
     LaunchedEffect(pagerState.currentPage, mountainsState) {
         val state = mountainsState
@@ -411,16 +440,20 @@ fun HomeScreen(
                         mountainsState = mountainsState,
                         activeWeatherState = activeWeatherState,
                         pagerState = pagerState,
+                        scrollState = exploreScrollState,
                         scope = scope,
                         onAvatarClick = {
                             selectedTab = 3
                             showEditProfile = true
                         },
                         onMountainSelected = { mountain ->
+                            savedPagerPage.intValue = pagerState.currentPage
                             selectedMountainForArticle = mountain
                         },
                         onNavigateToRoute = { route ->
+                            savedPagerPage.intValue = pagerState.currentPage
                             viewModel.selectRoute(route)
+                            enteredRouteFromExplore = true
                             selectedTab = 1
                         },
                         viewModel = viewModel
@@ -428,7 +461,9 @@ fun HomeScreen(
                 }
             }
             1 -> {
-                NavigationScreen(viewModel = viewModel)
+                NavigationScreen(
+                    viewModel = viewModel
+                )
             }
             2 -> {
                 val bookingsState by viewModel.bookingsState.collectAsState()
@@ -514,7 +549,7 @@ fun HomeScreen(
                             user = user,
                             updateState = updateState,
                             onBack = { showEditProfile = false },
-                            onSave = { name, email, phone, age, address, emergencyContact, nik, password ->
+                            onSave = { name, email, phone, age, address, emergencyContact, nik, password, avatarPath ->
                                 profileViewModel.updateProfile(
                                     name = name,
                                     email = email,
@@ -523,7 +558,8 @@ fun HomeScreen(
                                     address = address,
                                     emergency_contact = emergencyContact,
                                     nik = nik,
-                                    password = password
+                                    password = password,
+                                    avatarPath = avatarPath
                                 )
                             },
                             onResetUpdate = { profileViewModel.resetUpdateState() }
@@ -538,10 +574,20 @@ fun HomeScreen(
                             CircularProgressIndicator(color = AltiDark)
                         }
                     }
+                } else if (showHelpCenter) {
+                    HelpCenterScreen(
+                        onBack = { showHelpCenter = false }
+                    )
+                } else if (showAbout) {
+                    AboutScreen(
+                        onBack = { showAbout = false }
+                    )
                 } else {
                     ProfileScreen(
                         profileState = profileState,
                         onEditProfile = { showEditProfile = true },
+                        onNavigateToHelpCenter = { showHelpCenter = true },
+                        onNavigateToAbout = { showAbout = true },
                         onLogout = onLogout,
                         onRetry = { profileViewModel.fetchProfile() }
                     )
@@ -550,174 +596,47 @@ fun HomeScreen(
         }
 
         // ── Bottom Navigation ───────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-                .height(66.dp)
-                .clip(RoundedCornerShape(33.dp))
-                .background(AltiDark.copy(alpha = 0.93f))
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                NavItem(IconHome,   "Explore",    selectedTab == 0) { selectedTab = 0 }
-                NavItem(IconNav,    "Navigation", selectedTab == 1) { selectedTab = 1 }
-                NavItem(IconBook,   "Bookings",   selectedTab == 2) { selectedTab = 2 }
-                NavItem(IconPerson, "Profile",    selectedTab == 3) { selectedTab = 3 }
-            }
-        }
-    }
-}
-
-// ── Mountain Card ───────────────────────────────────────────────────────────
-@Composable
-internal fun MountainCard(
-    mountain: MountainModel,
-    cardWidth: androidx.compose.ui.unit.Dp,
-    onClick: () -> Unit
-) {
-    // Format altitude
-    val altitudeText = mountain.altitude?.let { "${formatNumber(it)} mdpl" } ?: ""
-    // Format from first route (data langsung dari API)
-    val firstRoute = mountain.routes?.firstOrNull()
-    val durationText = firstRoute?.duration_hours?.let {
-        val h = (it / 60).toInt()
-        val hEnd = h + 1.5
-        "$h-$hEnd hr"
-    } ?: "-"
-    val distanceText = firstRoute?.distance_km?.let {
-        if (it == it.toLong().toDouble()) "${it.toLong()} km"
-        else "$it km"
-    } ?: "-"
-    val levelText = firstRoute?.difficulty?.replaceFirstChar { it.uppercaseChar() } ?: "-"
-    val imageResId = getMountainDrawable(mountain.name)
-
-    Box(
-        modifier = Modifier
-            .width(cardWidth)
-            .height(310.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { onClick() }
-    ) {
-        Image(
-            painter = painterResource(id = imageResId),
-            contentDescription = mountain.name,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        // Dark overlay (top & bottom, clear in middle)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.0f  to AltiDark.copy(alpha = 0.60f),
-                            0.40f to Color.Transparent,
-                            0.65f to Color.Transparent,
-                            1.0f  to AltiDark.copy(alpha = 0.85f)
-                        )
-                    )
-                )
-        )
-
-        // Top: Name + Altitude + Arrow
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopStart)
-                .padding(start = 16.dp, end = 14.dp, top = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = mountain.name,
-                    fontFamily = Montserrat,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = altitudeText,
-                    fontFamily = Montserrat,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 15.sp,
-                    color = Color.White.copy(alpha = 0.90f)
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
+        if (selectedTab != 1 || selectedRoute == null) {
             Box(
                 modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.22f))
-                    .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape),
-                contentAlignment = Alignment.Center
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .height(66.dp)
+                    .clip(RoundedCornerShape(33.dp))
+                    .background(AltiDark.copy(alpha = 0.93f))
             ) {
-                Icon(
-                    imageVector = IconArrow,
-                    contentDescription = "Detail",
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NavItem(IconHome,   "Explore",    selectedTab == 0) {
+                        enteredRouteFromExplore = false
+                        if (selectedTab != 0) savedPagerPage.intValue = pagerState.currentPage
+                        selectedTab = 0
+                    }
+                    NavItem(IconNav,    "Navigation", selectedTab == 1) {
+                        enteredRouteFromExplore = false
+                        if (selectedTab == 0) savedPagerPage.intValue = pagerState.currentPage
+                        selectedTab = 1
+                    }
+                    NavItem(IconBook,   "Bookings",   selectedTab == 2) {
+                        enteredRouteFromExplore = false
+                        if (selectedTab == 0) savedPagerPage.intValue = pagerState.currentPage
+                        selectedTab = 2
+                    }
+                    NavItem(IconPerson, "Profile",    selectedTab == 3) {
+                        enteredRouteFromExplore = false
+                        if (selectedTab == 0) savedPagerPage.intValue = pagerState.currentPage
+                        selectedTab = 3
+                    }
+                }
             }
         }
-
-        // Bottom: Stats row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            StatChip(icon = IconClock, value = durationText, label = "Duration")
-            StatChip(icon = IconRoute, value = distanceText, label = "Distance")
-            StatChip(icon = IconStar,  value = levelText,    label = "Level")
-        }
     }
 }
 
-// ── Stat Chip ───────────────────────────────────────────────────────────────
-@Composable
-private fun StatChip(icon: ImageVector, value: String, label: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = Color.White,
-            modifier = Modifier.size(13.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Column {
-            Text(
-                text = value,
-                fontFamily = Montserrat,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-                color = Color.White
-            )
-            Text(
-                text = label,
-                fontFamily = Montserrat,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.65f)
-            )
-        }
-    }
-}
-
-// ── Bottom nav item ─────────────────────────────────────────────────────────
 @Composable
 private fun NavItem(
     icon: ImageVector,
@@ -750,640 +669,3 @@ private fun NavItem(
         )
     }
 }
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-private fun formatNumber(n: Int): String {
-    return String.format("%,d", n).replace(',', '.')
-}
-
-private fun getMountainDrawable(name: String): Int {
-    val key = name.lowercase().removePrefix("gunung ").trim()
-    return when (key) {
-        "merbabu"  -> R.drawable.merbabu
-        "andong"   -> R.drawable.andong
-        "lawu"     -> R.drawable.lawu
-        "prau"     -> R.drawable.prau
-        "sindoro"  -> R.drawable.sindoro
-        "slamet"   -> R.drawable.slamet
-        "sumbing"  -> R.drawable.sumbing
-        "ungaran"  -> R.drawable.ungaran
-        else       -> R.drawable.startjourney_img
-    }
-}
-
-internal data class WeatherMock(val emoji: String, val tempMax: Int, val tempMin: Int)
-
-internal fun getWeatherMock(mountainIndex: Int, dayIndex: Int): WeatherMock {
-    val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️")
-    val hash = (mountainIndex * 7 + dayIndex) % 5
-    val emoji = emojis[hash]
-
-    val baseTempMax = when (mountainIndex) {
-        0 -> 20 // Merbabu
-        1 -> 24 // Andong
-        2 -> 18 // Lawu
-        3 -> 21 // Prau
-        4 -> 17 // Sindoro
-        5 -> 15 // Slamet
-        6 -> 17 // Sumbing
-        7 -> 22 // Ungaran
-        else -> 20
-    }
-
-    val tempVarianceMax = (dayIndex % 3) - 1
-    val max = baseTempMax + tempVarianceMax
-    val min = max - 6 - (dayIndex % 3)
-    return WeatherMock(emoji, max, min)
-}
-
-internal data class HourlyMock(val time: String, val emoji: String, val temp: Int)
-
-internal fun getHourlyMockList(dayIndex: Int): List<HourlyMock> {
-    val times = listOf("05:00 AM", "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM")
-    val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️", "⛅")
-    val temps = listOf(22, 18, 16, 19, 23, 25)
-    return List(6) { index ->
-        val emojiShift = (dayIndex + index) % emojis.size
-        val tempShift = temps[index] + (dayIndex % 3) - 1
-        HourlyMock(times[index], emojis[emojiShift], tempShift)
-    }
-}
-
-internal fun formatHourlyTime(isoTime: String): String {
-    val timePart = isoTime.substringAfter('T', "")
-    if (timePart.isEmpty()) return isoTime
-    try {
-        val parts = timePart.split(":")
-        val hour = parts[0].toInt()
-        val minute = parts.getOrNull(1) ?: "00"
-        val ampm = if (hour >= 12) "PM" else "AM"
-        val displayHour = when {
-            hour == 0 -> 12
-            hour > 12 -> hour - 12
-            else -> hour
-        }
-        return String.format("%02d:%s %s", displayHour, minute, ampm)
-    } catch (e: Exception) {
-        return timePart
-    }
-}
-
-private fun formatIndonesianDate(dateStr: String?): String {
-    if (dateStr == null) return "-"
-    return try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val date = inputFormat.parse(dateStr.substring(0, 10))
-        if (date != null) {
-            val outputFormat = SimpleDateFormat("d MMMM yyyy", Locale("id", "ID"))
-            outputFormat.format(date)
-        } else {
-            dateStr
-        }
-    } catch (e: Exception) {
-        dateStr
-    }
-}
-
-private fun calculateDurationDays(startDateStr: String?, endDateStr: String?): String {
-    if (startDateStr == null || endDateStr == null) return "2 - 3 Days"
-    return try {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val startDate = LocalDate.parse(startDateStr.substring(0, 10), formatter)
-        val endDate = LocalDate.parse(endDateStr.substring(0, 10), formatter)
-        val days = ChronoUnit.DAYS.between(startDate, endDate) + 1
-        if (days <= 1) "1 Day" else "$days Days"
-    } catch (e: Exception) {
-        "2 - 3 Days"
-    }
-}
-
-@Composable
-private fun TicketDetailRow(
-    icon: ImageVector,
-    text: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = AltiDark,
-            modifier = Modifier.size(16.dp)
-        )
-        Text(
-            text = text,
-            fontFamily = Montserrat,
-            fontWeight = FontWeight.Medium,
-            fontSize = 12.sp,
-            color = AltiDark.copy(alpha = 0.8f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
-private fun TicketCard(
-    transaction: TransactionModel,
-    onClick: () -> Unit
-) {
-    val session = transaction.hikingSession
-    val route = session?.route
-    val mountainName = route?.mountain?.name ?: "Unknown Mountain"
-    val routeName = route?.name ?: "Unknown Route"
-    val shortRouteName = remember(routeName) {
-        if (routeName.contains(" via ")) {
-            "Jalur " + routeName.substringAfter(" via ")
-        } else {
-            routeName
-        }
-    }
-    val rawDate = session?.start_date
-    val dateText = remember(rawDate) { formatIndonesianDate(rawDate) }
-    val durationText = remember(session) {
-        calculateDurationDays(session?.start_date, session?.end_date)
-    }
-    val imageRes = getMountainDrawable(mountainName)
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(130.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { onClick() }
-    ) {
-        // Background Mountain Image
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = mountainName,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        // Overlay layout matching Figma dimensions and linear gradient stops
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(167.dp)
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colorStops = arrayOf(
-                            0.0f to Color.White.copy(alpha = 0.85f),
-                            0.35f to Color.White.copy(alpha = 0.60f),
-                            0.65f to Color.White.copy(alpha = 0.35f),
-                            1.0f to Color.White.copy(alpha = 0.00f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(
-                        topStart = 20.dp,
-                        bottomStart = 20.dp,
-                        topEnd = 30.dp,
-                        bottomEnd = 30.dp
-                    )
-                )
-                .padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Mountain Title
-                Text(
-                    text = mountainName,
-                    fontFamily = Montserrat,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = AltiDark,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                // Info Rows (Calendar, Pin, Clock)
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    TicketDetailRow(icon = IconCalendar, text = dateText)
-                    TicketDetailRow(icon = IconPin, text = shortRouteName)
-                    TicketDetailRow(icon = IconClock, text = durationText)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TicketDivider() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        repeat(40) {
-            Box(
-                modifier = Modifier
-                    .size(4.dp)
-                    .clip(CircleShape)
-                    .background(AltiDark.copy(alpha = 0.15f))
-            )
-        }
-    }
-}
-
-@Composable
-private fun TicketInfoRow(label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = label,
-            fontFamily = Montserrat,
-            fontWeight = FontWeight.Medium,
-            fontSize = 11.sp,
-            color = AltiDark.copy(alpha = 0.5f)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = value,
-            fontFamily = Montserrat,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 11.sp,
-            color = AltiDark
-        )
-    }
-}
-
-@Composable
-private fun EmptyBookingsState() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(24.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(AltiDark.copy(alpha = 0.08f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "🎫",
-                    fontSize = 40.sp
-                )
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "Belum Ada Tiket",
-                fontFamily = Montserrat,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = AltiDark
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = "Tiket yang sudah dibayar dan diverifikasi\nakan muncul di sini.",
-                fontFamily = Montserrat,
-                fontWeight = FontWeight.Medium,
-                fontSize = 13.sp,
-                color = AltiDark.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center,
-                lineHeight = 18.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun TicketDetailScreen(
-    transaction: TransactionModel,
-    onBack: () -> Unit
-) {
-    val session = transaction.hikingSession
-    val route = session?.route
-    val mountainName = route?.mountain?.name ?: "Unknown Mountain"
-    val routeName = route?.name ?: "Unknown Route"
-    val dateText = session?.start_date ?: "-"
-    val groupName = session?.group_name ?: "-"
-    val memberCount = session?.members?.size ?: 1
-    val imageRes = getMountainDrawable(mountainName)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 90.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 24.dp, top = 52.dp, bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(AltiDark)
-                    .clickable { onBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = IconBack,
-                    contentDescription = "Back",
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Detail Tiket",
-                fontFamily = Montserrat,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                color = AltiDark
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Ticket card
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(24.dp))
-            ) {
-                // Image header
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                ) {
-                    Image(
-                        painter = painterResource(id = imageRes),
-                        contentDescription = mountainName,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        AltiDark.copy(alpha = 0.7f)
-                                    )
-                                )
-                            )
-                    )
-                    // Overlay text on image
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = mountainName,
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = Color.White
-                        )
-                        Text(
-                            text = routeName,
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 13.sp,
-                            color = Color.White.copy(alpha = 0.85f)
-                        )
-                    }
-                    // Verified badge top-right
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(12.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFF4CAF50).copy(alpha = 0.9f))
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                    ) {
-                        Text(
-                            text = "Terverifikasi",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp,
-                            color = Color.White
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Info section
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = transaction.orderId,
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 11.sp,
-                            color = AltiDark.copy(alpha = 0.4f)
-                        )
-                        Text(
-                            text = "Rp ${formatNumber(transaction.grossAmount)}",
-                            fontFamily = Montserrat,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = AltiDark
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        DetailInfoItem(label = "Tanggal", value = dateText)
-                        DetailInfoItem(label = "Kelompok", value = groupName)
-                        DetailInfoItem(label = "Pendaki", value = "$memberCount Orang")
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-
-                // Dashed divider
-                TicketDivider()
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // QR Code section
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "E-Ticket",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = AltiDark
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Tunjukkan QR code ini pada petugas basecamp",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 11.sp,
-                        color = AltiDark.copy(alpha = 0.5f),
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // QR Code generated from booking code
-                    val qrContent = transaction.orderId.ifEmpty { transaction.id }
-                    val qrBitmap = remember(qrContent) {
-                        runCatching {
-                            val writer = QRCodeWriter()
-                            val bitMatrix = writer.encode(qrContent, BarcodeFormat.QR_CODE, 400, 400)
-                            val bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.RGB_565)
-                            for (x in 0 until 400) {
-                                for (y in 0 until 400) {
-                                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
-                                }
-                            }
-                            bitmap
-                        }.getOrNull()
-                    }
-                    val qrImageBitmap = remember(qrBitmap) { qrBitmap?.asImageBitmap() }
-
-                    Box(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .border(2.dp, AltiDark.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (qrImageBitmap != null) {
-                            Image(
-                                bitmap = qrImageBitmap,
-                                contentDescription = "QR Code",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(12.dp),
-                            )
-                        } else {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = "QR",
-                                    fontFamily = Montserrat,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 32.sp,
-                                    color = AltiDark.copy(alpha = 0.3f)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Gagal memuat QR",
-                                    fontFamily = Montserrat,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 11.sp,
-                                    color = AltiDark.copy(alpha = 0.4f)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "ID: ${transaction.id}",
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 9.sp,
-                        color = AltiDark.copy(alpha = 0.3f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // Ticket notch decorations
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = (-10).dp)
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE3E9CD))
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 10.dp)
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE3E9CD))
-            )
-        }
-
-        Spacer(modifier = Modifier.height(90.dp))
-    }
-}
-
-@Composable
-private fun DetailInfoItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.Start) {
-        Text(
-            text = label,
-            fontFamily = Montserrat,
-            fontWeight = FontWeight.Medium,
-            fontSize = 11.sp,
-            color = AltiDark.copy(alpha = 0.5f)
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = value,
-            fontFamily = Montserrat,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 13.sp,
-            color = AltiDark
-        )
-    }
-}
-
-internal fun getAvatarModelForUser(user: UserModel?): Any? {
-    if (user == null) return null
-    val base64 = user.image
-    if (!base64.isNullOrEmpty() && base64.startsWith("data:image")) {
-        try {
-            val cleanString = if (base64.contains(",")) base64.substring(base64.indexOf(",") + 1) else base64
-            val decodedBytes = android.util.Base64.decode(cleanString, android.util.Base64.DEFAULT)
-            return android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-        } catch (e: Exception) {
-            // fallback
-        }
-    }
-    val url = if (!user.avatar_url.isNullOrEmpty()) user.avatar_url else user.image
-    if (url.isNullOrEmpty()) return null
-    return url.replace("localhost", "10.0.2.2").replace("127.0.0.1", "10.0.2.2")
-}
-
-
-
-

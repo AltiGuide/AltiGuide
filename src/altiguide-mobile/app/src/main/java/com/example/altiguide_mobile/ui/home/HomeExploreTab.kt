@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,6 +38,19 @@ import com.example.altiguide_mobile.data.model.UserModel
 import com.example.altiguide_mobile.util.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import com.example.altiguide_mobile.ui.mountain.MountainCard
+
+// ── Montserrat font family ──────────────────────────────────────────────────
+private val Montserrat = FontFamily(
+    Font(R.font.montserrat_regular,  FontWeight.Normal),
+    Font(R.font.montserrat_medium,   FontWeight.Medium),
+    Font(R.font.montserrat_semibold, FontWeight.SemiBold),
+    Font(R.font.montserrat_bold,     FontWeight.Bold)
+)
+
+// ── Design color tokens ─────────────────────────────────────────────────────
+private val AltiDark      = Color(0xFF20341B)
+private val AltiMedium    = Color(0xFF859763)
 
 @Composable
 internal fun ExploreTabContent(
@@ -44,6 +59,7 @@ internal fun ExploreTabContent(
     mountainsState: UiState<List<MountainModel>>,
     activeWeatherState: UiState<com.example.altiguide_mobile.data.model.WeatherResponse>,
     pagerState: PagerState,
+    scrollState: androidx.compose.foundation.ScrollState,
     scope: CoroutineScope,
     onAvatarClick: () -> Unit,
     onMountainSelected: (MountainModel) -> Unit,
@@ -55,7 +71,7 @@ internal fun ExploreTabContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(bottom = 90.dp)
     ) {
         // ── Header ─────────────────────────────────────────────
@@ -84,56 +100,7 @@ internal fun ExploreTabContent(
                 )
             }
 
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.35f))
-                    .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape)
-                    .clickable { onAvatarClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                val user = (profileState as? UiState.Success<UserModel>)?.data
-                val imageModel = getAvatarModelForUser(user)
-                if (imageModel != null) {
-                    SubcomposeAsyncImage(
-                        model = imageModel,
-                        contentDescription = "Profile",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop,
-                        loading = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    color = Color.White,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        },
-                        error = {
-                            Image(
-                                painter = painterResource(id = R.drawable.logo_altiguide),
-                                contentDescription = "Profile",
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                            )
-                        }
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.logo_altiguide),
-                        contentDescription = "Profile",
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(CircleShape)
-                    )
-                }
-            }
+
         }
 
         Spacer(modifier = Modifier.height(18.dp))
@@ -648,3 +615,61 @@ private fun weatherCodeToEmoji(code: Int): String = when (code) {
     95, 96, 99 -> "⛈️"
     else -> "⛅"
 }
+
+internal data class WeatherMock(val emoji: String, val tempMax: Int, val tempMin: Int)
+
+internal fun getWeatherMock(mountainIndex: Int, dayIndex: Int): WeatherMock {
+    val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️")
+    val hash = (mountainIndex * 7 + dayIndex) % 5
+    val emoji = emojis[hash]
+
+    val baseTempMax = when (mountainIndex) {
+        0 -> 20 // Merbabu
+        1 -> 24 // Andong
+        2 -> 18 // Lawu
+        3 -> 21 // Prau
+        4 -> 17 // Sindoro
+        5 -> 15 // Slamet
+        6 -> 17 // Sumbing
+        7 -> 22 // Ungaran
+        else -> 20
+    }
+
+    val tempVarianceMax = (dayIndex % 3) - 1
+    val max = baseTempMax + tempVarianceMax
+    val min = max - 6 - (dayIndex % 3)
+    return WeatherMock(emoji, max, min)
+}
+
+internal data class HourlyMock(val time: String, val emoji: String, val temp: Int)
+
+internal fun getHourlyMockList(dayIndex: Int): List<HourlyMock> {
+    val times = listOf("05:00 AM", "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM")
+    val emojis = listOf("☀️", "⛅", "☁️", "🌧️", "⛈️", "⛅")
+    val temps = listOf(22, 18, 16, 19, 23, 25)
+    return List(6) { index ->
+        val emojiShift = (dayIndex + index) % emojis.size
+        val tempShift = temps[index] + (dayIndex % 3) - 1
+        HourlyMock(times[index], emojis[emojiShift], tempShift)
+    }
+}
+
+internal fun formatHourlyTime(isoTime: String): String {
+    val timePart = isoTime.substringAfter('T', "")
+    if (timePart.isEmpty()) return isoTime
+    try {
+        val parts = timePart.split(":")
+        val hour = parts[0].toInt()
+        val minute = parts.getOrNull(1) ?: "00"
+        val ampm = if (hour >= 12) "PM" else "AM"
+        val displayHour = when {
+            hour == 0 -> 12
+            hour > 12 -> hour - 12
+            else -> hour
+        }
+        return String.format("%02d:%s %s", displayHour, minute, ampm)
+    } catch (e: Exception) {
+        return timePart
+    }
+}
+
