@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1002025271077",
+    "firebase_url": "https://altiguide-dd49c-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "altiguide-dd49c",
     "storage_bucket": "altiguide-dd49c.firebasestorage.app"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "1002025271077-avcp8st1aibbuj0fufp12u58j0usmpu8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.altiguide_mobile",
+            "certificate_hash": "519f0eb0d32ff185d8a60c9bc61659212f17a2e7"
+          }
+        },
         {
           "client_id": "1002025271077-mp6q1gmrn0jufbsf5b5evgolvptgcfml.apps.googleusercontent.com",
           "client_type": 1,

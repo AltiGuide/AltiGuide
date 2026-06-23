@@ -1,5 +1,7 @@
 package com.example.altiguide_mobile.ui.profile
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,11 +18,16 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.flow.drop
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -47,14 +54,57 @@ private val AltiDark = Color(0xFF20341B)
 private val AltiMedium = Color(0xFF859763)
 private val SearchBg = Color(0xFFEAF0D8)
 
+private val IconCamera: ImageVector get() = ImageVector.Builder(
+    name = "Camera", defaultWidth = 20.dp, defaultHeight = 20.dp,
+    viewportWidth = 24f, viewportHeight = 24f
+).apply {
+    path(fill = SolidColor(Color.White)) {
+        moveTo(12f, 12f)
+        curveTo(13.66f, 12f, 15f, 10.66f, 15f, 9f)
+        curveTo(15f, 7.34f, 13.66f, 6f, 12f, 6f)
+        curveTo(10.34f, 6f, 9f, 7.34f, 9f, 9f)
+        curveTo(9f, 10.66f, 10.34f, 12f, 12f, 12f)
+        close()
+        
+        moveTo(9f, 2f); lineTo(7.17f, 4f); lineTo(4f, 4f)
+        curveTo(2.9f, 4f, 2f, 4.9f, 2f, 6f)
+        lineTo(2f, 18f)
+        curveTo(2f, 19.1f, 2.9f, 20f, 4f, 20f)
+        lineTo(20f, 20f)
+        curveTo(21.1f, 20f, 22f, 19.1f, 22f, 18f)
+        lineTo(22f, 6f)
+        curveTo(22f, 4.9f, 21.1f, 4f, 20f, 4f)
+        lineTo(16.83f, 4f); lineTo(15f, 2f)
+        close()
+        
+        moveTo(12f, 17f)
+        curveTo(9.24f, 17f, 7f, 14.76f, 7f, 12f)
+        curveTo(7f, 9.24f, 9.24f, 7f, 12f, 7f)
+        curveTo(14.76f, 7f, 17f, 9.24f, 17f, 12f)
+        curveTo(17f, 14.76f, 14.76f, 17f, 12f, 17f)
+        close()
+    }
+}.build()
+
 @Composable
 fun EditProfileScreen(
     user: UserModel,
     updateState: UiState<String>,
     onBack: () -> Unit = {},
-    onSave: (name: String, email: String, phone: String?, age: Int?, address: String?, emergencyContact: String?, nik: String?, password: String) -> Unit = { _, _, _, _, _, _, _, _ -> },
+    onSave: (
+        name: String, 
+        email: String, 
+        phone: String?, 
+        age: Int?, 
+        address: String?, 
+        emergencyContact: String?, 
+        nik: String?, 
+        password: String,
+        avatarPath: String?
+    ) -> Unit = { _, _, _, _, _, _, _, _, _ -> },
     onResetUpdate: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     var name by remember { mutableStateOf(user.name) }
     var email by remember { mutableStateOf(user.email) }
     var phone by remember { mutableStateOf(user.phone_number ?: "") }
@@ -65,10 +115,25 @@ fun EditProfileScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(updateState) {
-        if (updateState is UiState.Success) {
-            onBack()
+    var selectedImageUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    var selectedImagePath by remember { mutableStateOf<String?>(null) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        if (uri != null) {
+            selectedImageUri = uri
+            selectedImagePath = saveImageToCache(context, uri)
         }
+    }
+
+    // Skip initial updateState (apapun itu), reaksi hanya terhadap perubahan setelahnya
+    LaunchedEffect(Unit) {
+        snapshotFlow { updateState }
+            .drop(1)
+            .collect { state ->
+                if (state is UiState.Success) onBack()
+            }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -111,55 +176,81 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // ── Avatar ───────────────────────────────────────────────
+            // ── Avatar with Edit Camera Icon Overlay ───────────────────
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .background(AltiMedium),
-                contentAlignment = Alignment.Center
+                    .size(88.dp)
             ) {
-                val imageModel = user.getAvatarModel()
-                if (imageModel != null) {
-                    SubcomposeAsyncImage(
-                        model = imageModel,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        loading = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    color = Color.White,
-                                    modifier = Modifier.size(24.dp)
-                                )
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .align(Alignment.TopStart)
+                        .clip(CircleShape)
+                        .background(AltiMedium)
+                        .clickable { imagePickerLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    val imageModel = selectedImageUri ?: user.getAvatarModel()
+                    if (imageModel != null) {
+                        SubcomposeAsyncImage(
+                            model = imageModel,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                            loading = {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            },
+                            error = {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = user.name.take(1).uppercase(),
+                                        fontFamily = Montserrat,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 34.sp,
+                                        color = Color.White
+                                    )
+                                }
                             }
-                        },
-                        error = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = user.name.take(1).uppercase(),
-                                    fontFamily = Montserrat,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 34.sp,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    )
-                } else {
-                    Text(
-                        text = user.name.take(1).uppercase(),
-                        fontFamily = Montserrat,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 34.sp,
-                        color = Color.White
+                        )
+                    } else {
+                        Text(
+                            text = user.name.take(1).uppercase(),
+                            fontFamily = Montserrat,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 34.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                // Camera overlay badge
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .align(Alignment.BottomEnd)
+                        .clip(CircleShape)
+                        .background(AltiDark)
+                        .border(1.5.dp, Color.White, CircleShape)
+                        .clickable { imagePickerLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = IconCamera,
+                        contentDescription = "Edit Profile Picture",
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
                     )
                 }
             }
@@ -275,7 +366,8 @@ fun EditProfileScreen(
                                 address.ifBlank { null },
                                 emergencyContact.ifBlank { null },
                                 nik.ifBlank { null },
-                                password
+                                password,
+                                selectedImagePath
                             )
                         }
                     )
@@ -292,7 +384,8 @@ fun EditProfileScreen(
                                 address.ifBlank { null },
                                 emergencyContact.ifBlank { null },
                                 nik.ifBlank { null },
-                                password
+                                password,
+                                selectedImagePath
                             )
                         }
                     )
@@ -410,5 +503,43 @@ private fun SaveButton(enabled: Boolean, onClick: () -> Unit) {
             fontSize = 15.sp,
             color = Color.White
         )
+    }
+}
+
+private fun saveImageToCache(context: android.content.Context, uri: android.net.Uri): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val buffered = java.io.BufferedInputStream(inputStream)
+
+        val opts = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        buffered.mark(Integer.MAX_VALUE)
+        android.graphics.BitmapFactory.decodeStream(buffered, null, opts)
+        buffered.reset()
+
+        val maxDim = 256
+        val scaleFactor = if (opts.outWidth > 0 && opts.outHeight > 0) {
+            maxOf(
+                (opts.outWidth + maxDim - 1) / maxDim,
+                (opts.outHeight + maxDim - 1) / maxDim,
+                1
+            )
+        } else 1
+
+        val decodeOpts = android.graphics.BitmapFactory.Options().apply { inSampleSize = scaleFactor }
+        val bitmap = android.graphics.BitmapFactory.decodeStream(buffered, null, decodeOpts)
+        buffered.close()
+        if (bitmap == null) return null
+
+        val dir = java.io.File(context.filesDir, "avatars")
+        dir.mkdirs()
+        val file = java.io.File(dir, "avatar_${java.util.UUID.randomUUID()}.jpg")
+        val outputStream = java.io.FileOutputStream(file)
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, outputStream)
+        outputStream.close()
+        bitmap.recycle()
+
+        file.absolutePath
+    } catch (e: Exception) {
+        null
     }
 }

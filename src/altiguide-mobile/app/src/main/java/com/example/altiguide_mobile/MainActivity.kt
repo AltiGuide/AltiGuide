@@ -10,6 +10,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.altiguide_mobile.ui.theme.AltiguidemobileTheme
 import com.example.altiguide_mobile.ui.auth.LoginScreen
@@ -25,37 +28,45 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val authDataStore = AuthDataStore(applicationContext)
         setContent {
-            val tokenState = authDataStore.authTokenFlow.collectAsState(initial = null)
-            val scope = rememberCoroutineScope()
-
             AltiguidemobileTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    ) {
-                        when (val token = tokenState.value) {
-                            null -> {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
+                val token by authDataStore.authTokenFlow.collectAsState(initial = null)
+                val navController = rememberNavController()
+                val scope = rememberCoroutineScope()
+
+                NavHost(navController = navController, startDestination = "splash") {
+                    composable("splash") {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    composable("login") {
+                        LoginScreen()
+                    }
+                    composable("main") {
+                        HomeScreen(
+                            onLogout = {
+                                scope.launch {
+                                    authDataStore.clearToken()
                                 }
                             }
-                            "" -> {
-                                LoginScreen()
+                        )
+                    }
+                }
+
+                LaunchedEffect(token) {
+                    when (token) {
+                        null -> {} // stay on splash
+                        "" -> {
+                            navController.navigate("login") {
+                                popUpTo("splash") { inclusive = true }
                             }
-                            else -> {
-                                HomeScreen(
-                                    userName = "Diva",
-                                    onLogout = {
-                                        scope.launch {
-                                            authDataStore.clearToken()
-                                            this@MainActivity.recreate()
-                                        }
-                                    }
-                                )
+                        }
+                        else -> {
+                            navController.navigate("main") {
+                                popUpTo("splash") { inclusive = true }
                             }
                         }
                     }

@@ -53,6 +53,14 @@ class AuthDataStore(private val context: Context) {
         }
     }
 
+    suspend fun saveAuthDataWithProfile(token: String, email: String, profileJson: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TOKEN_KEY] = token
+            preferences[EMAIL_KEY] = email
+            preferences[USER_PROFILE_KEY] = profileJson
+        }
+    }
+
     suspend fun clearToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(TOKEN_KEY)

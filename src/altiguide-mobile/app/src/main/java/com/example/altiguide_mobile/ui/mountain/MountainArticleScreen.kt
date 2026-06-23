@@ -1,4 +1,4 @@
-package com.example.altiguide_mobile.ui.home
+package com.example.altiguide_mobile.ui.mountain
 
 import android.content.Context
 import android.content.Intent
@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.altiguide_mobile.R
 import com.example.altiguide_mobile.data.model.MountainModel
+import com.example.altiguide_mobile.util.formatNumber
+import com.example.altiguide_mobile.util.getMountainDrawable
+
 // ── OSMDroid ──
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -508,7 +511,6 @@ private fun ArticleOsmMapView(
     )
 }
 
-
 private fun launchMaps(context: Context, mountain: MountainModel) {
     val lat = mountain.latitude ?: -7.4497
     val lon = mountain.longitude ?: 110.4381
@@ -542,25 +544,6 @@ private fun launchMaps(context: Context, mountain: MountainModel) {
             "Tidak dapat membuka peta.",
             android.widget.Toast.LENGTH_LONG
         ).show()
-    }
-}
-
-private fun formatNumber(n: Int): String {
-    return String.format("%,d", n).replace(',', '.')
-}
-
-private fun getMountainDrawable(name: String): Int {
-    val key = name.lowercase().removePrefix("gunung ").trim()
-    return when (key) {
-        "merbabu"  -> R.drawable.merbabu
-        "andong"   -> R.drawable.andong
-        "lawu"     -> R.drawable.lawu
-        "prau"     -> R.drawable.prau
-        "sindoro"  -> R.drawable.sindoro
-        "slamet"   -> R.drawable.slamet
-        "sumbing"  -> R.drawable.sumbing
-        "ungaran"  -> R.drawable.ungaran
-        else       -> R.drawable.startjourney_img
     }
 }
 

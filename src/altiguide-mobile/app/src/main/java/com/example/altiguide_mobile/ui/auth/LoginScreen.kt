@@ -229,11 +229,25 @@ fun LoginScreen(
         }
     }
 
+    // Handle login errors — navigation is driven by the token flow in MainActivity
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is UiState.Error -> {
+                Toast.makeText(context, (loginState as UiState.Error).message, Toast.LENGTH_LONG).show()
+                viewModel.resetStates()
+            }
+            else -> {}
+        }
+    }
+
     LaunchedEffect(googleLoginState) {
         android.util.Log.d("GOOGLE_AUTH", "googleLoginState changed: $googleLoginState")
-        if (googleLoginState is UiState.Error) {
-            Toast.makeText(context, (googleLoginState as UiState.Error).message, Toast.LENGTH_LONG).show()
-            viewModel.resetStates()
+        when (googleLoginState) {
+            is UiState.Error -> {
+                Toast.makeText(context, (googleLoginState as UiState.Error).message, Toast.LENGTH_LONG).show()
+                viewModel.resetStates()
+            }
+            else -> {}
         }
     }
 

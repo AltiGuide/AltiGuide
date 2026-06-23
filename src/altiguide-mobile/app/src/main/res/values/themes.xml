@@ -3,23 +3,18 @@
 
     <style name="Theme.Altiguidemobile" parent="Theme.AppCompat.Light.NoActionBar" />
 
-    <!-- Splash theme: solid background to prevent launcher leaks, drawing edge-to-edge -->
     <style name="Theme.Altiguidemobile.Splash" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowBackground">#374426</item>
-        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowTranslucentStatus" tools:targetApi="l">true</item>
         <item name="android:windowTranslucentNavigation" tools:targetApi="l">true</item>
         
-        <!-- Android 12+ Splash Screen compatibility -->
-        <item name="android:windowSplashScreenBackground" tools:targetApi="s">#374426</item>
-        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@android:color/transparent</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
-    <!-- Onboarding & Intro theme: solid dark background to prevent launcher leaks, drawing edge-to-edge -->
     <style name="Theme.Altiguidemobile.Onboarding" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">#374426</item>
         <item name="android:windowIsTranslucent">false</item>
