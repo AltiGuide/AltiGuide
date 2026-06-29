@@ -91,7 +91,10 @@ class RouteController extends Controller
             : 1000;
 
         try {
-            $response = Http::get('https://api.open-meteo.com/v1/forecast', [
+            $response = Http::when(
+                app()->environment('local'),
+                fn ($http) => $http->withoutVerifying()
+            )->get('https://api.open-meteo.com/v1/forecast', [
                 'latitude'        => $route->latitude,
                 'longitude'       => $route->longitude,
                 'elevation'       => $elevation,

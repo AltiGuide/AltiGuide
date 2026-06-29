@@ -9,6 +9,7 @@ use Midtrans\Transaction as MidtransTransaction;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,20 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/article', [\App\Http\Controllers\ArticleController::class, 'show'])->name('article.show');
+Route::get('/mountains', [\App\Http\Controllers\MountainListController::class, 'index'])->name('mountains.index');
+Route::get('/about', function () {
+    return \Inertia\Inertia::render('About');
+})->name('about');
+
+Route::get('/tata-tertib', function () {
+    return \Inertia\Inertia::render('TataTertib');
+})->name('tata-tertib');
+
+Route::get('/tips-keamanan', function () {
+    return \Inertia\Inertia::render('TipsKeamanan');
+})->name('tips-keamanan');
+
+Route::get('/weather-analytics', [\App\Http\Controllers\WeatherAnalyticsController::class, 'index'])->name('weather-analytics');
 
 // ── Guest routes (hanya bisa diakses kalau BELUM login) ─────────────────
 
@@ -37,6 +52,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/register/verify',          [RegisterController::class, 'verifyOtp'])->name('register.verify.post');
     Route::post('/register/verify/resend',   [RegisterController::class, 'resendOtp'])->name('register.verify.resend');
 
+    Route::post('/auth/google', [GoogleAuthController::class, 'handleGoogleLogin']);
+    Route::get('/complete-profile', [GoogleAuthController::class, 'showCompleteProfileForm'])->name('complete-profile');
+    Route::post('/complete-profile', [GoogleAuthController::class, 'completeProfile']);
 });
 
 // Route untuk flow Forgot Password (accessible by guests & auth users)
@@ -130,6 +148,7 @@ Route::middleware('auth')->group(function () {
                 'end_date'     => $session?->end_date,
                 'member_count' => $session?->members?->count() ?? 0,
                 'group_name'   => $session?->group_name,
+                'verification_status' => $session?->verification_status ?? 'pending_review',
                 'hike_type'    => $session?->hike_type,
                 'leader'       => $session?->leader ? [
                     'name'  => $session->leader->name,
@@ -182,9 +201,18 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['auth:admin', 'is_admin'])->group(function () {
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 
-        Route::get('/dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
-        })->name('admin.dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+
+        // Booking verification update
+        Route::put('/bookings/{id}/verify', [\App\Http\Controllers\Admin\DashboardController::class, 'updateVerification'])->name('admin.bookings.verify');
+
+        // Mountain content management (artikel gunung & info jalur)
+        Route::put('/content/mountains/{mountain}', [\App\Http\Controllers\Admin\ContentController::class, 'updateMountainContent'])->name('admin.content.mountain.update');
+        Route::put('/content/routes/{route}/info', [\App\Http\Controllers\Admin\ContentController::class, 'updateRouteInfo'])->name('admin.content.route.info.update');
+
+        // QR Code Check-in scan & update status (Web Session)
+        Route::get('/checkin/scan/{order_id}', [\App\Http\Controllers\Api\Admin\CheckinController::class, 'scan'])->name('admin.checkin.scan');
+        Route::put('/checkin/status/{order_id}', [\App\Http\Controllers\Api\Admin\CheckinController::class, 'updateStatus'])->name('admin.checkin.status');
 
         // CMS Manajemen Gunung (Mountain CRUD)
         Route::resource('mountains', \App\Http\Controllers\Admin\MountainController::class)->names([

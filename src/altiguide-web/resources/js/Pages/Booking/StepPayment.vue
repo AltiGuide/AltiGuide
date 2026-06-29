@@ -120,54 +120,352 @@ onUnmounted(() => {
 const isPaymentSuccess = computed(() => paymentStatus.value === 'settlement')
 
 const downloadETicket = () => {
+    const formatFullDate = (dateStr) => {
+        if (!dateStr) return '-'
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
+        return new Date(dateStr + 'T00:00:00').toLocaleDateString('id-ID', options)
+    }
+
+    const mountainImages = {
+        'Gunung Sumbing': '/images/gunung_sumbing_4.png',
+        'Gunung Sindoro': '/images/gunung_sindoro_8.png',
+        'Gunung Prau':    '/images/gunung_prau_7.png',
+        'Gunung Merbabu': '/images/gunung_merbabu_6.png',
+        'Gunung Lawu':    '/images/gunung_lawu_2.png',
+        'Gunung Andong':  '/images/gunung_andong_1.png',
+        'Gunung Ungaran': '/images/gunung_ungaran_5.png',
+        'Gunung Slamet':  '/images/gunung_slamet_3.png',
+    };
+    const coverImage = mountainImages[props.selectedMountain?.name] || '/images/logo_2.png';
+
+    const membersHtml = props.members && props.members.length > 0
+        ? props.members.map((m, i) => `
+            <tr>
+                <td style="text-align: center;">${i + 1}</td>
+                <td style="text-align: left; padding-left: 20px;">${m.full_name}</td>
+                <td style="text-align: center;">${m.identity_number}</td>
+                <td style="text-align: center;">${m.phone_number || '-'}</td>
+            </tr>
+        `).join('')
+        : `<tr><td colspan="4" style="text-align: center; color: #8B9A7B;">Tidak ada anggota tambahan</td></tr>`;
+
     const ticketHtml = `
     <!DOCTYPE html>
     <html>
     <head>
         <title>E-Ticket AltiGuide - ${props.orderId}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
-            body { font-family: 'Montserrat', sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; color: #374426; }
-            .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #66533A; padding-bottom: 16px; }
-            .header h1 { font-size: 24px; color: #66533A; }
-            .header p { color: #9F8C74; font-size: 14px; }
-            .order-id { font-size: 20px; font-weight: 700; color: #66533A; text-align: center; margin: 16px 0; }
-            .details { margin: 20px 0; }
-            .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #E5DDD0; }
-            .detail-label { font-weight: 600; font-size: 13px; color: #66533A; }
-            .detail-value { font-size: 13px; color: #374426; }
-            .members { margin-top: 20px; }
-            .members h3 { font-size: 14px; color: #66533A; margin-bottom: 8px; }
-            .member-item { padding: 6px 0; border-bottom: 1px solid #F0EBE0; font-size: 13px; }
-            .footer { text-align: center; margin-top: 30px; padding-top: 16px; border-top: 2px solid #66533A; font-size: 12px; color: #9F8C74; }
-            @media print { body { padding: 20px; } }
+            body {
+                font-family: 'Montserrat', sans-serif;
+                background-color: #F4F1E6;
+                margin: 0;
+                padding: 40px 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .ticket-card {
+                background-color: #F0EADE;
+                border-radius: 30px;
+                padding: 40px;
+                width: 100%;
+                max-width: 600px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                border: 1px solid #D6CCAF;
+                box-sizing: border-box;
+            }
+            .ticket-title {
+                text-align: center;
+                font-size: 32px;
+                font-weight: 800;
+                color: #F0EADE;
+                -webkit-text-stroke: 1.5px #374426;
+                margin: 0;
+                letter-spacing: 1.5px;
+            }
+            .ticket-subtitle {
+                text-align: center;
+                font-size: 11px;
+                color: #6B553D;
+                margin: 5px 0 25px 0;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+            }
+            .cover-image-container {
+                position: relative;
+                width: 100%;
+                height: 180px;
+                border-radius: 20px;
+                overflow: hidden;
+                margin-bottom: 25px;
+            }
+            .cover-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            .logo-overlay {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(240, 238, 230, 0.85);
+                padding: 6px 16px;
+                border-radius: 25px;
+                backdrop-filter: blur(4px);
+            }
+            .logo-overlay img {
+                width: 22px;
+                height: 22px;
+            }
+            .logo-overlay span {
+                font-size: 16px;
+                font-weight: 700;
+                color: #374426;
+                letter-spacing: 0.5px;
+            }
+            .info-row-3 {
+                display: grid;
+                grid-template-cols: 1.2fr 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 20px;
+            }
+            .info-row-2 {
+                display: grid;
+                grid-template-cols: 1.2fr 1fr;
+                gap: 20px;
+                margin-bottom: 25px;
+            }
+            .info-label {
+                font-size: 10px;
+                color: #9F8C74;
+                font-weight: 600;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .info-value {
+                font-size: 13px;
+                font-weight: 700;
+                color: #374426;
+            }
+            .info-value.font-mono {
+                font-family: monospace;
+                font-size: 14px;
+            }
+            .info-value.text-large {
+                font-size: 14px;
+                line-height: 1.3;
+            }
+            .timeline {
+                display: grid;
+                grid-template-columns: 20px 1fr;
+                grid-template-rows: auto 12px auto;
+                align-items: center;
+            }
+            .timeline-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                justify-self: center;
+            }
+            .timeline-dot.solid {
+                background-color: #8B6E4B;
+            }
+            .timeline-dot.hollow {
+                border: 2px solid #8B6E4B;
+                background-color: #FFFEF8;
+                box-sizing: border-box;
+                width: 8px;
+                height: 8px;
+            }
+            .timeline-line {
+                grid-column: 1;
+                width: 2px;
+                height: 100%;
+                background-color: #D6CCAF;
+                justify-self: center;
+            }
+            .timeline-text {
+                font-size: 12.5px;
+                font-weight: 600;
+                color: #374426;
+            }
+            .notice-banner {
+                background-color: #6B553D;
+                color: #F4F1E6;
+                border-radius: 12px;
+                padding: 12px 18px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                font-size: 11px;
+                font-weight: 600;
+                margin-bottom: 25px;
+                line-height: 1.4;
+            }
+            .ticket-icon {
+                width: 24px;
+                height: 24px;
+                color: #F4F1E6;
+                flex-shrink: 0;
+            }
+            .table-title {
+                font-size: 13px;
+                font-weight: 700;
+                color: #374426;
+                margin: 0 0 12px 0;
+            }
+            .members-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 5px 0;
+                font-size: 11px;
+                margin-bottom: 25px;
+            }
+            .members-table th {
+                background-color: #6B553D;
+                color: #FFF;
+                font-weight: 600;
+                padding: 6px 10px;
+                border-radius: 15px;
+                font-size: 10px;
+            }
+            .members-table td {
+                padding: 10px;
+                color: #374426;
+                font-weight: 500;
+            }
+            .qr-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                margin-top: 15px;
+                border-top: 2px dashed #D6CCAF;
+                padding-top: 30px;
+            }
+            .qr-title {
+                font-size: 16px;
+                font-weight: 700;
+                color: #8B6E4B;
+                letter-spacing: 1px;
+                margin: 0;
+            }
+            .qr-code {
+                border: 2px solid #8B6E4B;
+                padding: 8px;
+                border-radius: 12px;
+                background-color: white;
+                width: 150px;
+                height: 150px;
+            }
+            .print-btn {
+                display: block;
+                width: 100%;
+                max-width: 200px;
+                margin: 15px auto 0 auto;
+                background-color: #D6CCAF;
+                color: #374426;
+                border: none;
+                padding: 12px 20px;
+                font-size: 14px;
+                font-weight: 700;
+                border-radius: 10px;
+                cursor: pointer;
+                text-align: center;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+                transition: all 0.2s;
+            }
+            .print-btn:hover {
+                background-color: #c4b998;
+            }
+            @media print {
+                body { background-color: #fff; padding: 0; }
+                .ticket-card { box-shadow: none; border: none; padding: 0; }
+                .print-btn { display: none; }
+            }
         </style>
     </head>
     <body>
-        <div class="header">
-            <h1>🏔️ AltiGuide E-Ticket</h1>
-            <p>Surat Izin Masuk Kawasan Konservasi (SIMAKSI)</p>
+        <div class="ticket-card">
+            <h1 class="ticket-title">ALTIGUIDE E-TICKET</h1>
+            <p class="ticket-subtitle">Surat Izin Masuk Kawasan Konservasi (SIMAKSI)</p>
+
+            <div class="cover-image-container">
+                <img src="${coverImage}" alt="Mountain" class="cover-image" />
+                <div class="logo-overlay">
+                    <img src="/images/logo_2.png" alt="Logo" />
+                    <span>AltiGuide</span>
+                </div>
+            </div>
+
+            <div class="info-row-3">
+                <div>
+                    <div class="info-label">Order ID</div>
+                    <div class="info-value font-mono">#${props.orderId}</div>
+                </div>
+                <div>
+                    <div class="info-label">Nama Rombongan</div>
+                    <div class="info-value">${props.groupName}</div>
+                </div>
+                <div>
+                    <div class="info-label">Ketua Rombongan</div>
+                    <div class="info-value">${props.user?.name || '-'}</div>
+                </div>
+            </div>
+
+            <div class="info-row-2">
+                <div>
+                    <div class="info-label">Tujuan</div>
+                    <div class="info-value text-large">${props.selectedMountain?.name} (${props.selectedRoute?.name})</div>
+                </div>
+                <div>
+                    <div class="info-label" style="margin-left: 20px;">Tanggal Pendakian</div>
+                    <div class="timeline">
+                        <div class="timeline-dot solid"></div>
+                        <div class="timeline-text">${formatFullDate(props.startDate)}</div>
+                        <div class="timeline-line"></div>
+                        <div class="timeline-dot hollow"></div>
+                        <div class="timeline-text">${formatFullDate(props.endDate)}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notice-banner">
+                <svg class="ticket-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+                <div>Tunjukkan E-Ticket dan Kartu Identitas kepada petugas Basecamp sebelum melakukan pendakian.</div>
+            </div>
+
+            <h3 class="table-title">Daftar Anggota Rombongan</h3>
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">NO</th>
+                        <th style="width: 40%; text-align: left; padding-left: 20px;">NAMA LENGKAP</th>
+                        <th style="width: 25%;">NOMOR IDENTITAS (NIK)</th>
+                        <th style="width: 25%;">NOMOR TELEPON</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${membersHtml}
+                </tbody>
+            </table>
+
+            <div class="qr-section">
+                <h3 class="qr-title">QRIS</h3>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${props.orderId}" alt="Check-in QR" class="qr-code" />
+            </div>
+
+            <button class="print-btn" onclick="window.print()">Download PDF</button>
         </div>
-        <div class="order-id">#${props.orderId}</div>
-        <div class="details">
-            <div class="detail-row"><span class="detail-label">Gunung & Jalur</span><span class="detail-value">${props.selectedMountain?.name} — ${props.selectedRoute?.name}</span></div>
-            <div class="detail-row"><span class="detail-label">Nama Kelompok</span><span class="detail-value">${props.groupName}</span></div>
-            <div class="detail-row"><span class="detail-label">Tanggal</span><span class="detail-value">${formatDate(props.startDate)} — ${formatDate(props.endDate)}</span></div>
-            <div class="detail-row"><span class="detail-label">Jumlah Anggota</span><span class="detail-value">${props.memberCount} Orang</span></div>
-            <div class="detail-row"><span class="detail-label">Total Pembayaran</span><span class="detail-value">${formatRupiah(props.grossAmount)}</span></div>
-            <div class="detail-row"><span class="detail-label">Ketua Rombongan</span><span class="detail-value">${props.user?.name} (${props.user?.nik})</span></div>
-        </div>
-        <div class="members">
-            <h3>Daftar Anggota:</h3>
-            ${props.members.map((m, i) => `<div class="member-item">${i + 1}. ${m.full_name} — ${m.identity_number}</div>`).join('')}
-        </div>
-        <div class="footer">
-            <p>E-Ticket ini sah sebagai bukti pendaftaran SIMAKSI digital.</p>
-            <p>Tunjukkan tiket ini (cetak/digital) saat melapor di basecamp.</p>
-            <p>© 2026 AltiGuide Team</p>
-        </div>
-        <script>window.onload = () => window.print();<\/script>
-    </body>
+    </body> 
     </html>`
 
     const w = window.open('', '_blank')

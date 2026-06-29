@@ -18,6 +18,12 @@ class HikingSession extends Model
         'end_date',
         'hike_type',
         'status',
+        'verification_status',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
     ];
 
     public function leader()
@@ -38,5 +44,14 @@ class HikingSession extends Model
     public function members()
     {
         return $this->hasMany(HikingMember::class, 'hiking_session_id');
+    }
+
+    protected static function booted()
+    {
+        static::saved(function ($session) {
+            if ($session->transaction_id) {
+                Transaction::syncToFirebase($session->transaction_id);
+            }
+        });
     }
 }

@@ -1,11 +1,23 @@
+import java.util.Properties
+
 plugins {
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.room)
+    alias(libs.plugins.google.services)
 }
+
+// Load MAPS_API_KEY from local.properties at top-level scope
+val localProperties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use {
+        localProperties.load(it)
+    }
+}
+val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY", "")
 
 android {
     namespace = "com.example.altiguide_mobile"
@@ -19,6 +31,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Inject the Maps API key into the manifest placeholder
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
@@ -39,15 +54,24 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
+// Manually configure KSP for Room
+ksp {
+    // Using a relative path avoids the "Tugas Sem 4" space issue entirely
+    arg("room.schemaLocation", "schemas")
 }
+
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -77,6 +101,20 @@ dependencies {
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    // Google Sign-In
+    implementation(libs.play.services.auth)
+
+    // Coil (Image loading from URL)
+    implementation(libs.coil.compose)
+
+    // OSMDroid (OpenStreetMap native, no API key needed)
+    implementation(libs.osmdroid.android)
+
+    // ZXing (QR Code generation)
+    implementation(libs.zxing.core)
+
+    // Google Maps SDK removed — using OSMDroid instead (offline support, no API key needed)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

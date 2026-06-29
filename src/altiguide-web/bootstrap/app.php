@@ -17,9 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
-        // Redirect ke halaman login yang sesuai berdasarkan path
-        $middleware->redirectGuestsTo(function (Request $request) {
-            return $request->is('admin/*') ? route('admin.login') : route('login');
+        // Redirect ke halaman login yang sesuai
+        $middleware->redirectGuestsTo(fn () => route('login'));
+
+        // Redirect ke dashboard yang sesuai jika user sudah login
+        $middleware->redirectUsersTo(function () {
+            if (\Illuminate\Support\Facades\Auth::guard('admin')->check()) {
+                return '/admin/dashboard';
+            }
+            return '/dashboard';
         });
 
         // Register alias middleware 'is_admin'

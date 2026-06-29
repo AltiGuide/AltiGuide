@@ -5,6 +5,7 @@ import com.example.altiguide_mobile.data.network.AltiGuideApiService
 import com.example.altiguide_mobile.data.local.AltiGuideDatabase
 import com.example.altiguide_mobile.data.local.dao.RouteDao
 import com.example.altiguide_mobile.data.local.dao.WaypointDao
+import com.example.altiguide_mobile.data.local.dao.TransactionDao
 import com.example.altiguide_mobile.util.AuthDataStore
 import androidx.room.Room
 import com.google.gson.GsonBuilder
@@ -26,7 +27,7 @@ import kotlinx.coroutines.runBlocking
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8000/api/" // Android Emulator localhost
+    private const val BASE_URL = "http://10.0.2.2:8010/api/" // Android Emulator localhost
 
     @Provides
     @Singleton
@@ -92,7 +93,8 @@ object AppModule {
             context,
             AltiGuideDatabase::class.java,
             "altiguide_database"
-        ).build()
+        ).fallbackToDestructiveMigration()
+         .build()
     }
 
     @Provides
@@ -105,5 +107,11 @@ object AppModule {
     @Singleton
     fun provideWaypointDao(database: AltiGuideDatabase): WaypointDao {
         return database.waypointDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransactionDao(database: AltiGuideDatabase): TransactionDao {
+        return database.transactionDao()
     }
 }
