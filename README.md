@@ -1,42 +1,54 @@
-# Team Contract & Project Progress - AltiGuide
+# AltiGuide 🗺️⛰️
 
-Dokumen ini merupakan kesepakatan resmi anggota tim untuk memastikan kelancaran kolaborasi serta dokumentasi progress berkala selama praktikum Rekayasa Perangkat Lunak (RPL).
+<!-- GitHub Badges -->
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=github-actions)
+![Laravel Version](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel)
+![Kotlin Version](https://img.shields.io/badge/Kotlin-Native-7F52FF?style=for-the-badge&logo=kotlin)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet?style=for-the-badge)
 
-## Status Progress Fitur Aplikasi (Update Modul P8)
-Berikut adalah daftar fitur utama (*Features*) yang telah berhasil diimplementasikan dan di-merge ke dalam branch `dev`:
+Dokumen ini merupakan kesepakatan resmi anggota tim untuk memastikan kelancaran kolaborasi serta dokumentasi sistem selama praktikum Rekayasa Perangkat Lunak (RPL).
 
-### 1. Fitur Utama Tahap 1 (Must-have #1 - Modul P6)
-* **[Selesai] Authentication System**: Sistem Login dan Register fungsional menggunakan arsitektur Laravel + Inertia.js untuk menjamin keamanan akses pendaki.
-* **[Selesai] Landing Page / Dashboard**: Antarmuka awal aplikasi sebagai gerbang informasi utama platform AltiGuide.
+## 📄 Deskripsi Proyek
+**AltiGuide** adalah platform navigasi dan registrasi pendakian gunung terintegrasi. Platform ini dirancang untuk mempermudah manajemen keselamatan pendaki melalui fitur registrasi daring (SIMAKSI), pemetaan rute luring, serta penyediaan informasi administratif pendakian yang komprehensif. Proyek ini dibangun menggunakan arsitektur *multi-platform* yang andal:
+- **Web App & API Gateway**: Dibangun menggunakan **Laravel 13**, **Inertia.js**, dan **Vue.js**.
+- **Mobile Native Client**: Dibangun menggunakan **Android Native (Kotlin)** dengan **Jetpack Compose** untuk antarmuka yang responsif.
 
-### 2. Fitur Utama Tahap 2 (Must-have #2 - Modul P7)
-* **[Selesai] Mountain & Article Detail**: Halaman eksplorasi informasi artikel detail gunung (deskripsi, foto, dan integrasi rute) serta seksi rekomendasi destinasi pendakian lainnya (*Other Destinations*).
-* **[Selesai] Dynamic Route Routing & Database Integration**: Sistem pencarian data berbasis `slug` dan penampilan data dinamis dari database tanpa *hardcoded values*.
-
-### 3. Fitur Utama Tahap 3 (Must-have #3 - Modul P8)
-* **[Selesai] Online Booking SIMAKSI System**: Sistem registrasi pendakian daring yang terintegrasi penuh, memandu pengguna melalui alur pemilihan destinasi, inisiasi grup/manifes, hingga validasi anggota secara otomatis.
-* **[Selesai] Dynamic Cost Calculation & Review**: Modul kalkulasi rincian biaya tiket masukan dan biaya layanan pendakian secara *real-time* dan dinamis yang ditarik langsung dari database pada tahap tinjauan akhir.
 ---
 
-## Panduan Instalasi & Menjalankan Aplikasi (Setup & Installation Guide)
+## ✨ Daftar Fitur Utama
+* **Authentication System**: Sistem Login dan Register menggunakan arsitektur Laravel + Inertia.js untuk menjamin keamanan akses akun pendaki.
+* **Mountain & Article Exploration**: Halaman eksplorasi informasi detail gunung (deskripsi, foto, integrasi rute) serta rekomendasi destinasi berbasis data dinamis dari database.
+* **Online Booking SIMAKSI System**: Sistem registrasi pendakian daring yang memandu pengguna melalui alur pemilihan destinasi, inisiasi grup/manifes, hingga kalkulasi rincian biaya tiket secara *real-time*.
+* **Offline Navigation Tracking**: Modul navigasi luring pada aplikasi mobile memanfaatkan data koordinat `.gpx` untuk keselamatan pendaki di area minim sinyal.
 
-Aplikasi AltiGuide terdiri dari dua komponen utama: **Backend/Web App (Laravel + Vue.js)** dan **Mobile App (Android Native Kotlin)**. Berikut adalah langkah-langkah untuk menyiapkan dan menjalankan kedua komponen tersebut di lingkungan lokal Anda.
+---
+
+## 📸 Antarmuka Aplikasi (Screenshots)
+
+| Web Dashboard Admin | Mobile Client Interface |
+| :---: | :---: |
+| <img src="docs/feature1/image.png" width="400" alt="Web Dashboard Admin Preview"/> | <img src="docs/Mobile/image.png" width="200" alt="Mobile App Preview"/> |
+| *Tampilan Landing Page Utama Website AltiGuide* | *Tampilan Halaman Utama / Eksplorasi Gunung pada Aplikasi Android* |
+
+---
+
+## 🚀 Panduan Instalasi & Menjalankan Aplikasi (Setup Guide)
+
+Ikuti instruksi di bawah ini dengan saksama untuk memasang dan menjalankan AltiGuide di lingkungan lokal Anda.
 
 ### 1. Prasyarat Sistem (Prerequisites)
-Sebelum memulai, pastikan Anda telah memasang perangkat lunak berikut:
+Sebelum memulai, pastikan perangkat lokal Anda sudah terpasang:
 * **PHP >= 8.3**
 * **Composer** (Dependency manager untuk PHP)
 * **Node.js (v18 ke atas) & npm**
-* **PostgreSQL** atau **SQLite** (Sebagai basis data)
-* **Android Studio** (Untuk menjalankan aplikasi mobile)
+* **PostgreSQL** atau **SQLite**
+* **Android Studio** (Untuk menjalankan komponen mobile)
 
 ---
 
 ### 2. Setup Backend & Web App (`src/altiguide-web`)
 
-Ikuti langkah-langkah berikut untuk mengonfigurasi dan menjalankan server web/API:
-
-1. **Masuk ke direktori web app:**
+1. **Masuk ke direktori kerja:**
    ```bash
    cd src/altiguide-web
    ```
@@ -122,6 +134,7 @@ Ikuti langkah-langkah berikut untuk membuka dan menjalankan proyek aplikasi Andr
 
 ---
 
+# 👥 Piagam & Aturan Tim (Team Contract)
 ## 1. Peran Anggota Tim (Team Roles)
 Setiap anggota bertanggung jawab atas tugas utama berikut:
 
@@ -135,7 +148,7 @@ Setiap anggota bertanggung jawab atas tugas utama berikut:
   * Mendokumentasikan bug atau error ke dalam Issue Tracker dan memantau proses perbaikannya.
   * Mengembangkan komponen antarmuka pengguna (Frontend) berdasarkan desain yang telah disepakati.
 
-* **Daniel Ferdian Napitupulu**: **Documentation & Technical Writer**
+* **Daniel Ferdian Napitupulu**: **Quality Assurance (QA), Documentation & Technical Writer**
   * Bertanggung jawab menyusun laporan resmi praktikum Bab I hingga Bab akhir.
   * Mengelola dokumentasi teknis dalam repositori seperti file README, Wiki, dan dokumentasi endpoint API.
   * Memastikan seluruh artefak proyek (diagram UML, ERD) terdokumentasi dengan rapi sesuai standar RPL.
